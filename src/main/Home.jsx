@@ -3,6 +3,7 @@ export default function Home() {
     <div>
       <h1>Home</h1>
       <p>study-o project</p>
+      <Link to="/sample/1">Go to Sample 1</Link>
     </div>
   );
 }
