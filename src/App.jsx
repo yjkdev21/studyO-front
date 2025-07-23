@@ -15,8 +15,6 @@ function App() {
         <Route path="/sample/:id" element={<Sample />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-
-      <Link to="/sample/1">Go to Sample 1</Link>
     </div>
   );
 }
