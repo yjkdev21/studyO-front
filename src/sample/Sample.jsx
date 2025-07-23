@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Sample() {
   const { id } = useParams();
@@ -7,6 +8,7 @@ export default function Sample() {
       <h1>Hello Sample!</h1>
       <h4>3th Project</h4>
       <p>param id = {id}</p>
+      <Link to="/">Home</Link>
     </div>
   );
 }
