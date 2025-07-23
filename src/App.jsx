@@ -9,13 +9,13 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
+    <div>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/sample/:id" element={<Sample />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </>
+    </div>
   );
 }
 
