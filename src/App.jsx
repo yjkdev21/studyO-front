@@ -1,14 +1,22 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
-import { HashRouter } from "react-router-dom"; // BrowserRouter 대신 HashRouter 임포트
+import "./App.css";
+import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Home from "./main/Home";
+import Sample from "./sample/Sample";
+import NotFoundPage from "./common/NotFoundPage";
 
-createRoot(document.getElementById("root")).render(
-  // BrowserRouter 대신 HashRouter를 사용하고, basename 속성은 HashRouter에서 필요 없습니다.
-  <HashRouter>
-    <StrictMode>
-      <App />
-    </StrictMode>
-  </HashRouter>
-);
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/sample/:id" element={<Sample />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
