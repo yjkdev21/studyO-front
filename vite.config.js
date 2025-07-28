@@ -4,5 +4,5 @@ import react from "@vitejs/plugin-react";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/react-study-o/",
+  base: "/", // 이 부분을 변경합니다.
 });
