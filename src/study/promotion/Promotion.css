@@ -1,0 +1,136 @@
+.promotion-container {
+  width: 800px;
+}
+.promotion-view-container {
+  width: 800px;
+  min-height: 400px;
+}
+
+.form-title {
+  margin-bottom: 1.5rem; /* mb-6 */
+  font-size: 1.2rem; /* text-2xl */
+  font-weight: 700; /* font-bold */
+  color: #1f2937; /* text-gray-800 */
+  display: flex;
+  align-items: center; /* items-center */
+}
+
+.form-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem; /* w-8 */
+  height: 1.5rem; /* h-8 */
+  border-radius: 9999px; /* rounded-full */
+  background-color: #facc15; /* bg-yellow-400 */
+  color: white;
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  margin-right: 0.75rem; /* mr-3 */
+  flex-shrink: 0; /* flex-shrink-0 */
+}
+
+/* 버튼 컨테이너 */
+.button-container {
+  display: flex;
+  justify-content: right;
+  align-items: right;
+  margin-top: 2rem; /* 상단 마진 */
+}
+
+/* 기본 버튼 스타일 */
+.btn-base {
+  display: inline-block;
+  font-weight: 700;
+  padding: 0.3rem 1.5rem;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.06); /* shadow-md */
+  transition: all 0.3s ease-in-out; /* transition duration-300 */
+  cursor: pointer;
+  text-decoration: none; /* <a> 태그의 밑줄 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  border: none;
+  font-size: 0.8rem;
+}
+
+/* 작성하기 버튼 스타일 (이미지 색상에 맞게 오렌지 계열로 변경) */
+.btn-primary {
+  background-color: #f59e0b; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-primary:hover {
+  background-color: #d97706; /* Tailwind CSS amber-600과 유사 */
+}
+
+.btn-dark-orange {
+  background-color: #e46002; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-dark-orange:hover {
+  background-color: #b43f1b; /* Tailwind CSS amber-600과 유사 */
+}
+
+.btn-gray {
+  background-color: #d1d5db; /* gray-300 */
+  color: #1f2937; /* gray-800 */
+}
+
+.btn-gray:hover {
+  background-color: #9ca3af; /* gray-400 */
+}
+
+.margin-left-1 {
+  margin-left: 1rem;
+}
+
+.pdding-03 {
+  padding: 0.3rem;
+}
+
+.attachment-section {
+  width: 800px;
+  margin-bottom: 1.5rem; /* mb-6 */
+  padding: 1rem; /* p-4 */
+  background-color: #f9fafb; /* bg-gray-50 */
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+}
+
+/* attachment-header: "기존 첨부파일" 제목 */
+.attachment-header {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: #374151; /* text-gray-700 */
+  margin-bottom: 0.75rem; /* mb-3 */
+}
+
+/* attachment-list: 파일 목록 ul */
+.attachment-list {
+  list-style: none; /* 기본 리스트 스타일 제거 */
+  padding: 0;
+  margin: 0;
+  display: flex; /* flexbox 사용 */
+  flex-wrap: wrap; /* 내용이 넘치면 다음 줄로 */
+  gap: 0.5rem; /* 아이템 간 간격 */
+}
+
+/* attachment-item: 각 파일 항목 li */
+.attachment-item {
+  display: inline-flex; /* inline-flex로 변경하여 텍스트와 버튼을 한 줄에 */
+  align-items: center; /* 세로 중앙 정렬 */
+  background-color: #eed3b5; /* light blue background (bg-blue-50) */
+  border: 1px solid #ff9100; /* border-blue-200 */
+  border-radius: 0.375rem; /* rounded-md */
+  padding: 0.375rem 0.75rem; /* py-1.5 px-3 */
+  font-size: 0.875rem; /* text-sm */
+  color: #4e4e4e; /* text-blue-700 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  white-space: nowrap; /* 파일명이 길어도 줄바꿈 안되게 */
+  overflow: hidden; /* 넘치는 부분 숨김 */
+  text-overflow: ellipsis; /* 넘치면 ...으로 표시 */
+  max-width: 100%; /* 부모 너비에 맞춤 */
+}

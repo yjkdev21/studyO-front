@@ -4,7 +4,9 @@ export default function Home() {
     <div>
       <h1>Home</h1>
       <p>study-o project</p>
-      <Link to="/sample/5">Go to Sample 5</Link>
+      <Link to="/sample/5">Go to Sample 5</Link> <br />
+      <br />
+      <Link to="/study/promotion/list">Go Promotion List</Link>
     </div>
   );
 }
