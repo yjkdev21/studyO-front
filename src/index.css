@@ -22,10 +22,10 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1em;
 }
 
-/* a {
+a {
   color: inherit;
   text-decoration: none;
-} */
+}
 
 /* 버튼 및 폼 요소 */
 button, input, textarea, select {

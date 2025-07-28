@@ -1,7 +1,6 @@
 import "./App.css";
 import { useState } from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
@@ -43,14 +42,13 @@ import ProjectMain from "./project/dashboard/ProjectMain";
 import ProjectMember from "./project/dashboard/ProjectMember";
 import ProjectCalender from "./project/dashboard/ProjectCalender";
 
-import { AuthProvider } from "./contexts/AuthContext";
+// import { AuthProvider } from "./contexts/AuthContext";
 import NotFoundPage from "./common/NotFoundPage";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <Router>
       <div>
         <Header />
         <Routes>
@@ -88,7 +86,6 @@ function App() {
         </Routes>
         <Footer />
       </div>
-    </Router>
   );
 }
 
