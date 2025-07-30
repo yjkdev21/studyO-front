@@ -31,7 +31,7 @@ import StudyPost from "./study/post/StudyPost";
 
 import StudyMain from "./study/dashboard/StudyMain";
 import StudyMember from "./study/dashboard/StudyMember";
-import StudyCalender from "./study/dashboard/StudyCalender";
+import StudyCalender from "./study/dashboard/StudyCalendar";
 
 import ProjectList from "./study/dashboard/ProjectList";
 
@@ -70,10 +70,11 @@ function App() {
           <Route path="/studyPost" element={<StudyPost />} />
           <Route path="/studyList" element={<StudyList />} />
 
-          <Route path="/study/:studyId" element={<StudyMain />} />
-          <Route path="/study/:studyId/member" element={<StudyMember />} />
-          <Route path="/study/:studyId/calender" element={<StudyCalender />} />
-          <Route path="/project/:studyId/list" element={<ProjectList />} />
+          {/* <Route path="/study/:studyId" element={<StudyMain />} /> */}
+          {/* <Route path="/study/:studyId/member" element={<StudyMember />} /> */}
+          {/* <Route path="/study/:studyId/calender" element={<StudyCalender />} /> */}
+          <Route path="/study/dashboard/studyCalender" element={<StudyCalender />} />
+          {/* <Route path="/project/:studyId/list" element={<ProjectList />} /> */}
 
           <Route path="/project/create" element={<ProjectCreate />} />
           <Route path="/project/:projectId/update" element={<ProjectUpdate />} />
