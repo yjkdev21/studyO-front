@@ -80,10 +80,16 @@ function App() {
           <Route path="/project/:studyId/list" element={<ProjectList />} />
 
           <Route path="/project/create" element={<ProjectCreate />} />
-          <Route path="/project/:projectId/update" element={<ProjectUpdate />} />
+          <Route
+            path="/project/:projectId/update"
+            element={<ProjectUpdate />}
+          />
 
           <Route path="/project/:projectId" element={<ProjectMain />} />
-          <Route path="/project/:projectId/member" element={<ProjectMember />} />
+          <Route
+            path="/project/:projectId/member"
+            element={<ProjectMember />}
+          />
           <Route
             path="/project/:projectId/calender"
             element={<ProjectCalender />}
