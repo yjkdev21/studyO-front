@@ -179,7 +179,6 @@ function Join() {
     minHeight: "20px", // 항상 같은 높이 유지
     marginBottom: "10px",
     color:
-      msg.includes("") ||
       msg.includes("이미 사용 중") ||
       msg.includes("일치하지") ||
       msg.includes("올바르지") ||
@@ -244,11 +243,12 @@ function Join() {
 
               const msg = messages[field];
               const isValid =
-                msg !== "" &&
-                (msg.includes("사용 가능한") ||
+                form[field] &&
+                form[field].trim() !== "" && // 입력값 있음
+                (msg === "" || // 에러 메시지가 없거나
+                  msg.includes("사용 가능한") ||
                   msg.includes("일치합니다") ||
                   msg.includes("올바른 이메일"));
-
               return (
                 <div key={i}>
                   <label style={labelStyle} htmlFor={field}>
