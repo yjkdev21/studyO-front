@@ -49,7 +49,7 @@ jobs:
 
             sudo docker run -d \
               --name studyo \
-              -p 8082:80 \
+              -p 80:80 \
               obama1004/studyo:latest
 
             sudo docker image prune -f
