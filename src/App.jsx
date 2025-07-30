@@ -44,7 +44,9 @@ import PromotionView from "./study/promotion/PromotionView";
 import PromotionList from "./study/promotion/PromotionList";
 import PromotionPost from "./study/promotion/PromotionPost";
 import PromotionEdit from "./study/promotion/PromotionEdit";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
+
+import StudySidebar from "./study/components/StudySidebar";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -75,6 +77,8 @@ function App() {
         <Route path="/study/:studyId" element={<StudyMain />} />
         <Route path="/study/:studyId/member" element={<StudyMember />} />
         <Route path="/study/:studyId/calender" element={<StudyCalender />} />
+        <Route path="/study/dashboard/studyCalender" element={<StudyCalender />} />
+        <Route path="/study/components/studySidebar" element={<StudySidebar />} />
         <Route path="/project/:studyId/list" element={<ProjectList />} />
 
         <Route path="/project/create" element={<ProjectCreate />} />

@@ -1,5 +1,125 @@
-export default function StudySidebar() {
+import React, { useEffect, useState } from 'react';
+import './StudySideBar.css';
+
+
+export default function StudySidebar({
+  studyId,
+  currentTab = 'dashboard', //기본 활성화 탭
+  onMenuClick
+}) {
+
+  // 스터디 정보 저장
+  const [studyInfo, setStudyInfo] = useState({
+    category: '',
+    name: '',
+    contact: '' //기본값을 다 빈 문자열로 저장
+  })
+
+  // 사이드 바 접기, 펼치기
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // API 로딩 상태 관리
+  const [loading, setLoading] = useState(true);
+
+  // 사이드 바 메뉴
+  const menuItems = [
+    { id: 'dashboard', label: '대시보드' },
+    { id: 'member', label: '멤버' },
+    { id: 'calendar', label: '캘린더' },
+    { id: 'project', label: '프로젝트' }
+  ];
+
+  // API 호출
+  useEffect(() => {
+    // 스터디 정보 가져오기
+    const fetchStudyInfo = async () => {
+      try {
+        setLoading(true);
+
+        setTimeout(() => {
+          setStudyInfo({
+            category: 'Java',
+            name: '스터디이름임',
+            contact: '연락방법'
+          });
+          setLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('스터디 정보 로딩 실패:', error);
+        setLoading(false);
+      }
+    };
+
+    // studyId가 존재할 때만 API 호출
+    if (studyId) {
+      fetchStudyInfo();
+    } else {
+      setLoading(false);
+    }
+  }, [studyId]);
+
+  //메뉴 클릭 처리 함수
+  const handleMenuClick = (tabId) => {
+    console.log(`${tabId} 탭 클릭됨`); // 디버깅용 로그
+
+    if (onMenuClick) {
+      onMenuClick(tabId); // 실제 라우팅은 각 페이지에서 처리함
+    }
+  };
+
+  //사이드바 토글
+  const toggle = () => {
+    setIsCollapsed(!isCollapsed); // 현재 상태의 반대로 변경
+  };
+
+
   return (
-    <div>StudySidebar</div>
+    <div id='wrap'>
+      {/* 메인 사이드바 */}
+      <div className={`study-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+        {/* 스터디 정보 */}
+        <div className='study-info'>
+          <p className='sidebar-category'>
+            {loading ? '로딩 중...' : (studyInfo.category || '카테고리')}
+          </p>
+          <p className='sidebar-group-name'>
+            {loading ? '로딩 중...' : (studyInfo.name || '스터디이름')}
+          </p>
+          <p className='sidebar-contact'>
+            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}
+          </p>
+        </div>
+        {/* 메뉴 - 사이드바 안으로 이동 */}
+        <ul className='sidebar-study-menu'>
+          <li className={`menu-tab dashboard-tab ${currentTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('dashboard')}>
+            대시보드
+          </li>
+          <li className={`menu-tab member-tab ${currentTab === 'member' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('member')}>
+            멤버
+          </li>
+          <li className={`menu-tab calendar-tab ${currentTab === 'calendar' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('calendar')}>
+            캘린더
+          </li>
+          <li className={`menu-tab project-tab ${currentTab === 'project' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('project')}>
+            프로젝트
+          </li>
+        </ul>
+
+      </div>
+        {/* 토글 - 사이드바 안으로 이동 */}
+        <div className='sidebar-toggle'>
+          <button onClick={toggle} className='toggle-button' aria-label="사이드바 토글">
+            <div className='toggle-bars'>
+              <div className='bar'></div>
+              <div className='bar'></div>
+              <div className='bar'></div>
+            </div>
+          </button>
+        </div>
+    </div>
   );
 }
