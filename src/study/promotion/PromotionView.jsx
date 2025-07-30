@@ -4,6 +4,8 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import "./Promotion.css";
 
 export default function PromotionView() {
+  console.log(import.meta.env.VITE_AWS_API_HOST);
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
   // page parameter..
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -19,7 +21,7 @@ export default function PromotionView() {
     const fetchPost = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8081/api/study/promotion/${postId}`
+          `${host}/api/study/promotion/${postId}`
         );
         setPost(response.data);
       } catch (err) {
@@ -46,7 +48,7 @@ export default function PromotionView() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`http://localhost:8081/api/study/promotion/${postId}`);
+      await axios.delete(`${host}/api/study/promotion/${postId}`);
       alert("게시글이 삭제되었습니다.");
       navigate("/study/promotion/list");
     } catch (err) {

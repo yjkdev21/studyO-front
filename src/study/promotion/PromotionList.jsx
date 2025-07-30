@@ -3,11 +3,9 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Pagination from "./Pagination";
 
-const loacalAPIHost = "http://localhost:8081";
-
 export default function PromotionList() {
-  console.log(import.meta.env.VITE_AWS_API_HOST);
-  const [host, setHost] = useState(loacalAPIHost);
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  console.log("host: ", host);
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);

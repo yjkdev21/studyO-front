@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import StudyCarousel from "../components/StudyCarousel";
 
 export default function PromotionPost() {
+  console.log(import.meta.env.VITE_AWS_API_HOST);
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
   // 선택된 스터디 Group ID 상태
   const [selectedStudyId, setSelectedStudyId] = useState(null);
 
@@ -50,7 +52,7 @@ export default function PromotionPost() {
       }
 
       const response = await axios.post(
-        "http://localhost:8081/api/study/promotion",
+        `${host}/api/study/promotion`,
         formData,
         {
           headers: {

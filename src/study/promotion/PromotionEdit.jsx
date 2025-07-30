@@ -7,6 +7,8 @@ import axios from "axios";
 import "./Promotion.css";
 
 export default function PromotionEdit() {
+  console.log(import.meta.env.VITE_AWS_API_HOST);
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
   const { postId } = useParams();
   const navigate = useNavigate();
 
@@ -30,9 +32,7 @@ export default function PromotionEdit() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:8081/api/study/promotion/${postId}`
-        );
+        const res = await axios.get(`${host}/api/study/promotion/${postId}`);
         const data = res.data;
 
         setTitle(data.title);
@@ -93,15 +93,11 @@ export default function PromotionEdit() {
     try {
       // "multipart/form-data" 을 사용할 경우 put 요청 spring 500 에러남
       // post 로 보냄
-      await axios.post(
-        "http://localhost:8081/api/study/promotion/edit",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await axios.post(`${host}/api/study/promotion/edit`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert("게시글이 수정되었습니다.");
       navigate(`/study/promotion/view/${postId}`);
