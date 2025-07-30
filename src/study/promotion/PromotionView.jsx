@@ -5,7 +5,7 @@ import "./Promotion.css";
 
 export default function PromotionView() {
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
+  console.log("API Host:", host); /// 디버깅을 위해 호스트 값 출력
 
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
