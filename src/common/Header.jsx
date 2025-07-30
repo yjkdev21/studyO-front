@@ -10,6 +10,7 @@ export default function Header() {
       <Link to="/login" style={{border: "1px solid"}}>로그인</Link>
       <Link to="/study/dashboard/studyCalender" style={{border: "1px solid"}}>캘린더</Link>
       <Link to="/groupCreate" style={{border: "1px solid"}}>그룹생성</Link>
+
     </header>
   );
 }
