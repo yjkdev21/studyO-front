@@ -7,20 +7,11 @@ import axios from "axios";
 import "./Promotion.css";
 
 export default function PromotionEdit() {
+
   // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
   console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
-  const { postId } = useParams();
-  const navigate = useNavigate();
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [existingFiles, setExistingFiles] = useState([]);
-  const [deletedStoredFileNames, setDeletedStoredFileNames] = useState([]);
-  const [newAttachments, setAttachments] = useState([]);
-
-  const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(""); // 오류 메시지 상태 추가
   const [successMessage, setSuccessMessage] = useState(""); // 성공 메시지 상태 추가
 
@@ -36,25 +27,40 @@ export default function PromotionEdit() {
     [loading, navigate, postId]
   );
 
+  const [error, setError] = useState("");
+
+
   // 게시글 상세 정보 가져오기
   useEffect(() => {
     const fetchPost = async () => {
+<<<<<<< HEAD
       setLoading(true);
       setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
       try {
         const res = await axios.get(`${host}/api/study/promotion/${postId}`, {
           withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
         });
+=======
+      try {
+        const res = await axios.get(
+          `http://localhost:8081/api/study/promotion/${postId}`
+        );
+>>>>>>> obama
         const data = res.data;
 
         setTitle(data.title);
         setContent(data.content);
         setExistingFiles(data.attachFile || []);
       } catch (err) {
+<<<<<<< HEAD
         console.error("게시글을 불러오는 데 실패했습니다:", err);
         setErrorMessage(
           "게시글을 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요."
         );
+=======
+        setError("게시글을 불러오는 데 실패했습니다.");
+        console.error(err);
+>>>>>>> obama
       } finally {
         setLoading(false);
       }
@@ -63,7 +69,11 @@ export default function PromotionEdit() {
     if (postId) {
       fetchPost();
     }
+<<<<<<< HEAD
   }, [postId, host]); // host도 의존성 배열에 추가하여 변경 시 재호출되도록 함
+=======
+  }, [postId]);
+>>>>>>> obama
 
   // 기존 첨부파일 삭제 핸들러
   const handleDeleteExistingFile = (storedFileName) => {
@@ -81,11 +91,17 @@ export default function PromotionEdit() {
   // 수정 제출
   const handleUpdate = async (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
     setSuccessMessage(""); // 성공 메시지 초기화
 
     if (!title || !content) {
       setErrorMessage("제목과 내용을 입력하세요."); // alert 대신 상태 업데이트
+=======
+
+    if (!title || !content) {
+      alert("제목과 내용을 입력하세요.");
+>>>>>>> obama
       return;
     }
 
@@ -104,11 +120,16 @@ export default function PromotionEdit() {
       formData.append("newAttachments", file);
     });
 
+<<<<<<< HEAD
     console.log("FormData:", formData); // FormData 내용 확인 (디버깅용)
+=======
+    console.log(formData);
+>>>>>>> obama
 
     try {
       // "multipart/form-data" 을 사용할 경우 put 요청 spring 500 에러남
       // post 로 보냄
+<<<<<<< HEAD
       await axios.post(`${host}/api/study/promotion/edit`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -124,12 +145,33 @@ export default function PromotionEdit() {
       setErrorMessage(
         "게시글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
       ); // alert 대신 상태 업데이트
+=======
+      await axios.post(
+        "http://localhost:8081/api/study/promotion/edit",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("게시글이 수정되었습니다.");
+      navigate(`/study/promotion/view/${postId}`);
+    } catch (error) {
+      console.error("수정 중 오류:", error);
+      alert("수정 실패");
+>>>>>>> obama
     }
   };
 
   if (loading) return <p>불러오는 중...</p>;
+<<<<<<< HEAD
   if (errorMessage && !loading)
     return <p className="text-danger">{errorMessage}</p>; // 로딩 중이 아닐 때만 오류 표시
+=======
+  if (error) return <p>{error}</p>;
+>>>>>>> obama
 
   return (
     <div className="promotion-container">
@@ -138,6 +180,7 @@ export default function PromotionEdit() {
         프로젝트 홍보글 수정
       </h2>
 
+<<<<<<< HEAD
       {/* 오류 메시지 표시 */}
       {errorMessage && (
         <div className="alert alert-danger" role="alert">
@@ -151,6 +194,8 @@ export default function PromotionEdit() {
         </div>
       )}
 
+=======
+>>>>>>> obama
       <form onSubmit={handleUpdate} encType="multipart/form-data">
         <div>
           <FormInput

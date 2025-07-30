@@ -4,9 +4,13 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import "./Promotion.css";
 
 export default function PromotionView() {
+<<<<<<< HEAD
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
   console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
+=======
+  // page parameter..
+>>>>>>> obama
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const paramPage = parseInt(queryParams.get("page")) || 1;
@@ -14,13 +18,18 @@ export default function PromotionView() {
 
   const { postId } = useParams();
   const [post, setPost] = useState(null);
+<<<<<<< HEAD
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
   const [errorMessage, setErrorMessage] = useState(""); // 오류 메시지 상태 추가
   const [successMessage, setSuccessMessage] = useState(""); // 성공 메시지 상태 추가
+=======
+  const [error, setError] = useState("");
+>>>>>>> obama
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPost = async () => {
+<<<<<<< HEAD
       setLoading(true);
       setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
       try {
@@ -53,12 +62,34 @@ export default function PromotionView() {
     const link = document.createElement("a");
     link.href = downloadUrl;
     link.setAttribute("download", storedFileName); // 파일 이름으로 다운로드되도록 설정
+=======
+      try {
+        const response = await axios.get(
+          `http://localhost:8081/api/study/promotion/${postId}`
+        );
+        setPost(response.data);
+      } catch (err) {
+        console.error("조회 실패:", err);
+        setError("❌ 게시글을 불러오지 못했습니다.");
+      }
+    };
+
+    fetchPost();
+  }, [postId]);
+
+  const handleDownLoadFile = (storedFileName) => {
+    const downloadUrl = `http://localhost:8081/editorexample/download/${storedFileName}`;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", storedFileName);
+>>>>>>> obama
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleDelete = async () => {
+<<<<<<< HEAD
     setErrorMessage(""); // 메시지 초기화
     setSuccessMessage(""); // 메시지 초기화
 
@@ -85,6 +116,26 @@ export default function PromotionView() {
   };
 
   if (loading) {
+=======
+    const confirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`http://localhost:8081/api/study/promotion/${postId}`);
+      alert("게시글이 삭제되었습니다.");
+      navigate("/study/promotion/list");
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("❌ 게시글 삭제에 실패했습니다.");
+    }
+  };
+
+  if (error) {
+    return <div className="alert alert-danger text-center">{error}</div>;
+  }
+
+  if (!post) {
+>>>>>>> obama
     return (
       <div className="text-center mt-5">
         <div className="spinner-border text-primary" role="status"></div>
@@ -93,6 +144,7 @@ export default function PromotionView() {
     );
   }
 
+<<<<<<< HEAD
   // 로딩이 끝났는데 오류 메시지가 있다면 오류 표시
   if (errorMessage && !loading) {
     return <div className="alert alert-danger text-center">{errorMessage}</div>;
@@ -125,6 +177,13 @@ export default function PromotionView() {
       <h2 className="mb-3">{post.title}</h2>
       <p className="text-muted">
         작성일: {new Date(post.regDate).toLocaleString("ko-KR")}
+=======
+  return (
+    <div className="promotion-container">
+      <h2 className="mb-3">{post.title}</h2>
+      <p className="text-muted">
+        작성일: {new Date(post.regDate).toLocaleString()}
+>>>>>>> obama
       </p>
 
       <div

@@ -6,7 +6,7 @@ on:
       reason:
         description: "수동 배포 사유"
         required: false
-        default: "React 수동 배포"
+        default: "React studyo 배포"
 
 permissions:
   contents: read

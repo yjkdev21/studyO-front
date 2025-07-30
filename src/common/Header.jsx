@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+=======
+import { Link, useLocation, useNavigate } from "react-router-dom";
+>>>>>>> obama
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -10,6 +14,7 @@ export default function Header() {
   }
 
   return (
+<<<<<<< HEAD
     <header id="header" className="border-b border-[#eee]">
       <div className="px-3 max-w-7xl m-auto w-full h-[80px] flex items-center">
         <h1 className="header-logo mb-0 mr-[30px]">
@@ -44,6 +49,19 @@ export default function Header() {
             )}
         </div>
       </div >
+=======
+    <header style={{ border: "1px solid", padding: "10px" }}>
+      <Link to="/" style={{ border: "1px solid" }}>
+        <img src="../assets/logo.svg" alt="logo" />
+        홈페이지
+      </Link>
+      <Link to="/join" style={{ border: "1px solid" }}>
+        회원가입
+      </Link>
+      <Link to="/login" style={{ border: "1px solid" }}>
+        로그인
+      </Link>
+>>>>>>> obama
     </header>
   );
 }
