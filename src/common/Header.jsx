@@ -8,6 +8,8 @@ export default function Header() {
       </Link>
       <Link to="/join" style={{border: "1px solid"}}>회원가입</Link>
       <Link to="/login"style={{border: "1px solid"}}>로그인</Link>
+      <Link to="/groupCreate" style={{ border: "1px solid" }}>스터디 생성</Link>
+      <Link to="/groupUpdate" style={{ border: "1px solid" }}>스터디 생성</Link>
     </header>
   );
 }
