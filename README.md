@@ -25,3 +25,6 @@ npm install --save-dev @types/react-redux
 npm install redux-persist @types/redux-persist
 npm install react-router-dom --save
 npm install gh-pages
+npm install quill-blot-formatter@^1.0.5
+npm install react-quill@^2.0.0
+npm install quill@^1.3.7
