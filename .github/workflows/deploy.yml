@@ -1,51 +1,55 @@
-name: Deploy
+name: React Deploy using GitHub Actions
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "수동 배포 사유"
+        required: false
+        default: "React 수동 배포"
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: Build
+  React-CD:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout source code
+        uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
-      - name: Build project
-        run: npm run build
-        env:
-          CI: false
-
-      - name: Upload production-ready build files
-        uses: actions/upload-artifact@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
         with:
-          name: production-files
-          path: ./dist
+          node-version: "20"
 
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
 
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      - name: Docker build & push to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          sudo docker build --platform linux/amd64/v3 -t obama1004/studyo:latest .
+          sudo docker push obama1004/studyo:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
         with:
-          name: production-files
-          path: ./dist
+          host: ${{ secrets.HOST_PROD }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            sudo docker stop $(sudo docker ps -q --filter "name=studyo") || true
+            sudo docker rm $(sudo docker ps -aq --filter "name=studyo") || true
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+            sudo docker pull obama1004/studyo:latest
+
+            sudo docker run -d \
+              --name studyo \
+              -p 8082:80 \
+              obama1004/studyo:latest
+
+            sudo docker image prune -f
