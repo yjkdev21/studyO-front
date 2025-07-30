@@ -3,7 +3,12 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Pagination from "./Pagination";
 
+const loacalAPIHost = "http://localhost:8081";
+
 export default function PromotionList() {
+  console.log(import.meta.env.VITE_AWS_API_HOST);
+  const [host, setHost] = useState(loacalAPIHost);
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -28,15 +33,12 @@ export default function PromotionList() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:8081/api/study/promotion`,
-        {
-          params: {
-            page: currentPage,
-            pageSize: pageSize,
-          },
-        }
-      );
+      const response = await axios.get(`${host}/api/study/promotion`, {
+        params: {
+          page: currentPage,
+          pageSize: pageSize,
+        },
+      });
 
       const { list, totalCount: fetchedTotalCount } = response.data;
       setPosts(list);
@@ -84,7 +86,7 @@ export default function PromotionList() {
   const handleDeletePost = async (id) => {
     if (window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
       try {
-        await axios.delete(`http://localhost:8081/api/study/promotion/${id}`);
+        await axios.delete(`${host}/api/study/promotion/${id}`);
         alert("게시글이 성공적으로 삭제되었습니다.");
         fetchPosts();
       } catch (error) {
