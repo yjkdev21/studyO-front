@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import StudyCarousel from "../components/StudyCarousel";
 
 export default function PromotionPost() {
+  // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  console.log("API Host:", host); ///. 디버깅을 위해 호스트 값 출력
+
   // 선택된 스터디 Group ID 상태
   const [selectedStudyId, setSelectedStudyId] = useState(null);
 
@@ -21,12 +25,16 @@ export default function PromotionPost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [attachments, setAttachments] = useState([]);
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // 오류 메시지 상태 추가
+  const [successMessage, setSuccessMessage] = useState(""); // 성공 메시지 상태 추가
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleCancel = (e) => {
-    loading && e.preventDefault();
+    // 로딩 중일 때는 취소 버튼 클릭 방지 (이벤트 기본 동작 막기)
+    if (loading) {
+      e.preventDefault();
+    }
     navigate(`/study/promotion/list`);
   };
 
@@ -37,39 +45,60 @@ export default function PromotionPost() {
   const submitPost = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
+    setSuccessMessage(""); // 성공 메시지 초기화
+
+    if (!title || !content) {
+      setErrorMessage("제목과 내용을 입력하세요."); // alert 대신 상태 업데이트
+      setLoading(false); // 로딩 상태 해제
+      return;
+    }
+
+    // 스터디 ID가 선택되지 않았다면 오류 메시지 표시
+    if (!selectedStudyId) {
+      setErrorMessage("스터디를 선택해주세요.");
+      setLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("studyId", selectedStudyId); // 선택된 스터디 ID 추가
+
+    if (attachments?.length > 0) {
+      attachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
+    }
+
+    console.log("FormData:", formData); // FormData 내용 확인 (디버깅용)
 
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-
-      if (attachments?.length > 0) {
-        attachments.forEach((file) => {
-          formData.append("attachments", file);
-        });
-      }
-
       const response = await axios.post(
-        "http://localhost:8081/api/study/promotion",
+        `${host}/api/study/promotion`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
           timeout: 60000,
+          withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
         }
       );
 
       const newPostId = response.data;
       console.log("newPostId: " + newPostId);
+      setSuccessMessage("게시글이 성공적으로 등록되었습니다."); // 메시지 업데이트
+
       // ReactQuill이 사라지기 전 range 작업 중이므로, 라우팅을 약간 지연
       setTimeout(() => {
         navigate(`/study/promotion/view/${newPostId}`);
       }, 0);
     } catch (error) {
-      console.error("등록 실패:", error);
-      setMessage(
-        "등록 실패: " + (error.response?.data?.error || error.message)
+      console.error("게시글 등록 실패:", error);
+      setErrorMessage(
+        "게시글 등록 실패: " + (error.response?.data?.error || error.message)
       );
     } finally {
       setLoading(false);
@@ -104,9 +133,16 @@ export default function PromotionPost() {
         프로젝트에 대해 소개해주세요.
       </h2>
 
-      {message && (
-        <div className="alert alert-info text-center" role="alert">
-          {message}
+      {/* 오류 메시지 표시 */}
+      {errorMessage && (
+        <div className="alert alert-danger" role="alert">
+          {errorMessage}
+        </div>
+      )}
+      {/* 성공 메시지 표시 */}
+      {successMessage && (
+        <div className="alert alert-success" role="alert">
+          {successMessage}
         </div>
       )}
 

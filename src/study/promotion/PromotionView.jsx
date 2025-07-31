@@ -4,7 +4,9 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import "./Promotion.css";
 
 export default function PromotionView() {
-  // page parameter..
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  console.log("API Host:", host); /// 디버깅을 위해 호스트 값 출력
+
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const paramPage = parseInt(queryParams.get("page")) || 1;
@@ -12,54 +14,77 @@ export default function PromotionView() {
 
   const { postId } = useParams();
   const [post, setPost] = useState(null);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [errorMessage, setErrorMessage] = useState(""); // 오류 메시지 상태 추가
+  const [successMessage, setSuccessMessage] = useState(""); // 성공 메시지 상태 추가
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPost = async () => {
+      setLoading(true);
+      setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
       try {
         const response = await axios.get(
-          `http://localhost:8081/api/study/promotion/${postId}`
+          `${host}/api/study/promotion/${postId}`,
+          {
+            withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
+          }
         );
         setPost(response.data);
       } catch (err) {
-        console.error("조회 실패:", err);
-        setError("❌ 게시글을 불러오지 못했습니다.");
+        console.error("게시글 조회 실패:", err);
+        setErrorMessage(
+          "❌ 게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
+        );
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchPost();
-  }, [postId]);
+    if (postId) {
+      // postId가 있을 때만 fetchPost 호출
+      fetchPost();
+    }
+  }, [postId, host]); // host도 의존성 배열에 추가하여 변경 시 재호출되도록 함
 
   const handleDownLoadFile = (storedFileName) => {
-    const downloadUrl = `http://localhost:8081/editorexample/download/${storedFileName}`;
+    // host 변수를 사용하여 동적으로 다운로드 URL 생성
+    const downloadUrl = `${host}/api/study/promotion/download/${storedFileName}`;
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.setAttribute("download", storedFileName);
+    link.setAttribute("download", storedFileName); // 파일 이름으로 다운로드되도록 설정
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleDelete = async () => {
-    const confirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
+    setErrorMessage(""); // 메시지 초기화
+    setSuccessMessage(""); // 메시지 초기화
+
+    // window.confirm 대신 커스텀 모달 또는 console.log로 대체
+    // 실제 앱에서는 사용자에게 확인을 받는 UI를 구현해야 합니다.
+    const confirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?"); // 임시로 window.confirm 유지, 실제 서비스에서는 커스텀 모달 사용 권장
     if (!confirmed) return;
 
     try {
-      await axios.delete(`http://localhost:8081/api/study/promotion/${postId}`);
-      alert("게시글이 삭제되었습니다.");
-      navigate("/study/promotion/list");
+      await axios.delete(`${host}/api/study/promotion/${postId}`, {
+        withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
+      });
+      setSuccessMessage("게시글이 성공적으로 삭제되었습니다."); // alert 대신 상태 업데이트
+      // 성공 메시지를 잠시 보여준 후 목록으로 이동
+      setTimeout(() => {
+        navigate("/study/promotion/list");
+      }, 1000); // 1초 후 이동
     } catch (err) {
-      console.error("삭제 실패:", err);
-      alert("❌ 게시글 삭제에 실패했습니다.");
+      console.error("게시글 삭제 실패:", err);
+      setErrorMessage(
+        "❌ 게시글 삭제에 실패했습니다. 잠시 후 다시 시도해주세요."
+      );
     }
   };
 
-  if (error) {
-    return <div className="alert alert-danger text-center">{error}</div>;
-  }
-
-  if (!post) {
+  if (loading) {
     return (
       <div className="text-center mt-5">
         <div className="spinner-border text-primary" role="status"></div>
@@ -68,11 +93,38 @@ export default function PromotionView() {
     );
   }
 
+  // 로딩이 끝났는데 오류 메시지가 있다면 오류 표시
+  if (errorMessage && !loading) {
+    return <div className="alert alert-danger text-center">{errorMessage}</div>;
+  }
+
+  // 게시글이 없으면 (예: 404 Not Found)
+  if (!post) {
+    return (
+      <div className="alert alert-info text-center">
+        게시글을 찾을 수 없습니다.
+      </div>
+    );
+  }
+
   return (
     <div className="promotion-container">
+      {/* 오류 메시지 표시 */}
+      {errorMessage && (
+        <div className="alert alert-danger" role="alert">
+          {errorMessage}
+        </div>
+      )}
+      {/* 성공 메시지 표시 */}
+      {successMessage && (
+        <div className="alert alert-success" role="alert">
+          {successMessage}
+        </div>
+      )}
+
       <h2 className="mb-3">{post.title}</h2>
       <p className="text-muted">
-        작성일: {new Date(post.regDate).toLocaleString()}
+        작성일: {new Date(post.regDate).toLocaleString("ko-KR")}
       </p>
 
       <div
