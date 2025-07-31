@@ -4,7 +4,7 @@ import './StudySideBar.css';
 
 export default function StudySidebar({
   studyId,
-  currentTab = 'dashboard', //기본 활성화 탭
+  initialTab  = 'dashboard', //기본 활성화 탭
   onMenuClick
 }) {
 
@@ -17,6 +17,9 @@ export default function StudySidebar({
 
   // 사이드 바 접기, 펼치기
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // 현재 활성 탭 상태를 컴포넌트 내부에서 관리
+  const [currentTab, setCurrentTab] = useState(initialTab);
 
   // API 로딩 상태 관리
   const [loading, setLoading] = useState(true);
@@ -62,8 +65,12 @@ export default function StudySidebar({
   const handleMenuClick = (tabId) => {
     console.log(`${tabId} 탭 클릭됨`); // 디버깅용 로그
 
+    // 내부 상태 업데이트
+    setCurrentTab(tabId);
+
+    // 부모 컴포넌트에게 알림
     if (onMenuClick) {
-      onMenuClick(tabId); // 실제 라우팅은 각 페이지에서 처리함
+      onMenuClick(tabId);
     }
   };
 

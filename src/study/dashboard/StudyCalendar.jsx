@@ -15,13 +15,16 @@ export default function StudyCalendar() {
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
 
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
+
   // 임시로 지정(기능 구현 전까지)
   const studyId = 1;
   const writerId = 1;
 
   // 일정 목록 조회
   useEffect(() => {
-    axios.get(`http://localhost:8081/api/study/calendar/study/${studyId}`).then((res) => {
+    axios.get(`${host}/api/study/calendar/study/${studyId}`).then((res) => {
       console.log("백엔드 응답:", res.data);
 
       // 받은 일정 데이터를 FullCalendar에 맞게 변환
@@ -61,7 +64,7 @@ export default function StudyCalendar() {
     };
 
     try {
-      await axios.post("http://localhost:8081/api/study/calendar", newEvent);
+      await axios.post(`${host}/api/study/calendar`, newEvent);
       alert('등록 완료');
 
       // 화면에 추가
@@ -92,7 +95,7 @@ export default function StudyCalendar() {
   // 일정 수정(PUT)
   const handleUpdate = async () => {
     try {
-      await axios.put('http://localhost:8081/api/study/calendar', {
+      await axios.put(`${host}/api/study/calendar`, {
         id: selectedEvent.id,
         title: newTitle,
         content: newContent,
@@ -113,7 +116,7 @@ export default function StudyCalendar() {
     if (!window.confirm('삭제하시겠습니까?')) return;
 
     try {
-      await axios.delete(`http://localhost:8081/api/study/calendar/${selectedEvent.id}`);
+      await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}`);
       selectedEvent.remove();
       alert('삭제 완료');
       setShowModal(false);
