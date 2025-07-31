@@ -5,13 +5,7 @@
 
 main {
   max-width: 1280px;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 220px);
   margin: 0 auto;
   text-align: center;
 }
-
-
-
-/* !!!!!!!!! 임시 CSS 추후 삭제 */
-main input {border: 1px dotted;}
-main button {border: 1px dotted;}
