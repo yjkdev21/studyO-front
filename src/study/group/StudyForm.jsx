@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import './group.css';
 
 const StudyForm = ({
   formData,
   onChange,
   onSubmit,
   isSubmitting,
-  submitMessage,
-  onCheckDuplicate,
-  isCheckingDuplicate,
-  isDuplicateChecked,
-  duplicateMessage,
   submitLabel,
   disabledFields = [],
 }) => {
@@ -24,10 +21,9 @@ const StudyForm = ({
       };
       reader.readAsDataURL(file);
 
-      // 부모 컴포넌트에 파일 정보 전달
       onChange({
         target: {
-          name: 'image',
+          name: 'thumbnailUrl',
           value: file
         }
       });
@@ -38,15 +34,15 @@ const StudyForm = ({
     '카테고리선택', '프로그래밍', '디자인', '마케팅', '언어', '자격증', '취업준비', '기타'
   ];
 
-  const progressTypes = [
+  const studyMode = [
     '온라인/오프라인', '온라인', '오프라인', '혼합'
   ];
 
-  const memberCounts = [
+  const maxMembers = [
     '인원을 선택하세요', '2명', '3명', '4명', '5명', '5명 이상'
   ];
 
-  const contactMethods = [
+  const contact = [
     '카테고리', '카카오톡', '이메일', '전화'
   ];
 
@@ -168,8 +164,8 @@ const StudyForm = ({
               </label>
               <input
                 type="text"
-                name="study_name"
-                value={formData.study_name}
+                name="groupName"
+                value={formData.groupName}
                 onChange={onChange}
                 placeholder="스터디 이름 입력"
                 style={{
@@ -181,15 +177,7 @@ const StudyForm = ({
                   backgroundColor: '#fff'
                 }}
               />
-              {duplicateMessage && (
-                <div style={{
-                  marginTop: '4px',
-                  fontSize: '12px',
-                  color: isDuplicateChecked ? 'green' : 'red'
-                }}>
-                  {duplicateMessage}
-                </div>
-              )}
+              
             </div>
 
             <div>
@@ -203,8 +191,8 @@ const StudyForm = ({
               </label>
               <input
                 type="text"
-                name="nick_name"
-                value={formData.nick_name}
+                name="nickName"
+                value={formData.nickName}
                 onChange={onChange}
                 placeholder="스터디에서 사용할 닉네임을 6글자 이내로 입력하세요."
                 style={{
@@ -259,8 +247,8 @@ const StudyForm = ({
                 모집인원
               </label>
               <select
-                name="member_count"
-                value={formData.member_count}
+                name="maxMembers"
+                value={formData.maxMembers}
                 onChange={onChange}
                 style={{
                   width: '100%',
@@ -271,7 +259,7 @@ const StudyForm = ({
                   backgroundColor: '#fff'
                 }}
               >
-                {memberCounts.map(count => (
+                {maxMembers.map(count => (
                   <option key={count} value={count === '인원을 선택하세요' ? '' : count}>
                     {count}
                   </option>
@@ -289,10 +277,10 @@ const StudyForm = ({
                 진행방식
               </label>
               <select
-                name="progress_type"
-                value={formData.progress_type}
+                name="studyMode"
+                value={formData.studyMode}
                 onChange={onChange}
-                disabled={disabledFields?.includes("progress_type")}
+                disabled={disabledFields?.includes("studyMode")}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -302,7 +290,7 @@ const StudyForm = ({
                   backgroundColor: '#fff'
                 }}
               >
-                {progressTypes.map(type => (
+                {studyMode.map(type => (
                   <option key={type} value={type === '온라인/오프라인' ? '' : type}>
                     {type}
                   </option>
@@ -321,10 +309,10 @@ const StudyForm = ({
               </label>
               <input
                 type="text"
-                name="location"
-                value={formData.location}
+                name="region"
+                value={formData.region}
                 onChange={onChange}
-                disabled={disabledFields?.includes("location")}
+                disabled={disabledFields?.includes("region")}
                 placeholder="지역"
                 style={{
                   width: '100%',
@@ -347,8 +335,8 @@ const StudyForm = ({
                 연락방법
               </label>
               <select
-                name="contact_method"
-                value={formData.contact_method}
+                name="contact"
+                value={formData.contact}
                 onChange={onChange}
                 style={{
                   width: '100%',
@@ -359,7 +347,7 @@ const StudyForm = ({
                   backgroundColor: '#fff'
                 }}
               >
-                {contactMethods.map(method => (
+                {contact.map(method => (
                   <option key={method} value={method === '카테고리' ? '' : method}>
                     {method}
                   </option>
@@ -377,11 +365,11 @@ const StudyForm = ({
                 모집마감
               </label>
               <input
-                type="text"
-                name="deadline"
-                value={formData.deadline}
+                type="date"
+                name="recruitEndDate"
+                value={formData.recruitEndDate}
                 onChange={onChange}
-                placeholder="카테고리"
+                disabled={disabledFields?.includes("recruitEndDate")}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -404,10 +392,10 @@ const StudyForm = ({
               </label>
               <input
                 type="date"
-                name="start"
-                value={formData.start}
+                name="studyStartDate"
+                value={formData.studyStartDate}
                 onChange={onChange}
-                disabled={disabledFields?.includes("start")}
+                disabled={disabledFields?.includes("studyStartDate")}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -430,8 +418,8 @@ const StudyForm = ({
               </label>
               <input
                 type="date"
-                name="end"
-                value={formData.end}
+                name="studyEndDate"
+                value={formData.studyEndDate}
                 onChange={onChange}
                 style={{
                   width: '100%',
@@ -479,10 +467,10 @@ const StudyForm = ({
           </h2>
 
           <textarea
-            name="description"
-            value={formData.description || ''}
+            name="groupIntroduction"
+            value={formData.groupIntroduction || ''}
             onChange={onChange}
-            placeholder="2024년 내년도 프론트엔드 직무 공부"
+            placeholder="200자 내외로 작성해주세요"
             rows={8}
             style={{
               width: '100%',
@@ -492,7 +480,6 @@ const StudyForm = ({
               fontSize: '14px',
               resize: 'vertical',
               backgroundColor: '#fff',
-              lineHeight: '1.5'
             }}
           />
         </div>
