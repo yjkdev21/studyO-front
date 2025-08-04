@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function StudyCalendar() {
   const [events, setEvents] = useState([]);
@@ -16,18 +17,16 @@ export default function StudyCalendar() {
   const [newContent, setNewContent] = useState('');
 
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
-  // 임시로 지정(기능 구현 전까지)
-  const studyId = 1;
-  const writerId = 1;
+  const { user } = useAuth();
+  const userId = user?.id;
+  const groupId = 1; // 임시 고정
 
   // 일정 목록 조회
   useEffect(() => {
-    axios.get(`${host}/api/study/calendar/study/${studyId}`).then((res) => {
-      console.log("백엔드 응답:", res.data);
+    axios.get(`${host}/api/study/calendar/study/${groupId}`).then((res) => {
+      console.log("최초 1회만 API 호출");
 
-      // 받은 일정 데이터를 FullCalendar에 맞게 변환
       const fetched = res.data.map((e) => ({
         id: e.id,
         title: e.title,
@@ -53,8 +52,7 @@ export default function StudyCalendar() {
     const content = prompt("내용을 입력하세요 (선택):");
 
     const newEvent = {
-      studyId,
-      writerId,
+      groupId,
       title,
       content,
       startDate: info.startStr,
@@ -64,7 +62,11 @@ export default function StudyCalendar() {
     };
 
     try {
-      await axios.post(`${host}/api/study/calendar`, newEvent);
+      await axios.post(`${host}/api/study/calendar`, newEvent, {
+        headers: {
+          'X-USER-ID': userId // 로그인 사용자 ID를 헤더에 포함
+        }
+      });
       alert('등록 완료');
 
       // 화면에 추가
@@ -80,6 +82,7 @@ export default function StudyCalendar() {
         },
       ]);
     } catch (err) {
+      console.error("등록 실패:", err); 
       alert('등록 실패');
     }
   };
@@ -99,6 +102,10 @@ export default function StudyCalendar() {
         id: selectedEvent.id,
         title: newTitle,
         content: newContent,
+      },  {
+        headers: {
+          'X-USER-ID': userId
+        }
       });
 
       selectedEvent.setProp('title', newTitle);
@@ -116,7 +123,11 @@ export default function StudyCalendar() {
     if (!window.confirm('삭제하시겠습니까?')) return;
 
     try {
-      await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}`);
+      await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}` ,{
+        headers: {
+          'X-USER-ID': userId
+        }
+      });
       selectedEvent.remove();
       alert('삭제 완료');
       setShowModal(false);

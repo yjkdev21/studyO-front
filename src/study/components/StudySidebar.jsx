@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './StudySideBar.css';
+import { studySidebarApi } from '../components/StusySidebarApi';
 
 
 export default function StudySidebar({
   studyId,
-  initialTab  = 'dashboard', //기본 활성화 탭
+  initialTab = 'dashboard', //기본 활성화 탭
   onMenuClick
 }) {
 
@@ -12,7 +13,7 @@ export default function StudySidebar({
   const [studyInfo, setStudyInfo] = useState({
     category: '',
     name: '',
-    contact: '' //기본값을 다 빈 문자열로 저장
+    contact: '' // 다 빈 문자열로 저장
   })
 
   // 사이드 바 접기, 펼치기
@@ -39,14 +40,19 @@ export default function StudySidebar({
       try {
         setLoading(true);
 
-        setTimeout(() => {
+        // API 호출
+        const data = await studySidebarApi.getStudyInfo(studyId);
+
+        // 데이터 o 상태 업데이트
+        if (data) {
           setStudyInfo({
-            category: 'Java',
-            name: '스터디이름임',
-            contact: '연락방법'
+            category: data.category,
+            name: data.name,
+            contact: data.contact
           });
-          setLoading(false);
-        }, 1000);
+        }
+        setLoading(false);
+
       } catch (error) {
         console.error('스터디 정보 로딩 실패:', error);
         setLoading(false);
@@ -81,7 +87,7 @@ export default function StudySidebar({
 
 
   return (
-    <div id='wrap'>
+    <div id={'wrap'}>
       {/* 메인 사이드바 */}
       <div className={`study-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* 스터디 정보 */}
@@ -93,10 +99,10 @@ export default function StudySidebar({
             {loading ? '로딩 중...' : (studyInfo.name || '스터디이름')}
           </p>
           <p className='sidebar-contact'>
-            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}
+            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}D
           </p>
         </div>
-        {/* 메뉴 - 사이드바 안으로 이동 */}
+        {/* 대시보드 메뉴 */}
         <ul className='sidebar-study-menu'>
           <li className={`menu-tab dashboard-tab ${currentTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => handleMenuClick('dashboard')}>
@@ -115,18 +121,17 @@ export default function StudySidebar({
             프로젝트
           </li>
         </ul>
-
       </div>
-        {/* 토글 - 사이드바 안으로 이동 */}
-        <div className='sidebar-toggle'>
-          <button onClick={toggle} className='toggle-button' aria-label="사이드바 토글">
-            <div className='toggle-bars'>
-              <div className='bar'></div>
-              <div className='bar'></div>
-              <div className='bar'></div>
-            </div>
-          </button>
-        </div>
+      {/* 토글 */}
+      <div className='sidebar-toggle'>
+        <button onClick={toggle} className='toggle-button' aria-label="사이드바 토글">
+          <div className='toggle-bars'>
+            <div className='bar'></div>
+            <div className='bar'></div>
+            <div className='bar'></div>
+          </div>
+        </button>
+      </div>
     </div>
   );
 }

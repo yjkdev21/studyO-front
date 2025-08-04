@@ -10,7 +10,7 @@ import StudyCarousel from "../components/StudyCarousel";
 export default function PromotionPost() {
   // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
+  console.log("API Host:", host); ///. 디버깅을 위해 호스트 값 출력
 
   // 선택된 스터디 Group ID 상태
   const [selectedStudyId, setSelectedStudyId] = useState(null);

@@ -40,7 +40,7 @@ export default function PromotionEdit() {
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
-      setErrorMessage(""); // 새로운 요청 전에 오류 메시지 초기화
+      setErrorMessage(""); /// 새로운 요청 전에 오류 메시지 초기화
       try {
         const res = await axios.get(`${host}/api/study/promotion/${postId}`, {
           withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
