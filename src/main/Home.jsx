@@ -3,7 +3,7 @@ export default function Home() {
   return (
     <main id="home-page">
       <div className="main-center">
-        <div className="absolute top-23 left-1 space-y-1">
+        <div className="absolute top-23 left-1 space-y-1 z-10">
           <Link to="/sample/5" className="border bg-gray-300 block">Go to Sample 5</Link>
           <Link to="/study/promotion/list" className="border bg-gray-300 block">Go Promotion List</Link>
           <Link to="/groupCreate" className="border bg-gray-300 block">스터디그룹생성</Link>
