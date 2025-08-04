@@ -6,7 +6,9 @@ export default function Home() {
       <p>study-o project</p>
       <Link to="/sample/5">Go to Sample 5</Link> <br />
       <br />
-      <Link to="/study/promotion/list">Go Promotion List</Link>
+      <Link to="/study/promotion/list">Go Promotion List</Link><br />
+      <Link to="/groupCreate">스터디그룹생성</Link>
+      <Link to="/groupList">스터디그룹생성</Link>
     </div>
   );
 }

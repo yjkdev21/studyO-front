@@ -40,6 +40,7 @@ export default function Header() {
               <ul className="flex !space-x-[30px]">
                 <li><Link to="/login">로그인</Link></li>
                 <li><Link to="/join">회원가입</Link></li>
+                <li><Link to="/groupCreate">그룹생성</Link></li>
               </ul>
             )}
         </div>

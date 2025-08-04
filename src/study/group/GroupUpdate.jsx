@@ -4,29 +4,27 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 
+// 작성 기본값 초기화 
 const RESET_FORM = {
     groupName: '',
-    nickName: '',
     category: '',
     maxMembers: '',
     studyMode: '',
     region: '',
     contact: '',
-    recruitEndDate: '',
-    studyStartDate: '',
-    studyEndDate: '',
     groupIntroduction: '',
-    thumbnailUrl: '',
-    groupOwnerId: 1   //임시
+    thumbnail: '',
+    groupOwnerId: 1
 };
 
+//필수 필드
 const REQUIRED_FIELDS = [
-    'groupName', 'nickName', 'category', 'maxMembers',
+    'groupName', 'category', 'maxMembers',
     'studyMode', 'region', 'contact', 'groupIntroduction',
-    'recruitEndDate', 'studyStartDate', 'studyEndDate'
 ];
 
-const DISABLED_FIELDS = ['category', 'progress_type', 'location', 'start'];
+
+const DISABLED_FIELDS = ['category', 'studyMode', 'region'];
 
 const MODAL_TYPES = {
     SUBMIT: 'update'
@@ -34,7 +32,7 @@ const MODAL_TYPES = {
 
 function GroupUpdate() {
     const navigate = useNavigate();
-    const { gid } = useParams();
+    const { groupId } = useParams();
     const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
 
     const [formData, setFormData] = useState(RESET_FORM);
@@ -49,7 +47,7 @@ function GroupUpdate() {
                 setIsLoading(true);
                 
                 // 로컬 하고 서버 올라갔을때 host 주소가 변경
-                const response = await axios.get(`${host}/api/study/group/${gid}`, {
+                const response = await axios.get(`${host}/api/study/${groupId}`, {
                     withCredentials: true, // 자격 증명(쿠키 등)을 요청에 포함
                 });
 
@@ -57,17 +55,13 @@ function GroupUpdate() {
                     const data = response.data.data;
                     setFormData({
                         groupName: data.groupName || '',
-                        nickName: data.nickName || '',
                         category: data.category || '',
                         maxMembers: data.maxMembers || '',
                         studyMode: data.studyMode || '',
                         region: data.region || '',
                         contact: data.contact || '',
-                        recruitEndDate: data.recruitEndDate || '',
-                        studyStartDate: data.studyStartDate || '',
-                        studyEndDate: data.studyEndDate || '',
                         groupIntroduction: data.groupIntroduction || '',
-                        thumbnailUrl: data.thumbnailUrl || '',
+                        thumbnail: data.thumbnail || '',
                         groupOwnerId: data.groupOwnerId || 1
                     });
                 }
@@ -79,10 +73,10 @@ function GroupUpdate() {
             }
         };
         
-        if (gid) {
+        if (groupId) {
             fetchStudyData();
         }
-    }, [gid, host]);
+    }, [groupId, host]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -114,15 +108,11 @@ function GroupUpdate() {
     const getFieldDisplayName = (field) => {
         const fieldNames = {
             groupName: '스터디 이름',
-            nickName: '닉네임',
             category: '카테고리',
             maxMembers: '최대 인원',
             studyMode: '진행 방식',
             region: '지역',
             contact: '연락처',
-            recruitEndDate: '모집 마감일',
-            studyStartDate: '스터디 시작일',
-            studyEndDate: '스터디 종료일',
             groupIntroduction: '스터디 소개'
         };
         return fieldNames[field] || field;
@@ -155,24 +145,20 @@ function GroupUpdate() {
             // JSON 형태로 데이터 전송
             const submitData = {
                 groupName: formData.groupName,
-                nickName: formData.nickName,
                 category: formData.category,
-                maxMembers: parseInt(formData.maxMembers.replace('명', '')) || formData.maxMembers,
+                maxMembers: formData.maxMembers,
                 studyMode: formData.studyMode,
                 region: formData.region,
                 contact: formData.contact,
-                recruitEndDate: formData.recruitEndDate,
-                studyStartDate: formData.studyStartDate,
-                studyEndDate: formData.studyEndDate,
                 groupIntroduction: formData.groupIntroduction,
-                thumbnailUrl: formData.thumbnailUrl || '', // 임시
+                thumbnail: '',
                 groupOwnerId: formData.groupOwnerId
             };
 
             console.log('전송할 데이터:', submitData);
 
             // 로컬 하고 서버 올라갔을때 host 주소가 변경
-            const response = await axios.put(`${host}/api/study/group/${gid}`, submitData, {
+            const response = await axios.put(`${host}/api/study/${groupId}`, submitData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -185,7 +171,7 @@ function GroupUpdate() {
                 setSubmitMessage('스터디 그룹이 성공적으로 수정되었습니다!');
                 
                 setTimeout(() => {
-                    navigate('/study/groups');
+                    navigate(`/group/${groupId}`);
                 }, 1500);
             } else {
                 setSubmitMessage(response.data.message || '수정에 실패했습니다.');
@@ -200,6 +186,22 @@ function GroupUpdate() {
         }
     };
 
+    const handleDelete = async () => {
+    const confirmed = window.confirm('정말 삭제하시겠습니까?');
+    if (!confirmed) return;
+
+    try {
+        await axios.delete(`${host}/api/study/${groupId}`, {
+            withCredentials: true,
+        });
+        alert('스터디 그룹이 삭제되었습니다.');
+        navigate('/groupList',{ replace: true });
+    } catch (error) {
+        console.error('삭제 실패:', error);
+        alert('삭제에 실패했습니다.');
+    }
+};
+
     if (isLoading) {
         return <div>로딩 중...</div>;
     }
@@ -213,12 +215,14 @@ function GroupUpdate() {
             )}
 
             <StudyForm
+                mode="update"
                 formData={formData}
                 onChange={handleInputChange}
                 onSubmit={handleFormSubmit}
                 submitMessage={submitMessage}
                 modalType={modalType}
                 onConfirm={handleConfirmSubmit}
+                onDelete={handleDelete}
                 onCancel={closeModal}
                 isSubmitting={isSubmitting}
                 disabledFields={DISABLED_FIELDS}
