@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 
 function Join() {
+
+  // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+
   const [form, setForm] = useState({
     userId: "",
     password: "",
@@ -43,31 +47,12 @@ function Join() {
     </svg>
   );
 
-  const handleChange = async (e) => {
+  // 변경된 handleChange (axios 요청 제거)
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
 
     switch (name) {
-      case "userId":
-        if (value.trim()) {
-          try {
-            const res = await axios.get(
-              `http://localhost:8081/api/user/check-id?userId=${value}`
-            );
-            setMessages((prev) => ({
-              ...prev,
-              userId:
-                res.data === "exists"
-                  ? " 이미 사용 중인 아이디입니다."
-                  : " 사용 가능한 아이디입니다.",
-            }));
-          } catch {
-            setMessages((prev) => ({ ...prev, userId: "⚠️ 서버 오류" }));
-          }
-        } else {
-          setMessages((prev) => ({ ...prev, userId: "" }));
-        }
-        break;
       case "password":
         setMessages((prev) => ({
           ...prev,
@@ -75,8 +60,6 @@ function Join() {
           passwordCheck:
             form.passwordCheck && value !== form.passwordCheck
               ? " 비밀번호가 일치하지 않습니다."
-              : form.passwordCheck
-              ? ""
               : "",
         }));
         break;
@@ -87,26 +70,6 @@ function Join() {
             value === form.password ? "" : " 비밀번호가 일치하지 않습니다.",
         }));
         break;
-      case "nickname":
-        if (value.trim()) {
-          try {
-            const res = await axios.get(
-              `http://localhost:8081/api/user/check-nickname?nickname=${value}`
-            );
-            setMessages((prev) => ({
-              ...prev,
-              nickname:
-                res.data === "exists"
-                  ? " 이미 사용 중인 닉네임입니다."
-                  : " 사용 가능한 닉네임입니다.",
-            }));
-          } catch {
-            setMessages((prev) => ({ ...prev, nickname: "⚠️ 서버 오류" }));
-          }
-        } else {
-          setMessages((prev) => ({ ...prev, nickname: "" }));
-        }
-        break;
       case "email":
         setMessages((prev) => ({
           ...prev,
@@ -116,19 +79,44 @@ function Join() {
         }));
         break;
       default:
+        // userId, nickname은 단순 값만 업데이트
         break;
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. 기본 클라이언트 측 검사
     if (form.password !== form.passwordCheck) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
+    if (!validateEmail(form.email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
 
     try {
-      const res = await axios.post("http://localhost:8081/api/user/register", {
+      // 2. 서버 중복 확인 (아이디)
+      const idRes = await axios.get(
+        `${host}/api/user/check-id?userId=${form.userId}`
+      );
+      if (idRes.data === "exists") {
+        alert("이미 사용 중인 아이디입니다.");
+        return;
+      }
+
+      // 3. 서버 중복 확인 (닉네임)
+      const nickRes = await axios.get(
+        `${host}/api/user/check-nickname?nickname=${form.nickname}`
+      );
+      if (nickRes.data === "exists") {
+        alert("이미 사용 중인 닉네임입니다.");
+        return;
+      }
+
+      // 4. 최종 회원가입 요청
+      const res = await axios.post(`${host}/api/user/register`, {
         userId: form.userId,
         password: form.password,
         nickname: form.nickname,
@@ -180,9 +168,9 @@ function Join() {
     marginBottom: "10px",
     color:
       msg.includes("이미 사용 중") ||
-      msg.includes("일치하지") ||
-      msg.includes("올바르지") ||
-      msg.includes("서버 오류")
+        msg.includes("일치하지") ||
+        msg.includes("올바르지") ||
+        msg.includes("서버 오류")
         ? "red"
         : "#777",
     textAlign: "left",

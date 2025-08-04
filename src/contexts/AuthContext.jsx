@@ -9,11 +9,13 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true); // 처음에 true로 시작
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const API_BASE = "http://localhost:8081/api/auth";
+  // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
+  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
   //axios 기본 설정
   const apiClient = axios.create({
-    baseURL: API_BASE,
+    baseURL: `${host}/api/auth`,
     withCredentials: true,
     timeout: 10000,
     headers: {

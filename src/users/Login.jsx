@@ -193,6 +193,11 @@ export default function Login() {
           id:         kim_coder<br/>
           pw:        password123
         </pre>
+        <pre className='bg-gray-200'>
+          <b>[로그인 테스트 정보]</b><br/>
+          id:         demo<br/>
+          pw:        1234
+        </pre>
         </div>
       )}
     </main>
