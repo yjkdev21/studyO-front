@@ -46,7 +46,7 @@ import PromotionView from "./study/promotion/PromotionView";
 import PromotionList from "./study/promotion/PromotionList";
 import PromotionPost from "./study/promotion/PromotionPost";
 import PromotionEdit from "./study/promotion/PromotionEdit";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
