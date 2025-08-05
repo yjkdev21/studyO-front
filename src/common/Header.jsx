@@ -75,16 +75,15 @@ export default function Header() {
                     />
                   </button>
                   {/* 드롭 메뉴 */}
-                  {open && (
-                    <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white">
-                      <ul className="min-w-[120px] space-y-4 text-sm">
-                        <li><Link to="/myPage">마이페이지</Link></li>
-                        <li><Link to="/myHistory">내 북마크</Link></li>
-                        <li><button type="button" onClick={handleLogout}>로그아웃</button></li>
-                      </ul>
-                    </div>
-                  )}
-
+{open && (
+  <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white z-50">
+    <ul className="min-w-[120px] space-y-4 text-sm">
+      <li><Link to="/myPage">마이페이지</Link></li>
+      <li><Link to="/myHistory">내 북마크</Link></li>
+      <li><button type="button" onClick={handleLogout}>로그아웃</button></li>
+    </ul>
+  </div>
+)}
                 </li>
               </ul>
             ) :
