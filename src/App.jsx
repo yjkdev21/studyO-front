@@ -27,9 +27,10 @@ import PostCreate from "./study/post/PostCreate";
 import PostUpdate from "./study/post/PostUpdate";
 import StudyPost from "./study/post/StudyPost";
 
+import DashboardList from "./study/dashboard/DashboardList";
 import StudyMain from "./study/dashboard/StudyMain";
 import StudyMember from "./study/dashboard/StudyMember";
-import StudyCalender from "./study/dashboard/StudyCalendar";
+import StudyCalendar from "./study/dashboard/StudyCalendar";
 
 import ProjectList from "./study/dashboard/ProjectList";
 
@@ -38,7 +39,7 @@ import ProjectUpdate from "./project/ProjectUpdate";
 
 import ProjectMain from "./project/dashboard/ProjectMain";
 import ProjectMember from "./project/dashboard/ProjectMember";
-import ProjectCalender from "./project/dashboard/ProjectCalender";
+import ProjectCalendar from "./project/dashboard/ProjectCalendar";
 
 //import { AuthProvider } from "./contexts/AuthContext";
 import NotFoundPage from "./common/NotFoundPage";
@@ -78,10 +79,11 @@ function App() {
           <Route path="/studyPost" element={<StudyPost />} />
           <Route path="/studyList" element={<StudyList />} />
 
-          <Route path="/study/:studyId" element={<StudyMain />} />
-          <Route path="/study/:studyId/member" element={<StudyMember />} />
-          <Route path="/study/:studyId/calender" element={<StudyCalender />} />
-          <Route path="/study/dashboard/studyCalender" element={<StudyCalender />} />
+          <Route path="/study/dashboard/DashboardList" element={<DashboardList />} />
+          <Route path="/study/:groupId" element={<StudyMain />} />
+          <Route path="/study/:groupId/member" element={<StudyMember />} />
+          <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
+          <Route path="/study/dashboard/studyCalendar" element={<StudyCalendar />} />
           <Route path="/study/components/studySidebar" element={<StudySidebar />} />
           <Route path="/project/:studyId/list" element={<ProjectList />} />
 
@@ -97,8 +99,8 @@ function App() {
             element={<ProjectMember />}
           />
           <Route
-            path="/project/:projectId/calender"
-            element={<ProjectCalender />}
+            path="/project/:projectId/calendar"
+            element={<ProjectCalendar />}
           />
 
           {/* Sample Quill Editor CRUD */}

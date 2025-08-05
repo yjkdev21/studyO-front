@@ -2,11 +2,11 @@ import { useState } from 'react';
 import axios from 'axios';
 
 export const studySidebarApi = {
-  getStudyInfo: async (studyId) => {  // 함수명, 매개변수명 수정
+  getStudyInfo: async (groupId) => {  // 함수명, 매개변수명 수정
     const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
 
     try {
-      const response = await axios.get(`${host}/api/sidebar/study/${studyId}`);
+      const response = await axios.get(`${host}/api/sidebar/study/${groupId}`);
       return response.data;
 
     } catch (error) {

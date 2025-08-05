@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-export default function GroupView() {
+export default function GroupDetail() {
     const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
     const { groupId } = useParams();
     const [group, setGroup] = useState(null);
@@ -62,8 +62,9 @@ export default function GroupView() {
       )} */}
 
         <div className="mt-3">
+        <strong>닉네임:</strong> {group.nickname}<br />
         <strong>최대 인원:</strong> {group.maxMembers}명<br />
-        <strong>연락처:</strong> {group.contact}<br />
+        <strong>연락 방법:</strong> {group.contact}<br />
         <strong>소개:</strong> <p>{group.groupIntroduction}</p>
         </div>
 

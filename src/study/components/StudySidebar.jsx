@@ -4,7 +4,7 @@ import { studySidebarApi } from '../components/StusySidebarApi';
 
 
 export default function StudySidebar({
-  studyId,
+  groupId,
   initialTab = 'dashboard', //기본 활성화 탭
   onMenuClick
 }) {
@@ -41,7 +41,7 @@ export default function StudySidebar({
         setLoading(true);
 
         // API 호출
-        const data = await studySidebarApi.getStudyInfo(studyId);
+        const data = await studySidebarApi.getStudyInfo(groupId);
 
         // 데이터 o 상태 업데이트
         if (data) {
@@ -65,7 +65,7 @@ export default function StudySidebar({
     } else {
       setLoading(false);
     }
-  }, [studyId]);
+  }, [groupId]);
 
   //메뉴 클릭 처리 함수
   const handleMenuClick = (tabId) => {

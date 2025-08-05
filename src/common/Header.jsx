@@ -43,7 +43,7 @@ export default function Header() {
           <button type="button" className="header-mobile-btn"
             onClick={() => setIsMenuOpen((prev) => !prev)}
           >
-            <span class="material-symbols-rounded !text-3xl">
+            <span className="material-symbols-rounded !text-3xl">
               keyboard_arrow_down
             </span>
           </button>
@@ -78,6 +78,7 @@ export default function Header() {
 {open && (
   <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white z-50">
     <ul className="min-w-[120px] space-y-4 text-sm">
+      <li><Link to="study/dashboard/dashboardList">대시보드</Link></li>
       <li><Link to="/myPage">마이페이지</Link></li>
       <li><Link to="/myHistory">내 북마크</Link></li>
       <li><button type="button" onClick={handleLogout}>로그아웃</button></li>
