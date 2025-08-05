@@ -78,7 +78,7 @@
 }
 
 .myedit-image-change-btn:hover {
-    background-color: #e6a014;
+    background-color: #FFCC5B;
 }
 
 .myedit-profile-name {
@@ -122,7 +122,7 @@
 .myedit-field-input:focus {
     outline: none;
     border-color: #FDB515;
-    box-shadow: 0 0 0 3px rgba(253, 181, 21, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 204, 91, 0.3);
 }
 
 .myedit-field-input.myedit-disabled {
@@ -148,7 +148,7 @@
 .myedit-field-textarea:focus {
     outline: none;
     border-color: #FDB515;
-    box-shadow: 0 0 0 3px rgba(253, 181, 21, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 204, 91, 0.3);
 }
 
 .myedit-password-error {
@@ -200,7 +200,7 @@
 }
 
 .myedit-submit-btn:hover {
-    background-color: #e6a014;
+    background-color: #FFCC5B;
 }
 
 .myedit-submit-btn:disabled,
