@@ -1,0 +1,195 @@
+:root {
+  --header-height: 80px;
+  --footer-height: 60px;
+  --main-height: calc(100vh - var(--header-height) - var(--footer-height));
+
+  --main-color: #FDB515;
+  --sub-color: #FFCC5B;
+}
+
+/* ========================================
+                  Common
+======================================== */
+
+/* 그림자 버튼 */
+.shadow-btn {
+  width: 300px;
+  padding: 20px;
+  border: 1px solid black;
+  box-shadow: -8px 8px black;
+  background-color: white;
+  font-weight: bold;
+  letter-spacing: 0.07em;
+
+}
+
+/* ========================================
+                  Main
+======================================== */
+
+main {
+  padding: 60px 0;
+  min-height: var(--main-height);
+  text-align: center;
+}
+
+.main-center {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ========================================
+                  Home
+======================================== */
+
+main#home-page {
+  padding: 80px 0;
+}
+
+#home-page .main-center {
+  max-width: none;
+}
+
+#home-page .main-banner {
+  min-height: 400px;
+  /* header, footer, main 패딩값 뺄셈 */
+  height: calc(var(--main-height) - 160px);
+  max-height: calc(var(--main-height) - 160px);
+  background-image: url("/images/main-banner.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#home-page .banner-content {
+  margin-top: -20px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#home-page .banner-text {
+  font-size: 60px;
+  margin-right: 25vw;
+  text-align: right;
+  align-items: end;
+}
+
+#home-page .banner-text img {
+  width: 240px;
+  margin-right: 5px;
+}
+
+/* 태블릿 - 화면 1023px 이하 */
+@media (max-width: 1023px) {
+  #home-page .main-banner {
+    background-position-y: top;
+  }
+}
+
+/* 모바일 - 화면 767px 이하 */
+@media (max-width: 767px) {
+  #home-page .main-banner {
+    background-size: cover;
+    background-position: 15% center;
+  }
+
+  #home-page .banner-text {
+    font-size: 48px;
+    margin-right: -20vw;
+  }
+
+  #home-page .banner-text img {
+    width: 200px;
+  }
+}
+
+
+/* ========================================
+                  Header
+======================================== */
+
+#header .header-logo {
+  margin-right: 30px;
+}
+
+#header .header-mobile-btn {
+  display: none;
+  color: #666;
+}
+
+#header .header-category li {
+  padding-right: 30px;
+}
+
+#header .header-profile-btn {
+  border: 1px solid transparent;
+  transition: border-color .1s;
+}
+
+#header .header-profile-btn:focus {
+  border-color: var(--main-color);
+}
+
+/* 태블릿 - 화면 1023px 이하 */
+@media (max-width: 1023px) {
+  #header .header-logo {
+    margin-right: 5px;
+  }
+
+  #header .header-nav {
+    justify-content: center;
+  }
+
+  #header .header-mobile-btn {
+    display: block;
+  }
+
+  #header .header-category {
+    padding: 20px 0;
+    position: absolute;
+    width: 100%;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    max-height: 400px;
+    transition: all .4s;
+    background-color: var(--main-color);
+  }
+
+  #header .header-category.on {
+    padding: 0;
+    max-height: 0;
+
+  }
+
+  #header .header-category li {
+    padding: 5px 20px;
+  }
+}
+
+/* 모바일 - 화면 767px 이하 */
+@media (max-width: 767px) {}
+
+
+/* ========================================
+                  Footer
+======================================== */
+#footer .footer-content {
+  height: 60px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 1023px) {
+  #footer .footer-content {
+    justify-content: center;
+  }
+
+  #footer .footer-content>*:not(h2) {
+    display: none;
+  }
+}
