@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import axios from "axios";
 
 function Join() {
-
-  // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
-  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  // host 설정 개선
+  const [host, setHost] = useState(
+    import.meta.env.VITE_AWS_API_HOST || "http://localhost:8081"
+  );
 
   const [form, setForm] = useState({
     userId: "",
@@ -22,6 +23,15 @@ function Join() {
     email: "",
   });
 
+  // 검증 상태 추가
+  const [validationStatus, setValidationStatus] = useState({
+    userId: null, // null, 'checking', 'valid', 'invalid'
+    nickname: null,
+    password: null,
+    passwordCheck: null,
+    email: null,
+  });
+
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
   const validatePassword = (password) =>
     password.length >= 8 && password.length <= 16;
@@ -36,7 +46,7 @@ function Join() {
       style={{ display: "block", marginBottom: "15" }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="12" cy="12" r="10" fill="#FDB515" /> {/* 노란 원 */}
+      <circle cx="12" cy="12" r="10" fill="#FDB515" />
       <path
         d="M7 12l3 3 7-7"
         stroke="white"
@@ -47,46 +57,185 @@ function Join() {
     </svg>
   );
 
-  // 변경된 handleChange (axios 요청 제거)
+  // 디바운스된 중복 검사 함수
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
+  // 아이디 중복 검사
+  const checkUserId = useCallback(
+    debounce(async (userId) => {
+      if (!userId.trim()) return;
+
+      try {
+        setValidationStatus((prev) => ({ ...prev, userId: "checking" }));
+        const response = await axios.get(
+          `${host}/api/user/check-id?userId=${userId}`
+        );
+
+        if (response.data === "exists") {
+          setMessages((prev) => ({
+            ...prev,
+            userId: "이미 사용 중인 아이디입니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, userId: "invalid" }));
+        } else {
+          setMessages((prev) => ({
+            ...prev,
+            userId: "사용 가능한 아이디입니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, userId: "valid" }));
+        }
+      } catch (error) {
+        console.error("아이디 중복 검사 오류:", error);
+        setMessages((prev) => ({
+          ...prev,
+          userId: "서버 오류가 발생했습니다.",
+        }));
+        setValidationStatus((prev) => ({ ...prev, userId: "invalid" }));
+      }
+    }, 500),
+    [host]
+  );
+
+  // 닉네임 중복 검사
+  const checkNickname = useCallback(
+    debounce(async (nickname) => {
+      if (!nickname.trim()) return;
+
+      try {
+        setValidationStatus((prev) => ({ ...prev, nickname: "checking" }));
+        const response = await axios.get(
+          `${host}/api/user/check-nickname?nickname=${nickname}`
+        );
+
+        if (response.data === "exists") {
+          setMessages((prev) => ({
+            ...prev,
+            nickname: "이미 사용 중인 닉네임입니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, nickname: "invalid" }));
+        } else {
+          setMessages((prev) => ({
+            ...prev,
+            nickname: "사용 가능한 닉네임입니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, nickname: "valid" }));
+        }
+      } catch (error) {
+        console.error("닉네임 중복 검사 오류:", error);
+        setMessages((prev) => ({
+          ...prev,
+          nickname: "서버 오류가 발생했습니다.",
+        }));
+        setValidationStatus((prev) => ({ ...prev, nickname: "invalid" }));
+      }
+    }, 500),
+    [host]
+  );
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
 
     switch (name) {
+      case "userId":
+        if (value.trim()) {
+          checkUserId(value.trim());
+        } else {
+          setMessages((prev) => ({ ...prev, userId: "" }));
+          setValidationStatus((prev) => ({ ...prev, userId: null }));
+        }
+        break;
+
+      case "nickname":
+        if (value.trim()) {
+          checkNickname(value.trim());
+        } else {
+          setMessages((prev) => ({ ...prev, nickname: "" }));
+          setValidationStatus((prev) => ({ ...prev, nickname: null }));
+        }
+        break;
+
       case "password":
+        const isPasswordValid = validatePassword(value);
         setMessages((prev) => ({
           ...prev,
-          password: validatePassword(value) ? "" : " 8~16자리로 입력해주세요.",
+          password: isPasswordValid ? "" : "8~16자리로 입력해주세요.",
           passwordCheck:
             form.passwordCheck && value !== form.passwordCheck
-              ? " 비밀번호가 일치하지 않습니다."
-              : "",
+              ? "비밀번호가 일치하지 않습니다."
+              : form.passwordCheck && value === form.passwordCheck
+              ? ""
+              : prev.passwordCheck,
         }));
-        break;
-      case "passwordCheck":
-        setMessages((prev) => ({
+        setValidationStatus((prev) => ({
           ...prev,
+          password: isPasswordValid ? "valid" : "invalid",
           passwordCheck:
-            value === form.password ? "" : " 비밀번호가 일치하지 않습니다.",
+            form.passwordCheck && value === form.passwordCheck
+              ? "valid"
+              : form.passwordCheck && value !== form.passwordCheck
+              ? "invalid"
+              : prev.passwordCheck,
         }));
         break;
-      case "email":
+
+      case "passwordCheck":
+        const isPasswordMatch = value === form.password;
         setMessages((prev) => ({
           ...prev,
-          email: validateEmail(value)
-            ? ""
-            : " 이메일 형식이 올바르지 않습니다.",
+          passwordCheck: isPasswordMatch ? "" : "비밀번호가 일치하지 않습니다.",
+        }));
+        setValidationStatus((prev) => ({
+          ...prev,
+          passwordCheck: isPasswordMatch ? "valid" : "invalid",
         }));
         break;
+
+      case "email":
+        const isEmailValid = validateEmail(value);
+        setMessages((prev) => ({
+          ...prev,
+          email: isEmailValid
+            ? "올바른 이메일 형식입니다."
+            : "이메일 형식이 올바르지 않습니다.",
+        }));
+        setValidationStatus((prev) => ({
+          ...prev,
+          email: isEmailValid ? "valid" : "invalid",
+        }));
+        break;
+
       default:
-        // userId, nickname은 단순 값만 업데이트
         break;
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. 기본 클라이언트 측 검사
+    // 모든 필드 검증
+    if (
+      !form.userId.trim() ||
+      !form.password ||
+      !form.passwordCheck ||
+      !form.nickname.trim() ||
+      !form.email.trim()
+    ) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    // 클라이언트 측 최종 검증
     if (form.password !== form.passwordCheck) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -95,27 +244,34 @@ function Join() {
       alert("이메일 형식이 올바르지 않습니다.");
       return;
     }
+    if (!validatePassword(form.password)) {
+      alert("비밀번호는 8~16자리로 입력해주세요.");
+      return;
+    }
 
     try {
-      // 2. 서버 중복 확인 (아이디)
-      const idRes = await axios.get(
-        `${host}/api/user/check-id?userId=${form.userId}`
-      );
+      console.log("회원가입 요청 시작:", {
+        host,
+        form: { ...form, password: "***" },
+      });
+
+      // 최종 서버 중복 확인 (보안상 한 번 더 확인)
+      const [idRes, nickRes] = await Promise.all([
+        axios.get(`${host}/api/user/check-id?userId=${form.userId}`),
+        axios.get(`${host}/api/user/check-nickname?nickname=${form.nickname}`),
+      ]);
+
       if (idRes.data === "exists") {
         alert("이미 사용 중인 아이디입니다.");
         return;
       }
 
-      // 3. 서버 중복 확인 (닉네임)
-      const nickRes = await axios.get(
-        `${host}/api/user/check-nickname?nickname=${form.nickname}`
-      );
       if (nickRes.data === "exists") {
         alert("이미 사용 중인 닉네임입니다.");
         return;
       }
 
-      // 4. 최종 회원가입 요청
+      // 회원가입 요청
       const res = await axios.post(`${host}/api/user/register`, {
         userId: form.userId,
         password: form.password,
@@ -127,14 +283,47 @@ function Join() {
         globalRole: "USER",
       });
 
+      console.log("회원가입 응답:", res.data);
+
       if (res.data === "success") {
-        alert("회원가입 완료!");
+        alert("회원가입이 완료되었습니다!");
+        // 폼 초기화
+        setForm({
+          userId: "",
+          password: "",
+          passwordCheck: "",
+          nickname: "",
+          email: "",
+        });
+        setMessages({
+          userId: "",
+          password: "",
+          passwordCheck: "",
+          nickname: "",
+          email: "",
+        });
+        setValidationStatus({
+          userId: null,
+          nickname: null,
+          password: null,
+          passwordCheck: null,
+          email: null,
+        });
       } else {
         alert("회원가입 실패: " + res.data);
       }
     } catch (err) {
-      alert("서버 오류 발생!");
-      console.error(err);
+      console.error("회원가입 오류:", err);
+      if (err.response) {
+        console.error("응답 오류:", err.response.data);
+        alert(`서버 오류: ${err.response.status} - ${err.response.data}`);
+      } else if (err.request) {
+        console.error("요청 오류:", err.request);
+        alert("서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.");
+      } else {
+        console.error("기타 오류:", err.message);
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
     }
   };
 
@@ -148,7 +337,7 @@ function Join() {
     width: "100%",
     border: "none",
     borderBottom: "1.7px solid #999999",
-    padding: "0px 30px 5px 4px", // 오른쪽 체크 아이콘 공간 확보
+    padding: "0px 30px 5px 4px",
     marginBottom: "8px",
     fontSize: "16px",
     outline: "none",
@@ -164,14 +353,16 @@ function Join() {
 
   const messageStyle = (msg) => ({
     fontSize: "12px",
-    minHeight: "20px", // 항상 같은 높이 유지
+    minHeight: "20px",
     marginBottom: "10px",
     color:
       msg.includes("이미 사용 중") ||
-        msg.includes("일치하지") ||
-        msg.includes("올바르지") ||
-        msg.includes("서버 오류")
+      msg.includes("일치하지") ||
+      msg.includes("올바르지") ||
+      msg.includes("서버 오류")
         ? "red"
+        : msg.includes("사용 가능한") || msg.includes("올바른 이메일")
+        ? "green"
         : "#777",
     textAlign: "left",
   });
@@ -223,20 +414,15 @@ function Join() {
               };
               const types = {
                 userId: "text",
-                password: "text", // 기본 보이도록 text로 변경
+                password: "password",
                 passwordCheck: "password",
                 nickname: "text",
                 email: "email",
               };
 
               const msg = messages[field];
-              const isValid =
-                form[field] &&
-                form[field].trim() !== "" && // 입력값 있음
-                (msg === "" || // 에러 메시지가 없거나
-                  msg.includes("사용 가능한") ||
-                  msg.includes("일치합니다") ||
-                  msg.includes("올바른 이메일"));
+              const isValid = validationStatus[field] === "valid";
+
               return (
                 <div key={i}>
                   <label style={labelStyle} htmlFor={field}>
@@ -247,6 +433,7 @@ function Join() {
                       id={field}
                       name={field}
                       type={types[field]}
+                      value={form[field]}
                       onChange={handleChange}
                       required
                       autoComplete={

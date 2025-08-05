@@ -7,66 +7,67 @@ function Search() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [filters, setFilters] = useState({
     category: "",
-    mode: "",
+    studyMode: "", // mode 대신 studyMode만 사용
     region: "",
     search: "",
     recruitmentCount: "",
     recruitingOnly: true,
   });
 
-  const [studyGroups, setStudyGroups] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [bookmarkViewList, setBookmarkViewList] = useState([]); // 북마크+조회수 리스트
 
   const debounceTimer = useRef(null);
 
+  // 모집인원 범위 수정: 경계값 겹치지 않도록 변경
   const getMinMaxMembers = (recruitmentCount) => {
-    if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 5 };
+    if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 4 };
     if (recruitmentCount === "5~10") return { minMembers: 5, maxMembers: 10 };
     if (recruitmentCount === "10이상")
-      return { minMembers: 10, maxMembers: null };
+      return { minMembers: 11, maxMembers: null };
     return { minMembers: null, maxMembers: null };
   };
 
-  // 스터디 그룹 데이터 API 호출
-  const fetchStudyGroups = async (filterParams) => {
+  const fetchPosts = async (filterParams) => {
     try {
       const { minMembers, maxMembers } = getMinMaxMembers(
         filterParams.recruitmentCount
       );
       const recruitingOnlyInt = filterParams.recruitingOnly ? 1 : 0;
 
-      const res = await axios.get("http://localhost:8081/api/search", {
-        params: {
-          category: filterParams.category || null,
-          mode: filterParams.mode || null,
-          region: filterParams.region || null,
-          minMembers,
-          maxMembers,
-          search: filterParams.search || null,
-          recruitingOnly: recruitingOnlyInt,
-        },
+      const params = {};
+      if (filterParams.category) params.category = filterParams.category;
+      if (filterParams.studyMode) params.studyMode = filterParams.studyMode; // studyMode만 넘김
+      if (filterParams.region) params.region = filterParams.region;
+      if (filterParams.search) params.search = filterParams.search;
+      if (filterParams.recruitingOnly !== undefined)
+        params.recruitingOnly = recruitingOnlyInt;
+      if (minMembers !== null) params.minMembers = minMembers;
+      if (maxMembers !== null) params.maxMembers = maxMembers;
+
+      const res = await axios.get("http://localhost:8081/api/searchPosts", {
+        params,
       });
 
-      console.log("스터디 그룹 API 응답:", res.data);
+      console.log("포스트 API 응답:", res.data);
 
       if (Array.isArray(res.data)) {
-        setStudyGroups(res.data);
-      } else if (res.data && Array.isArray(res.data.studyGroups)) {
-        setStudyGroups(res.data.studyGroups);
+        setPosts(res.data);
+      } else if (res.data && Array.isArray(res.data.posts)) {
+        setPosts(res.data.posts);
       } else {
-        setStudyGroups([]);
-        console.warn("스터디 그룹 응답 데이터가 배열이 아닙니다.");
+        setPosts([]);
+        console.warn("포스트 응답 데이터가 배열이 아닙니다.");
       }
     } catch (error) {
-      console.error("스터디 그룹 조회 실패", error);
-      setStudyGroups([]);
+      console.error("포스트 조회 실패", error);
+      setPosts([]);
     }
   };
 
-  // 북마크+조회수 리스트 API 호출
   const fetchBookmarkViewCounts = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/api/search"); // 북마크+조회수 API 경로
+      const res = await axios.get("http://localhost:8081/api/bookmarks");
 
       console.log("북마크+조회수 API 응답:", res.data);
 
@@ -82,6 +83,15 @@ function Search() {
     }
   };
 
+  // 모집인원 선택 시 필터 업데이트 함수
+  const handleRecruitmentCountChange = (value) => {
+    setFilters((prev) => ({
+      ...prev,
+      recruitmentCount: value,
+      // minMembers, maxMembers는 fetchPosts 내부에서 계산하므로 여기선 제외
+    }));
+  };
+
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
   };
@@ -90,7 +100,7 @@ function Search() {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(() => {
-      fetchStudyGroups(filters);
+      fetchPosts(filters);
     }, 300);
 
     return () => {
@@ -98,23 +108,21 @@ function Search() {
     };
   }, [filters]);
 
-  // 초기 렌더 시 스터디 그룹과 북마크+조회수 둘 다 호출
   useEffect(() => {
-    fetchStudyGroups(filters);
+    fetchPosts(filters);
     fetchBookmarkViewCounts();
   }, []);
 
-  // studyGroups에 bookmarkCount, viewCount 병합
-  const mergedStudyGroups = studyGroups.map((group) => {
+  // posts에 bookmarkCount, viewCount 병합
+  const mergedPosts = posts.map((post) => {
     const bookmarkView = bookmarkViewList.find(
-      (b) =>
-        b.studyGroupId === group.id || b.studyGroupId === group.studyGroupId
+      (b) => b.studyPostId === post.studyPostId
     );
 
     return {
-      ...group,
+      ...post,
       viewCount: bookmarkView?.viewCount ?? 0,
-      bookmarkCount: bookmarkView?.bookmarkCount ?? 0, // bookmarkCount가 없다면 0 처리
+      bookmarkCount: bookmarkView?.bookmarkCount ?? 0,
     };
   });
 
@@ -148,16 +156,16 @@ function Search() {
 
       {/* 진행방식 */}
       <select
-        name="mode"
-        value={filters.mode}
+        name="studyMode"
+        value={filters.studyMode}
         onChange={(e) =>
-          handleFilterChange({ ...filters, mode: e.target.value })
+          handleFilterChange({ ...filters, studyMode: e.target.value })
         }
       >
         <option value="">진행방식</option>
         <option value="온라인">온라인</option>
         <option value="오프라인">오프라인</option>
-        <option value="온오프">온오프</option>
+        <option value="온/오프">온/오프</option>
       </select>
 
       {/* 지역 */}
@@ -194,9 +202,7 @@ function Search() {
       <select
         name="recruitmentCount"
         value={filters.recruitmentCount}
-        onChange={(e) =>
-          handleFilterChange({ ...filters, recruitmentCount: e.target.value })
-        }
+        onChange={(e) => handleRecruitmentCountChange(e.target.value)}
       >
         <option value="">모집인원</option>
         <option value="1~5">1~5</option>
@@ -252,32 +258,43 @@ function Search() {
 
       {/* 리스트 출력 */}
       <div style={{ marginTop: 20 }}>
-        {mergedStudyGroups.length === 0 ? (
+        {mergedPosts.length === 0 ? (
           <p>검색 결과가 없습니다.</p>
         ) : (
-          mergedStudyGroups.map((group) => (
+          mergedPosts.map((post) => (
             <div
-              key={group.id}
+              key={post.studyPostId}
               style={{ borderBottom: "1px solid #ddd", padding: 10 }}
             >
-              <h3>{group.groupName}</h3>
-              <p>카테고리: {group.category}</p>
-              <p>진행방식: {group.studyMode}</p>
-              <p>지역: {group.region || "지역 미정 (온라인)"}</p>
-              <p>모집인원: {group.maxMembers}</p>
+              <h3>{post.title}</h3>
+              <p>작성자: {post.authorName ?? "알 수 없음"}</p>
+              <p>카테고리: {post.category}</p>
+              <p>진행방식: {post.studyMode}</p>
+              <p>모집인원: {post.maxMembers}</p>
+              <p>지역: {post.region || "지역 미정 (온라인)"}</p>
               <p>
                 모집 마감일:{" "}
-                {new Date(group.recruitEndDate).toLocaleDateString()}
+                {post.recruitEndDate
+                  ? new Date(post.recruitEndDate).toLocaleDateString()
+                  : "마감일 없음"}
               </p>
-              <p>{group.groupIntroduction}</p>
-
-              {/* 조회수 및 북마크 수 */}
+              <p>
+                모집 기간:{" "}
+                {post.recruitStartDate
+                  ? new Date(post.recruitStartDate).toLocaleDateString()
+                  : "미정"}{" "}
+                ~{" "}
+                {post.recruitEndDate
+                  ? new Date(post.recruitEndDate).toLocaleDateString()
+                  : "미정"}
+              </p>
+              <p>{post.content}</p>
               <div style={{ marginTop: 10, fontSize: "0.9em", color: "#555" }}>
                 <span style={{ marginRight: 15 }}>
-                  조회수: <strong>{group.viewCount ?? 0}</strong>
+                  조회수: <strong>{post.viewCount ?? 0}</strong>
                 </span>
                 <span style={{ marginRight: 15 }}>
-                  북마크: <strong>{group.bookmarkCount ?? 0}</strong>
+                  북마크: <strong>{post.bookmarkCount ?? 0}</strong>
                 </span>
               </div>
             </div>
