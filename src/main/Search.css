@@ -1,0 +1,61 @@
+.category-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.category-tabs button {
+  background: none;
+  border: none;
+  font-weight: normal;
+  color: #888;
+  cursor: pointer;
+}
+
+.category-tabs button.active {
+  font-weight: bold;
+  color: #000;
+  border-bottom: 2px solid orange;
+}
+
+.dropdown-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+select {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  width: 100%;
+}
+
+.btn-write-g {
+  float: right; /* 오른쪽 배치 */
+  font-weight: bold; /* 글씨 굵게 */
+  margin-right: 20px; /* 오른쪽에서 살짝 떨어지게 */
+  display: flex; /* float 적용 보장 */
+}
+
+html,
+body {
+  height: auto;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.filters-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* 줄 바꿈 허용 */
+}

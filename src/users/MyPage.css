@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .mypage-container *,
 .mypage-container *::before,
 .mypage-container *::after {
@@ -5,6 +6,8 @@
   padding: 0;
   box-sizing: border-box;
 }
+=======
+>>>>>>> 7f708770bcdd204e3d16334139dae4439f9dc586
 .mypage-container {
   min-height: 100vh;
   background-color: #ffffff;
@@ -90,7 +93,6 @@
   font-weight: 500;
   border: none;
   cursor: pointer;
-  transition: none;
   white-space: nowrap;
 }
 
@@ -168,24 +170,16 @@
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #333;
   padding: 1rem;
   box-sizing: border-box;
   cursor: pointer;
-  transition: none;
   display: flex;
   gap: 0.75rem;
   height: 200px;
-  outline: none;
-}
-
-.study-card:focus {
-  outline: none;
 }
 
 .study-card:hover {
-  box-shadow: none;
   border-color: #e5e7eb;
   background-color: #ffffff;
 }
@@ -193,7 +187,6 @@
 .study-card.selected {
   border-color: #FDB515 !important;
   outline: 1px solid #FDB515 !important;
-  box-shadow: none !important;
 }
 
 .study-card:focus,
@@ -227,24 +220,9 @@
   color: #6b7280;
 }
 
-.tag.offline {
-  background-color: #f9fafb !important;
-  color: #6b7280 !important;
-  border: 1px solid #d1d5db !important;
-}
-
-.tag.location {
-  background-color: #f9fafb !important;
-  color: #6b7280 !important;
-  border: 1px solid #d1d5db !important;
-}
-
-.tag.members {
-  background-color: #f9fafb !important;
-  color: #6b7280 !important;
-  border: 1px solid #d1d5db !important;
-}
-
+.tag.offline,
+.tag.location,
+.tag.members,
 .tag.bookmark {
   background-color: #f9fafb !important;
   color: #6b7280 !important;
@@ -283,7 +261,7 @@
 }
 
 .study-category {
-  color: #f59e0b;
+  color: #FDB515; 
   font-weight: 600;
   font-size: 0.75rem;
   margin: 0;
@@ -304,7 +282,6 @@
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: auto;
   display: block;
 }
 
@@ -320,19 +297,12 @@
   font-size: 0.8rem;
   color: #6b7280;
   margin-right: 0.5rem;
-  transition: none;
 }
 
 .mypage-chevron-right {
   font-size: 1rem;
   color: #000000;
-  transition: none;
   font-weight: bold;
-}
-
-.mypage-chevron-down:hover,
-.mypage-chevron-right:hover {
-  transform: none;
 }
 
 .mypage-loading,
@@ -350,11 +320,11 @@
   .mypage-container {
     padding: 1rem;
   }
-  
+
   .mypage-profile-name {
     font-size: 1.125rem;
   }
-  
+
   .mypage-categories-grid {
     grid-template-columns: 1fr;
   }
@@ -365,9 +335,7 @@
   }
 
   .study-card {
-    box-shadow: none;
     border-color: #e5e7eb;
-    transition: none;
   }
 
   .mypage-chevron-right {

@@ -15,6 +15,7 @@ import MyEdit from "./users/MyEdit";
 import FindId from "./users/FindId";
 import FindPw from "./users/FindPw";
 import MyHistory from "./users/MyHistory";
+import MyStudy from "./users/MyStudy";
 
 import StudyList from "./study/StudyList";
 
@@ -41,7 +42,6 @@ import ProjectMain from "./project/dashboard/ProjectMain";
 import ProjectMember from "./project/dashboard/ProjectMember";
 import ProjectCalendar from "./project/dashboard/ProjectCalendar";
 
-//import { AuthProvider } from "./contexts/AuthContext";
 import NotFoundPage from "./common/NotFoundPage";
 import PromotionView from "./study/promotion/PromotionView";
 import PromotionList from "./study/promotion/PromotionList";
@@ -67,6 +67,7 @@ function App() {
           <Route path="/findId" element={<FindId />} />
           <Route path="/findPw" element={<FindPw />} />
           <Route path="/myHistory" element={<MyHistory />} />
+          <Route path="/myStudy" element={<MyStudy />} />
           <Route path="/search" element={<Search />} />
 
           <Route path="/groupList" element={<GroupList />} />
@@ -79,10 +80,12 @@ function App() {
           <Route path="/studyPost" element={<StudyPost />} />
           <Route path="/studyList" element={<StudyList />} />
 
+         
           <Route path="/study/dashboard/DashboardList" element={<DashboardList />} />
-          <Route path="/study/:groupId" element={<StudyMain />} />
-          <Route path="/study/:groupId/member" element={<StudyMember />} />
-          <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
+          <Route path="/study/:studyId" element={<StudyMain />} />
+          <Route path="/study/:studyId/member" element={<StudyMember />} />
+          <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
+          
           <Route path="/study/dashboard/studyCalendar" element={<StudyCalendar />} />
           <Route path="/study/components/studySidebar" element={<StudySidebar />} />
           <Route path="/project/:studyId/list" element={<ProjectList />} />

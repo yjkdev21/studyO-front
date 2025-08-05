@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Link 추가
 import { useAuth } from '../contexts/AuthContext';
 import './MyPage.css';
 
@@ -194,6 +194,12 @@ function MyPage() {
   
   // 인증 컨텍스트에서 사용자 정보와 인증 상태 가져오기
   const { user, isAuthenticated, isLoading } = useAuth();
+
+  // === 프로필 이미지 경로 결정 ===
+  // 헤더 컴포넌트와 동일한 로직 적용
+  const profileImageSrc = user?.profileImage ? 
+    user.profileImage : 
+    "/images/default-profile.png";
 
   // === 상태 관리 ===
   
@@ -422,12 +428,17 @@ function MyPage() {
       <div className="mypage-main-content">
         {/* 프로필 정보 섹션 */}
         <div className="mypage-profile-section">
-          {/* 프로필 이미지 영역 */}
+          {/* 프로필 이미지 영역 - 수정된 부분 */}
           <div className="mypage-profile-image-wrapper">
             <div className="mypage-profile-image">
-              {user.profileImage && (
-                <img src={user.profileImage} alt="프로필" />
-              )}
+              <img 
+                src={profileImageSrc} 
+                alt="프로필" 
+                onError={(e) => {
+                  // 이미지 로드 실패 시 기본 이미지로 대체
+                  e.target.src = "/images/default-profile.png";
+                }}
+              />
             </div>
           </div>
           {/* 프로필 정보 및 수정 버튼 */}
@@ -490,7 +501,7 @@ function MyPage() {
         {/* 참여 중인 스터디 목록 섹션 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
-            <h3 className="mypage-section-title">스터디</h3>
+            <h3 className="mypage-section-title"><Link to="/myStudy">스터디</Link></h3>
             <span className="mypage-chevron-right">&gt;</span>
           </div>
 
@@ -542,7 +553,7 @@ function MyPage() {
         {/* 북마크한 스터디 목록 섹션 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
-            <h3 className="mypage-section-title">북마크</h3>
+            <h3 className="mypage-section-title"><Link to="/myHistory">북마크</Link></h3>
             <span className="mypage-chevron-right">&gt;</span>
           </div>
 

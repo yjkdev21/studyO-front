@@ -15,6 +15,12 @@ function MyEdit() {
     // useAuth 커스텀 훅에서 사용자 정보와 인증 상태 가져오기
     const { user, isAuthenticated, isLoading } = useAuth();
 
+    // === 프로필 이미지 경로 결정 ===
+    // 헤더 및 마이페이지와 동일한 로직 적용
+    const defaultProfileImageSrc = user?.profileImage ? 
+        user.profileImage : 
+        "/images/default-profile.png";
+
     // === 상태 관리 ===
     
     /**
@@ -71,10 +77,9 @@ function MyEdit() {
             profileImage: user.profileImage
         });
 
-        // 프로필 이미지가 있으면 미리보기 상태에도 설정
-        if (user.profileImage) {
-            setProfileImage(user.profileImage);
-        }
+        // 프로필 이미지 설정 - 사용자 이미지가 있으면 사용, 없으면 기본 이미지
+        const imageToSet = user.profileImage || "/images/default-profile.png";
+        setProfileImage(imageToSet);
     };
 
     /**
@@ -251,15 +256,16 @@ function MyEdit() {
                 {/* 프로필 이미지 및 닉네임 표시 영역 */}
                 <div className="myedit-profile-section">
                     <div className="myedit-profile-image-wrapper">
-                        {/* 프로필 이미지 미리보기 */}
+                        {/* 프로필 이미지 미리보기 - 수정된 부분 */}
                         <div className="myedit-profile-image">
-                            {profileImage ? (
-                                // 이미지가 있으면 표시
-                                <img src={profileImage} alt="프로필" />
-                            ) : (
-                                // 이미지가 없으면 기본 프로필 표시
-                                <div className="myedit-default-profile" />
-                            )}
+                            <img 
+                                src={profileImage || defaultProfileImageSrc} 
+                                alt="프로필" 
+                                onError={(e) => {
+                                    // 이미지 로드 실패 시 기본 이미지로 대체
+                                    e.target.src = "/images/default-profile.png";
+                                }}
+                            />
                         </div>
 
                         {/* 이미지 변경 버튼 - 숨겨진 파일 input과 연결된 label */}
@@ -280,7 +286,7 @@ function MyEdit() {
                     </div>
 
                     {/* 현재 사용자 닉네임 표시 (읽기 전용) */}
-                    <div className="myedit-profile-name">{user.nickname}</div>
+                    <div className="myedit-profile-name">{user.nickname || user.userId}</div>
                 </div>
 
                 {/* 프로필 수정 입력 폼 */}
@@ -320,7 +326,7 @@ function MyEdit() {
                             value={formData.newPassword}
                             onChange={handleInputChange}
                             className="myedit-field-input"
-                            placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)"
+                            placeholder="새 비밀번호를 입력하세요"
                         />
                     </div>
 
