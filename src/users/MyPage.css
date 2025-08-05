@@ -1,0 +1,380 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.mypage-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+  position: relative;
+}
+
+.mypage-top-background {
+  height: 150px;
+  background-color: #e5e7eb;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.mypage-main-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+}
+
+.mypage-profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: -40px;
+  margin-left: 6rem;
+  position: relative;
+  z-index: 10;
+  width: 5rem;
+}
+
+.mypage-profile-image-wrapper {
+  width: 5rem;
+  height: 5rem;
+  background-color: #e5e7eb;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #ffffff;
+}
+
+.mypage-profile-image {
+  width: 4rem;
+  height: 4rem;
+  background-color: #d1d5db;
+  border-radius: 50%;
+}
+
+.mypage-profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.mypage-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mypage-profile-name {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.mypage-edit-profile-btn {
+  padding: 0.25rem 0.75rem;
+  background-color: #f3f4f6;
+  color: #374151;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: none;
+  white-space: nowrap;
+}
+
+.mypage-edit-profile-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.mypage-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.mypage-category-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.mypage-category-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.mypage-category-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.mypage-category-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mypage-category-item {
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+.mypage-section-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.mypage-section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.mypage-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.mypage-study-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
+.study-card {
+  flex: 1 1 300px;
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #333;
+  padding: 1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: none;
+  display: flex;
+  gap: 0.75rem;
+  height: 200px;
+  outline: none;
+}
+
+.study-card:focus {
+  outline: none;
+}
+
+.study-card:hover {
+  box-shadow: none;
+  border-color: #e5e7eb;
+  background-color: #ffffff;
+}
+
+.study-card.selected {
+  border-color: #FDB515 !important;
+  outline: 1px solid #FDB515 !important;
+  box-shadow: none !important;
+}
+
+.study-card:focus,
+.study-card:focus-visible,
+.study-card:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.study-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.study-tags {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  white-space: nowrap;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  color: #6b7280;
+}
+
+.tag.offline {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.tag.location {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.tag.members {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.tag.bookmark {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.study-thumbnail-container {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  align-self: flex-start;
+}
+
+.study-thumbnail {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.study-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.study-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.study-category {
+  color: #f59e0b;
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.study-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.study-description {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: auto;
+  display: block;
+}
+
+.study-author,
+.study-due-date,
+.study-contact {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.mypage-chevron-down {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-right: 0.5rem;
+  transition: none;
+}
+
+.mypage-chevron-right {
+  font-size: 1rem;
+  color: #000000;
+  transition: none;
+  font-weight: bold;
+}
+
+.mypage-chevron-down:hover,
+.mypage-chevron-right:hover {
+  transform: none;
+}
+
+.mypage-loading,
+.mypage-error,
+.mypage-study-loading,
+.mypage-study-error,
+.mypage-study-empty {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .mypage-container {
+    padding: 1rem;
+  }
+  
+  .mypage-profile-name {
+    font-size: 1.125rem;
+  }
+  
+  .mypage-categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage-study-cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .study-card {
+    box-shadow: none;
+    border-color: #e5e7eb;
+    transition: none;
+  }
+
+  .mypage-chevron-right {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #666;
+    border-bottom: 2px solid #666;
+    transform: rotate(-45deg);
+    display: inline-block;
+  }
+}
