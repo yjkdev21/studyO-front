@@ -77,7 +77,7 @@ function App() {
             path="/study/dashboard/DashboardList"
             element={<DashboardList />}
           />
-          <Route path="/study/:studyId" element={<StudyMain />} />
+          <Route path="/study/:groupId" element={<StudyMain />} />
           <Route path="/study/:studyId/member" element={<StudyMember />} />
           <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
 
