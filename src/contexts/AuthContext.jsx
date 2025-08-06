@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
@@ -11,22 +11,32 @@ export const AuthProvider = ({ children }) => {
 
   // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
   //axios 기본 설정
-  const apiClient = axios.create({
-    baseURL: `${host}/api/auth`,
+  const baseConfig = {
     withCredentials: true,
     timeout: 10000,
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json"
     }
+  }
+  // auth 패키지 API
+  const authApi = axios.create({
+    ...baseConfig,
+    baseURL: `${host}/api/auth`,
   });
 
-  // 로그인 상태 확인 (앱 시작시 한 번만)
+  // user 패키지 API
+  const userApi = axios.create({
+    ...baseConfig,
+    baseURL: `${host}/api/user`,
+  });
+
+
+  // 로그인 상태 확인 
   const checkLoginStatus = async () => {
     try {
-      const response = await apiClient.get('/check');
+      const response = await authApi.get("/check");
       const data = response.data;
 
       if (data.success && data.isLoggedIn) {
@@ -37,18 +47,17 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      // console.error('로그인 상태 확인 오류:', error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
-      setIsLoading(false); // 여기서 로딩을 끝냄
+      setIsLoading(false);
     }
   };
 
   // 로그인
   const login = async (formData) => {
     try {
-      const response = await apiClient.post('/login', formData);
+      const response = await authApi.post("/login", formData);
       const data = response.data;
 
       if (data.success) {
@@ -59,12 +68,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message };
       }
     } catch (error) {
-      console.error('로그인 오류:', error);
+      console.error("로그인 오류:", error);
 
       if (error.response && error.response.data) {
-        return { success: false, message: error.response.data.message || '로그인에 실패했습니다.' };
+        return { success: false, message: error.response.data.message || "로그인에 실패했습니다." };
       } else {
-        return { success: false, message: '네트워크 오류가 발생했습니다.' };
+        return { success: false, message: "네트워크 오류가 발생했습니다." };
       }
     }
   };
@@ -72,25 +81,80 @@ export const AuthProvider = ({ children }) => {
   // 로그아웃
   const logout = async () => {
     try {
-      const response = await apiClient.post('/logout');
+      const response = await authApi.post("/logout");
       const data = response.data;
 
       setUser(null);
       setIsAuthenticated(false);
 
-      return { success: true, message: data.message || '로그아웃되었습니다.' };
+      return { success: true, message: data.message || "로그아웃되었습니다." };
     } catch (error) {
-      console.error('로그아웃 오류:', error);
+      console.error("로그아웃 오류:", error);
 
       // 에러가 발생해도 프론트엔드에서는 로그아웃 처리
       setUser(null);
       setIsAuthenticated(false);
 
-      return { success: false, message: '로그아웃 중 오류가 발생했습니다.' };
+      return { success: false, message: "로그아웃 중 오류가 발생했습니다." };
     }
   };
 
-  // 앱 시작시 딱 한 번만 로그인 상태 확인
+  // 아이디 찾기
+  const findUserId = async (email) => {
+    try {
+      const response = await authApi.post("/find-id", { email });
+      return response.data;
+    } catch (error) {
+      console.error("아이디 찾기 오류:", error);
+      return { success: false, message: "네트워크 오류가 발생했습니다." };
+    }
+  }
+
+  // 비밀번호 찾기 - 비밀번호 변경
+  const resetPassword = async (userId, email, newPassword) => {
+    try {
+      const response = await authApi.post("/find-password", {
+        userId,
+        email,
+        newPassword
+      });
+      return response.data;
+    } catch (error) {
+      console.error("비밀번호 변경 오류:", error);
+      // 서버에서 내려준 message가 있다면 사용하고, 없으면 기본 메시지 사용
+      const message =
+        error.response?.data?.message || "네트워크 오류가 발생했습니다.";
+      return { success: false, message };
+    }
+  };
+  // 회원 탈퇴
+  const deleteAccount = async () => {
+    try {
+      const response = await userApi.delete("/delete");
+      const data = response.data;
+
+      if (data.success) {
+        setUser(null);
+        setIsAuthenticated(false);
+
+
+        return { success: true, message: data.message || '회원 탈퇴가 완료되었습니다.' };
+      } else {
+        return { success: false, message: data.message || '탈퇴 처리에 실패했습니다.' };
+      }
+
+    } catch (error) {
+      console.error('회원 탈퇴 오류:', error);
+
+      if (error.response && error.response.data) {
+        return { success: false, message: error.response.data.message || '탈퇴 처리에 실패했습니다.' };
+      } else {
+        return { success: false, message: '네트워크 오류가 발생했습니다.' };
+      }
+    }
+  }
+
+  // 초기 렌더링 시 로그인 상태 체크
   useEffect(() => {
     checkLoginStatus();
   }, []);
@@ -100,7 +164,10 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
-    logout
+    logout,
+    deleteAccount,
+    findUserId,
+    resetPassword
   };
 
   return (
@@ -114,7 +181,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
