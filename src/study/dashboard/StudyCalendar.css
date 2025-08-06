@@ -1,0 +1,89 @@
+/* 모달 배경 */
+.modal-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 중앙 정렬 */
+  width: 380px;
+  height: auto;
+  background-color: #fff;
+  border: 0.5px solid #999;
+  border-radius: 7px;
+  z-index: 1000;
+}
+
+
+
+/* 각 섹션 */
+.modal-section {
+  padding: 15px 20px; /* 20px → 15px로 줄임 */
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 라벨 (제목, 내용) */
+.modal-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* 입력창 */
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 텍스트 영역 */
+.modal-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+/* 버튼 섹션 */
+.modal-buttons {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 액션 버튼들 (수정, 삭제) */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 수정 버튼 */
+.update-button {
+  padding: 8px 16px;
+  background-color: #FDB515;
+  color: #666666;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 삭제 버튼 */
+.delete-button {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 닫기 버튼 */
+.close-button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: #666;
+  font-size: 14px;
+}

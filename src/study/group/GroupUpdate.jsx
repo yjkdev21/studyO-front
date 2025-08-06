@@ -15,7 +15,7 @@ const RESET_FORM = {
     groupIntroduction: '',
     thumbnail: null,
     groupOwnerId: 1,
-    nickname: '' // nickname 필드 추가
+    nickname: ''
 };
 
 //필수 필드

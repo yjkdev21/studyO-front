@@ -1,6 +1,6 @@
 import React from 'react';
 
-function PostUpdate() {
+function MyStudy() {
     return (
         <div>
             
@@ -8,4 +8,4 @@ function PostUpdate() {
     );
 }
 
-export default PostUpdate;
+export default MyStudy;

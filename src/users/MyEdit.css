@@ -1,0 +1,222 @@
+.myedit-field-input,
+.myedit-field-textarea {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid #eee !important;
+  border-radius: 3px !important;
+  font-size: 16px;
+  color: #333;
+  background-color: #fff !important;
+  height: 56px;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* 특정 input 타입별로 강제 스타일 적용 */
+input[type="text"].myedit-field-input,
+input[type="password"].myedit-field-input {
+  border-radius: 3px !important;
+  -webkit-border-radius: 3px !important;
+  -moz-border-radius: 3px !important;
+}
+
+.myedit-field-textarea {
+  height: 150px;
+}
+
+.myedit-field-input:focus,
+.myedit-field-textarea:focus {
+  outline: none;
+  border-color: #fdb515;
+  box-shadow: 0 0 0 3px rgba(253, 181, 21, 0.1);
+}
+
+/* disabled 스타일을 더 명확하게 정의 */
+.myedit-field-input.myedit-disabled {
+  background-color: #f8f8f8; /* 약간 더 연한 회색 */
+  color: #888; /* 텍스트 색상 조정 */
+  cursor: not-allowed;
+  border-color: #ddd; /* 테두리 색상도 조정 */
+}
+
+.myedit-container {
+  background-color: #fff;
+  min-height: 100vh;
+  padding: 60px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.myedit-form {
+  background-color: transparent;
+  max-width: 600px;
+  width: 100%;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.myedit-loading,
+.myedit-error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+.myedit-profile-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.myedit-profile-image-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.myedit-profile-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #eee;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.myedit-profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.myedit-default-profile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.myedit-image-change-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background-color: #fdb515;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s;
+}
+
+.myedit-image-change-btn:hover {
+  background-color: #e6a014;
+}
+
+.myedit-profile-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 10px;
+}
+
+.myedit-form-fields {
+  margin-bottom: 40px;
+}
+
+.myedit-field-group {
+  margin-bottom: 32px;
+}
+
+.myedit-field-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.myedit-required {
+  color: #ff4444;
+}
+
+.myedit-password-error {
+  color: #ff4444;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.myedit-button-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 60px;
+}
+
+.myedit-submit-btn,
+.myedit-cancel-btn {
+  width: auto;
+  min-width: 60px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.myedit-cancel-btn {
+  background-color: #eee;
+  color: #666;
+}
+
+.myedit-cancel-btn:hover {
+  background-color: #ddd;
+}
+
+.myedit-submit-btn {
+  background-color: #fdb515;
+  color: #fff;
+}
+
+.myedit-submit-btn:hover {
+  background-color: #e6a014;
+}
+
+.myedit-submit-btn:disabled,
+.myedit-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .myedit-container {
+    padding: 40px 20px;
+  }
+
+  .myedit-form {
+    max-width: 100%;
+  }
+
+  .myedit-button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .myedit-submit-btn,
+  .myedit-cancel-btn {
+    width: 100%;
+  }
+}

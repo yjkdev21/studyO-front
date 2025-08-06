@@ -86,9 +86,7 @@ export default function GroupDetail() {
   }
   alt="썸네일"
   width="200"
-/>
-
-                
+/>   
                 {/* 디버깅용 정보 표시 (개발 중에만 사용) */}
                 <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
                     <div>썸네일 파일명: {group.thumbnail || 'null'}</div>

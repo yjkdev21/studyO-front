@@ -56,6 +56,23 @@ const StudyForm = ({
                 <div id="studygroup-basic-info-icon"></div>
                 스터디 기본 정보
             </div>
+            <div>
+                <label>닉네임 </label>
+                <input
+                    type="text"
+                    name="nickname"
+                    value={formData.nickname || ''}
+                    onChange={onChange}
+                    disabled={isFieldDisabled('nickname')}
+                    required
+                    placeholder="스터디에서 사용할 닉네임을 입력하세요"
+                />
+                {userNickname && formData.nickname !== userNickname && (
+                    <small style={{ color: '#666', display: 'block', marginTop: '4px' }}>
+                        닉네임: {userNickname}
+                    </small>
+                )}
+            </div>
 
             <form id="studygroup-main-form" onSubmit={onSubmit} encType="multipart/form-data">
                 

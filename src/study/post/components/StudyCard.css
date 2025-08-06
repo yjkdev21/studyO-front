@@ -1,0 +1,191 @@
+/* src/components/StudyCard.css */
+.study-card-container {
+  width: 100%; /* 카드 전체 너비 */
+  height: 200px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  cursor: pointer; /* 클릭 가능함을 나타냄 */
+  transition: all 0.2s ease-in-out; /* 부드러운 전환 효과 */
+}
+
+/* 선택된 카드 스타일 */
+.study-card-container.selected {
+  border: 2px solid #ffae00;
+  box-shadow: 0 0 15px rgba(206, 206, 206, 0.3); /* 선택 시 그림자 효과 */
+}
+
+.study-card-container:hover {
+  border: 2px solid #ff5e00;
+}
+
+/* 뱃지 컨테이너 스타일 */
+.study-card-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 뱃지 개별 스타일 */
+.study-card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  background-color: #f0f0f0;
+}
+
+.study-card-body-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 4;
+}
+
+/* 메인 컨텐츠 영역 */
+.study-card-content {
+  display: flex;
+  gap: 5px;
+}
+
+/* 헤더 영역 (카테고리, 제목) */
+.study-card-header {
+  width: 100%;
+  flex-direction: row;
+}
+
+/* 카테고리 스타일 */
+.study-card-category {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff6f00; /* 카테고리 색상 */
+}
+
+/* 제목 스타일 */
+.study-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  flex-grow: 1;
+}
+
+/* 소개글 스타일 */
+.study-card-intro {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  height: 40px; /* 2줄까지만 보이도록 높이 지정 */
+  overflow: hidden; /* 넘치는 내용 숨김 */
+  text-overflow: ellipsis; /* ... 표시 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 2줄로 제한 */
+  -webkit-box-orient: vertical;
+}
+
+/* 푸터 영역 */
+.study-card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -10px;
+}
+
+/* 썸네일 영역 */
+.study-card-thumbnail {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  overflow: hidden;
+  flex-shrink: 0; /* 썸네일 크기 유지 */
+  flex-grow: 1;
+}
+
+/* 썸네일 이미지 스타일 */
+.study-card-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 메타 정보 (작성자, 마감일) */
+.study-card-meta {
+  width: 100%;
+  display: flex;
+  gap: 2px;
+  font-size: 13px;
+  color: #777;
+}
+
+/* 작성자 스타일 */
+.study-card-author {
+  width: 80%;
+  font-weight: 600;
+}
+
+/* 마감일 */
+.study-card-date {
+  width: 20%;
+  font-size: 0.7rem;
+  text-align: right;
+}
+
+/* src/components/StudyContainer.css */
+
+.study-carousel-container {
+  position: relative; /* 버튼 위치 지정을 위해 */
+  width: 100%;
+  margin: 5px auto; /* 중앙 정렬 및 상하 여백 */
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.carousel-controls {
+  position: absolute;
+  top: -35px; /* 이미지 우측 상단과 비슷하게 조정 */
+  right: 5px; /* 컨테이너 오른쪽 끝에서 20px */
+  display: flex;
+  z-index: 2; /* 다른 요소 위에 오도록 */
+}
+
+.carousel-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #555;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.carousel-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  border-color: #ccc;
+}
+
+.carousel-button:disabled {
+  background-color: #f8f8f8;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.study-carousel-track {
+  display: flex;
+  gap: 20px; /* 카드 간의 간격 */
+  overflow: hidden; /* 슬라이드 효과를 위해 */
+  transition: transform 0.5s ease-in-out; /* 부드러운 전환 효과 */
+  justify-content: flex-start; /* 카드들이 왼쪽부터 정렬되도록 */
+}
