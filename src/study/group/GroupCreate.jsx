@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './group.css';
@@ -14,21 +14,23 @@ const RESET_FORM = {
     contact: '',
     groupIntroduction: '',
     thumbnail: null,
-    groupOwnerId: 1
+    groupOwnerId: 1,
+    nickname: ''
 };
 
 //필수 필드
 const REQUIRED_FIELDS = [
-    'groupName', 'category', 'maxMembers',
+    'groupName', 'nickname', 'category', 'maxMembers',
     'studyMode', 'region', 'contact', 'groupIntroduction'
 ];
 
 function GroupCreate() {
     const navigate = useNavigate();
-    const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+    const host = import.meta.env.VITE_AWS_API_HOST;
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
+    const [userNickname, setUserNickname] = useState(''); // 원본 닉네임 저장
 
     // 이름 중복 확인 함수
     const checkGroupNameDuplicate = async (groupName) => {
@@ -37,10 +39,38 @@ function GroupCreate() {
             return res.data.isDuplicate;
         } catch (err) {
             console.error('중복 확인 오류:', err);
-            return false; // 오류 발생 시 중복 아님으로 처리 (또는 true로 막아도 됨)
+            return false;
         }
     };
 
+    useEffect(() => {
+        const fetchUserNickname = async () => {
+            try {
+                // 임시로 userId를 1로 설정 (실제로는 세션이나 다른 방법으로 가져와야 함)
+                const userId = 1;
+                
+                const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
+                    withCredentials: true,
+                });
+                
+                if (res.data.success) {
+                    const nickname = res.data.nickname;
+                    setUserNickname(nickname || ''); // 원본 닉네임 저장
+                    setFormData(prev => ({
+                        ...prev,
+                        nickname: nickname || '', // 폼 데이터에도 설정
+                        groupOwnerId: userId // userId도 함께 설정
+                    }));
+                } else {
+                    console.error("닉네임 불러오기 실패:", res.data.message);
+                }
+            } catch (error) {
+                console.error("닉네임 불러오기 실패:", error);
+            }
+        };
+
+        fetchUserNickname();
+    }, [host]);
 
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
@@ -98,6 +128,7 @@ function GroupCreate() {
     const getFieldDisplayName = (field) => {
         const fieldNames = {
             groupName: '스터디 이름',
+            nickname: '닉네임',
             category: '카테고리',
             maxMembers: '최대 인원',
             studyMode: '진행 방식',
@@ -134,10 +165,11 @@ function GroupCreate() {
                 category: formData.category,
                 maxMembers: parseInt(formData.maxMembers),
                 studyMode: formData.studyMode,
-                region: formData.studyMode === '온라인' ? null : formData.region, // 온라인 모드면 null
+                region: formData.studyMode === '온라인' ? null : formData.region,
                 contact: formData.contact,
                 groupIntroduction: formData.groupIntroduction,
                 groupOwnerId: formData.groupOwnerId,
+                nickname: formData.nickname // 수정된 닉네임 포함
             };
 
             // FormData에 JSON Blob으로 추가
@@ -180,7 +212,7 @@ function GroupCreate() {
     };
 
     return (
-        <main id='study-create'>
+        <main id='studygroup-main-container'>
             {submitMessage && (
                 <div className={`message ${submitMessage.includes('실패') || submitMessage.includes('오류') ? 'error' : 'success'}`}>
                     {submitMessage}
@@ -196,6 +228,7 @@ function GroupCreate() {
                 isSubmitting={isSubmitting}
                 submitMessage={submitMessage}
                 submitLabel="작성하기"
+                userNickname={userNickname} // 원본 닉네임 전달
             />
         </main>
     );
