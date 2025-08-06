@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './ConfirmModal.css';
 
 /**
@@ -18,6 +19,20 @@ function ConfirmModal({
     isSuccess = false, // 성공 모달 여부 (true: 성공 모달, false: 확인 모달)
     onSuccessConfirm, // 성공 모달의 확인 버튼 핸들러 (선택적)
 }) {
+    // 모달이 열릴 때 body 스크롤 방지
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // 컴포넌트 언마운트 시 정리
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     // 모달이 열려있지 않으면 아무것도 렌더링하지 않음 (조건부 렌더링)
     if (!isOpen) return null;
 
@@ -101,11 +116,11 @@ function ConfirmModal({
     };
 
     // ========================================
-    // JSX 렌더링 시작
+    // Portal을 사용해 document.body에 직접 렌더링
     // ========================================
-    return (
+    return createPortal(
         // 모달 오버레이 - 화면 전체를 덮는 반투명 배경
-        <div className="modal-overlay">
+        <div className="confirm-modal-overlay">
             {/* 모달 메인 콘텐츠 박스 */}
             <div className="modal-content">
                 
@@ -203,51 +218,9 @@ function ConfirmModal({
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body // body에 직접 렌더링
     );
 }
 
-// ========================================
-// 컴포넌트 내보내기
-// default export로 다른 파일에서 import 가능
-// ========================================
 export default ConfirmModal;
-
-/*
-========================================
-사용 예시:
-
-// 확인 모달 (프로필 수정)
-<ConfirmModal
-    isOpen={showModal}
-    type="editProfile"
-    userName="홍길동"
-    profileImage="path/to/image.jpg"
-    onCancel={() => setShowModal(false)}
-    onConfirm={handleProfileEdit}
-/>
-
-// 성공 모달 (프로필 수정 완료)
-<ConfirmModal
-    isOpen={showSuccessModal}
-    type="editProfile"
-    userName="홍길동"
-    profileImage="path/to/image.jpg"
-    isSuccess={true}
-    onSuccessConfirm={() => setShowSuccessModal(false)}
-/>
-
-// 커스텀 텍스트 사용
-<ConfirmModal
-    isOpen={showModal}
-    type="editProfile"
-    userName="홍길동"
-    customText={{
-        title: "커스텀 제목",
-        description: "커스텀 설명"
-    }}
-    onCancel={() => setShowModal(false)}
-    onConfirm={handleAction}
-/>
-========================================
-*/

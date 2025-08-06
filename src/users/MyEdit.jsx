@@ -140,17 +140,23 @@ function MyEdit() {
         
         // 기본적으로 보낼 데이터 (항상 포함)
         const dataToSend = {
-            id: formData.id,                    // 사용자 식별용
-            nickname: formData.nickname,        // 수정할 닉네임
-            introduction: formData.introduction, // 수정할 자기소개
-            profileImage: profileImage,         // 수정할 프로필 이미지 (Base64)
+            id: formData.id,
+            nickname: formData.nickname,
+            introduction: formData.introduction,
         };
 
+        // profileImage는 이미지가 Base64 (즉, 실제 변경된 경우)일 때만 포함
+        if (profileImage && profileImage.startsWith('data:image')) {
+            dataToSend.profileImage = profileImage;
+        }
+
         // 비밀번호 변경이 있을 경우에만 password 필드 추가
-        // 빈 문자열이 아닐 때만 서버에 전송 (선택적 수정)
         if (formData.newPassword) {
             dataToSend.password = formData.newPassword;
         }
+
+        // 요청 보내기 전 payload 로그 찍기
+        console.log('서버로 보내는 프로필 수정 데이터:', dataToSend);
 
         try {
             // === 서버에 PUT 요청으로 정보 수정 요청 ===
@@ -217,7 +223,7 @@ function MyEdit() {
      */
     const handleSuccessConfirm = () => {
         setShowSuccessModal(false);
-        window.location.reload(); // 새로고침으로 변경사항 반영 (Context 재로딩)
+        // window.location.reload(); // 새로고침으로 변경사항 반영 (Context 재로딩)
     };
 
     /**
