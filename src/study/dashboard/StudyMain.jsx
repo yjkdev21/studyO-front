@@ -127,6 +127,8 @@ export default function StudyMain() {
 
       if (!res.ok) throw new Error('등록 실패');
 
+      await fetchPosts(); // 작성한 글 화면에 바로 반영됨
+
       setMessage('작성 완료');
       setPostTitle('');
       setPostContent('');
@@ -171,7 +173,7 @@ export default function StudyMain() {
       if (!res.ok) throw new Error('수정 실패');
 
       await fetchPosts();
-      handleCancelEdit();
+      handleCancelEdit(); // 편집상태 종료
     } catch (error) {
       console.error('수정 오류', error);
     }
@@ -189,6 +191,8 @@ export default function StudyMain() {
         }
       });
       if (!res.ok) throw new Error('삭제 실패');
+
+      await fetchPosts();
     } catch (err) {
       alert('삭제 중 오류가 발생했습니다.');
     }
@@ -269,6 +273,58 @@ export default function StudyMain() {
 
         {/* 전체 게시글 목록(공지 + 일반글) */}
         <section className='all-post-list'>
+          {/* 공지글 먼저 출력 */}
+          {allNotices.map((post) => (
+            <li key={post.id} className='post-item notice'>
+              <div className='post-header'>
+                <img
+                  src={post.writerProfileImage || '/default-profile.png'}
+                  alt='프로필'
+                  className='profile-img'
+                />
+                <div className='post-meta'>
+                  <span className='nickname'>{post.writerNickname} (공지)</span>
+                  <span className='date'>{post.createdAt?.slice(0, 10)}</span>
+                </div>
+                {user?.id === post.writerId && (
+                  <div className='post-actions'>
+                    {editingPostId === post.id ? (
+                      <>
+                        <button onClick={handleConfirmEdit}>확인</button>
+                        <button onClick={handleCancelEdit}>취소</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleStartEdit(post)}>수정</button>
+                        <button onClick={() => handleDelete(post.id)}>삭제</button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className='post-body'>
+                {editingPostId === post.id ? (
+                  <>
+                    <input
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                    />
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <strong className='post-title'>{post.dashboardPostTitle}</strong>
+                    <p className='post-content'>{post.dashboardPostText}</p>
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+
+          {/* 일반글 출력 */}
           {allPosts.map((post) => (
             <li key={post.id} className='post-item'>
               <div className='post-header'>
