@@ -20,11 +20,7 @@ function Search() {
 
   // AuthContext에서 로그인 상태와 사용자 정보를 가져옵니다.
   const { user, isAuthenticated } = useAuth();
-  const userId = isAuthenticated ? user?.id : null; // 숫자 ID 사용
-
-  console.log("Auth user object: ", user);
-  console.log("user.id (number): ", user?.id);
-  console.log("user.userId (string): ", user?.userId);
+  const userId = isAuthenticated ? user.userId : null;
 
   const [userBookmarks, setUserBookmarks] = useState([]);
 
@@ -81,17 +77,11 @@ function Search() {
     }
   };
 
-  // AuthContext에서 받아온 userId가 string일 수도 있으니 숫자로 변환
-  const userIdNum = userId ? Number(userId) : null;
-
   const fetchUserBookmarks = async () => {
-    if (!user || !user.id) {
-      console.log("userId가 유효하지 않습니다.");
-      return;
-    }
+    if (!userId) return; // userId가 없으면 북마크를 가져오지 않음
     try {
       const res = await axios.get(
-        `http://localhost:8081/api/bookmark/user/${user.id}`
+        `http://localhost:8081/api/bookmark/user/${userId}`
       );
       console.log("사용자 북마크 API 응답:", res.data);
       if (res.data.success && Array.isArray(res.data.data)) {
@@ -130,31 +120,30 @@ function Search() {
     }
   };
 
-  const handleBookmarkToggle = async (groupId) => {
-    if (!user) {
+  const handleBookmarkToggle = async (groupId, isBookmarked) => {
+    if (!userId) {
       alert("로그인 후 이용해주세요.");
       return;
     }
 
-    const userId = user.id;
-
     try {
-      if (userBookmarks.includes(groupId)) {
+      if (isBookmarked) {
         await axios.delete(
           `http://localhost:8081/api/bookmark/${userId}/${groupId}`
         );
         alert("북마크가 삭제되었습니다.");
       } else {
-        const payload = { userId, groupId };
-        await axios.post(`http://localhost:8081/api/bookmark`, payload);
+        await axios.post(`http://localhost:8081/api/bookmark`, {
+          userId,
+          groupId,
+        });
         alert("북마크가 추가되었습니다.");
       }
-
-      await fetchUserBookmarks();
-      await fetchBookmarkViewCounts(); // ★ 북마크 수 새로고침 추가
+      fetchUserBookmarks();
+      fetchBookmarkViewCounts();
     } catch (error) {
       console.error("북마크 토글 실패", error);
-      alert("북마크 처리 중 오류가 발생했습니다.");
+      alert("북마크 처리에 실패했습니다.");
     }
   };
 
@@ -186,9 +175,8 @@ function Search() {
 
   const mergedPosts = posts.map((post) => {
     const bookmarkView = bookmarkViewList.find(
-      (b) => String(b.groupId) === String(post.groupId)
+      (b) => b.groupId == post.groupId
     );
-
     // userBookmarks 배열에 groupId가 포함되어 있는지 확인
     const isBookmarked = userBookmarks.includes(post.groupId);
     const viewCount =
