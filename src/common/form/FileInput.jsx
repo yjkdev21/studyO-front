@@ -1,5 +1,6 @@
 // components/FileInput.jsx
 import React from "react";
+import "./Form.css";
 
 function FileInput({
   id,
@@ -12,12 +13,12 @@ function FileInput({
   return (
     <>
       <div>
-        <label htmlFor={id} className="form-label fw-semibold">
+        <label htmlFor={id} className="input-form-label">
           {label}
         </label>
         <input
           type="file"
-          className="form-control"
+          className="input-form-field"
           id={id}
           multiple={multiple}
           accept={accept}

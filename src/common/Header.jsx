@@ -13,10 +13,10 @@ export default function Header() {
     setIsMenuOpen(false);
   }, [location]);
 
-  // 프로필 이미지 경로 - null일 시 기본 이미지 
-  const imageSrc = user?.profileImage ?
-    user?.profileImage :
-    "/images/default-profile.png";
+  // 프로필 이미지 경로 - null일 시 기본 이미지
+  const imageSrc = user?.profileImage
+    ? user?.profileImage
+    : "/images/default-profile.png";
 
   // 로그아웃 핸들
   const handleLogout = async () => {
@@ -40,7 +40,9 @@ export default function Header() {
             </Link>
           </h1>
           {/* 모바일 메뉴 버튼 */}
-          <button type="button" className="header-mobile-btn"
+          <button
+            type="button"
+            className="header-mobile-btn"
             onClick={() => setIsMenuOpen((prev) => !prev)}
           >
             <span className="material-symbols-rounded !text-3xl">
@@ -49,55 +51,90 @@ export default function Header() {
           </button>
           {/* 헤더 카테고리 */}
           <ul className={`header-category flex ${isMenuOpen ? "" : "on"}`}>
-            <li><Link to="/">전체</Link></li>
-            <li><Link to="/">IT</Link></li>
-            <li><Link to="/">자격증</Link></li>
-            <li><Link to="/">언어</Link></li>
-            <li><Link to="/">전공</Link></li>
-            <li><Link to="/">취업/면접</Link></li>
-            <li><Link to="/">취미</Link></li>
-            <li><Link to="/">기타</Link></li>
+            <li>
+              <Link to="/">전체</Link>
+            </li>
+            <li>
+              <Link to="/">IT</Link>
+            </li>
+            <li>
+              <Link to="/">자격증</Link>
+            </li>
+            <li>
+              <Link to="/">언어</Link>
+            </li>
+            <li>
+              <Link to="/">전공</Link>
+            </li>
+            <li>
+              <Link to="/">취업/면접</Link>
+            </li>
+            <li>
+              <Link to="/">취미</Link>
+            </li>
+            <li>
+              <Link to="/">기타</Link>
+            </li>
           </ul>
         </div>
         {/* 헤더 오른쪽: 회원 메뉴 */}
         <div className="header-info !ml-auto">
-          {isAuthenticated ?
+          {isAuthenticated ? (
             // 로그인 중인 메뉴
-            (
-              <ul className="flex items-center !space-x-[30px]">
-                <li><span>{user?.nickname || user?.userId} 님</span></li>
-                <li><Link to="/groupCreate">그룹생성</Link></li>
-                <li>
-                  <button
-                    type="button" className="header-profile-btn block w-[40px] !rounded-[100%] overflow-hidden"
-                    onClick={() => setOpen((prev) => !prev)}>
-                    <img src={imageSrc} alt="프로필이미지"
-                    />
-                  </button>
-                  {/* 드롭 메뉴 */}
-{open && (
-  <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white z-50">
-    <ul className="min-w-[120px] space-y-4 text-sm">
-      <li><Link to="study/dashboard/dashboardList">대시보드</Link></li>
-      <li><Link to="/myPage">마이페이지</Link></li>
-      <li><Link to="/myHistory">내 북마크</Link></li>
-      <li><button type="button" onClick={handleLogout}>로그아웃</button></li>
-    </ul>
-  </div>
-)}
-                </li>
-              </ul>
-            ) :
+            <ul className="flex items-center !space-x-[30px]">
+              <li>
+                <span>{user?.nickname || user?.userId} 님</span>
+              </li>
+              <li>
+                <Link to="/groupCreate">그룹생성</Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="header-profile-btn block w-[40px] !rounded-[100%] overflow-hidden"
+                  onClick={() => setOpen((prev) => !prev)}
+                >
+                  <img src={imageSrc} alt="프로필이미지" />
+                </button>
+                {/* 드롭 메뉴 */}
+                {open && (
+                  <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white z-50">
+                    <ul className="min-w-[120px] space-y-4 text-sm">
+                      <li>
+                        <Link to="study/dashboard/dashboardList">대시보드</Link>
+                      </li>
+                      <li>
+                        <Link to="/myPage">마이페이지</Link>
+                      </li>
+                      <li>
+                        <Link to="/myHistory">내 북마크</Link>
+                      </li>
+                      <li>
+                        <button type="button" onClick={handleLogout}>
+                          로그아웃
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </li>
+            </ul>
+          ) : (
             // 비회원 메뉴
-            (
-              <ul className="flex !space-x-[30px]">
-                <li><Link to="/login">로그인</Link></li>
-                <li><Link to="/join">회원가입</Link> </li>
-                <li><Link to="/groupCreate">그룹생성</Link></li>
-              </ul>
-            )}
+            <ul className="flex !space-x-[30px]">
+              <li>
+                <Link to="/login">로그인</Link>
+              </li>
+              <li>
+                <Link to="/join">회원가입</Link>{" "}
+              </li>
+              <li>
+                <Link to="/groupCreate">그룹생성</Link>
+              </li>
+            </ul>
+          )}
         </div>
       </div>
-    </header >
+    </header>
   );
 }
