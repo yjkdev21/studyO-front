@@ -5,7 +5,7 @@ import FileInput from "../../common/form/FileInput";
 import axios from "axios";
 import "./Promotion.css";
 import { useNavigate } from "react-router-dom";
-import StudyCarousel from "../components/StudyCarousel";
+import StudyCarousel from "../post/components/StudyCarousel";
 
 export default function PromotionPost() {
   // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.

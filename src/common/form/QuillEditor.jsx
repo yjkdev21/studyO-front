@@ -16,8 +16,8 @@ if (!Quill.imports["modules/blotFormatter"]) {
 }
 
 const editorStyle = {
-  width: "800px",
-  height: "500px", // 전체 wrapper 높이 (선택)
+  width: "100%",
+  height: "550px", // 전체 wrapper 높이 (선택)
 };
 
 const editorContentStyle = {

@@ -1,8 +1,8 @@
 .promotion-container {
-  width: 800px;
+  width: 1200px;
+  margin: 20px auto;
 }
 .promotion-view-container {
-  width: 800px;
   min-height: 400px;
 }
 

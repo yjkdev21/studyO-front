@@ -1,4 +1,5 @@
 import React from "react";
+import "./Form.css";
 
 function FormInput({
   id,
@@ -11,12 +12,12 @@ function FormInput({
 }) {
   return (
     <>
-      <label htmlFor={id} className="form-label fw-semibold">
+      <label htmlFor={id} className="input-form-label">
         {label}
       </label>
       <input
         type={type}
-        className="form-control"
+        className="input-form-field"
         id={id}
         value={value}
         onChange={onChange}

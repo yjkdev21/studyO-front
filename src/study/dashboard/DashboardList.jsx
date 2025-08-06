@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext'; // 사용자 인증 정보를 가져오는 커스텀 훅
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext"; // 사용자 인증 정보를 가져오는 커스텀 훅
+import { useNavigate } from "react-router-dom";
 
-import StudyCard from '../components/StudyCard';
-import '../../users/MyEdit.css'; // 스타일 파일
+import StudyCard from "../post/components/StudyCard";
+import "../../users/MyEdit.css"; // 스타일 파일
 
 export default function DashboardList() {
   // === 인증 정보 가져오기 ===
@@ -16,9 +16,8 @@ export default function DashboardList() {
   const [selectedCard, setSelectedCard] = useState(null);
   const handleCardSelect = (groupId) => {
     setSelectedCard(groupId); // 선택 저장
-    navigate(`/study/${groupId}`) // 해당 스터디의 대시보드로 이동
-  }
-
+    navigate(`/study/${groupId}`); // 해당 스터디의 대시보드로 이동
+  };
 
   useEffect(() => {
     const fetchMyActiveStudies = async () => {
@@ -34,44 +33,48 @@ export default function DashboardList() {
         setStudyError(null);
 
         // API URL 설정 (환경변수 또는 기본값)
-        const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+        const apiUrl = window.REACT_APP_API_URL || "http://localhost:8081";
         const url = `${apiUrl}/api/study/user/${user.id}/active`;
 
         // 서버에 스터디 목록 요청
         const response = await fetch(url, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-          credentials: 'include', // 쿠키 포함
+          credentials: "include", // 쿠키 포함
         });
 
         // HTTP 상태 코드별 에러 처리
         if (response.status === 403) {
-          throw new Error('서버 접근 권한이 없습니다. CORS 설정을 확인해주세요.');
+          throw new Error(
+            "서버 접근 권한이 없습니다. CORS 설정을 확인해주세요."
+          );
         }
 
         if (response.status === 404) {
-          throw new Error('API 엔드포인트를 찾을 수 없습니다.');
+          throw new Error("API 엔드포인트를 찾을 수 없습니다.");
         }
 
         // 응답 헤더 확인 - JSON 형태인지 체크
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('서버에서 올바른 JSON 응답을 받지 못했습니다.');
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("서버에서 올바른 JSON 응답을 받지 못했습니다.");
         }
 
         // HTTP 상태가 성공이 아닌 경우
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          throw new Error(
+            errorData.message || `HTTP error! status: ${response.status}`
+          );
         }
 
         // 응답 데이터 파싱
         const data = await response.json();
 
-        console.log('스터디 데이터:', data); // 디버깅용 로그
+        console.log("스터디 데이터:", data); // 디버깅용 로그
 
         // 데이터 구조 검증 및 처리
         if (data.success && Array.isArray(data.data)) {
@@ -84,11 +87,11 @@ export default function DashboardList() {
 
           setMyStudies(sortedStudies);
         } else {
-          throw new Error(data.message || '데이터 형식이 올바르지 않습니다.');
+          throw new Error(data.message || "데이터 형식이 올바르지 않습니다.");
         }
       } catch (error) {
         // 에러 로깅 및 사용자에게 표시할 에러 메시지 설정
-        console.error('스터디 데이터 조회 실패:', error);
+        console.error("스터디 데이터 조회 실패:", error);
         setStudyError(`스터디 데이터를 불러올 수 없습니다: ${error.message}`);
         setMyStudies([]); // 에러 시 빈 배열로 초기화
       } finally {
@@ -117,7 +120,9 @@ export default function DashboardList() {
           // 에러 발생 시 표시
           <div className="mypage-study-error">
             <p>오류: {studyError}</p>
-            <small>API 서버가 실행 중인지, 엔드포인트가 올바른지 확인해주세요.</small>
+            <small>
+              API 서버가 실행 중인지, 엔드포인트가 올바른지 확인해주세요.
+            </small>
           </div>
         ) : myStudies.length === 0 ? (
           // 데이터가 없을 때 표시
@@ -128,7 +133,7 @@ export default function DashboardList() {
           // 데이터가 있을 때 스터디 카드들 렌더링
           myStudies.map((study) => (
             <StudyCard
-              key={`study-${study.groupId}-${study.groupName || 'unknown'}`}
+              key={`study-${study.groupId}-${study.groupName || "unknown"}`}
               id={study.groupId}
               category={study.category}
               name={study.groupName}
@@ -136,7 +141,7 @@ export default function DashboardList() {
               author={study.groupOwnerId}
               dueDate={study.createdAt}
               members={study.maxMembers}
-              isOffline={study.studyMode === '오프라인'}
+              isOffline={study.studyMode === "오프라인"}
               location={study.region}
               contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
               thumbnail={study.thumbnail}
@@ -147,6 +152,5 @@ export default function DashboardList() {
         )}
       </div>
     </div>
-
   );
 }

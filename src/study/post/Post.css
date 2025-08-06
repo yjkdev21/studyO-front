@@ -1,0 +1,361 @@
+.promotion-container {
+  max-width: 1200px;
+  padding: 20px;
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+.promotion-view-container {
+  min-height: 400px;
+}
+
+.form-title {
+  margin: 2.5rem 0rem 1.5rem 0rem; /* mb-6 */
+  font-size: 1.2rem; /* text-2xl */
+  font-weight: 700; /* font-bold */
+  color: #1f2937; /* text-gray-800 */
+  display: flex;
+  align-items: center; /* items-center */
+}
+
+.form-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem; /* w-8 */
+  height: 1.5rem; /* h-8 */
+  border-radius: 9999px; /* rounded-full */
+  background-color: #facc15; /* bg-yellow-400 */
+  color: white;
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  margin-right: 0.75rem; /* mr-3 */
+  flex-shrink: 0; /* flex-shrink-0 */
+}
+
+/* 버튼 컨테이너 */
+.button-container {
+  display: flex;
+  justify-content: right;
+  align-items: right;
+  margin-top: 2rem; /* 상단 마진 */
+}
+
+/* 기본 버튼 스타일 */
+.btn-base {
+  display: inline-block;
+  font-weight: 700;
+  padding: 0.3rem 1.5rem;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.06); /* shadow-md */
+  transition: all 0.3s ease-in-out; /* transition duration-300 */
+  cursor: pointer;
+  text-decoration: none; /* <a> 태그의 밑줄 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  border: none;
+  font-size: 0.8rem;
+}
+
+/* 작성하기 버튼 스타일 (이미지 색상에 맞게 오렌지 계열로 변경) */
+.btn-primary {
+  background-color: #f59e0b; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-primary:hover {
+  background-color: #d97706; /* Tailwind CSS amber-600과 유사 */
+}
+
+.btn-dark-orange {
+  background-color: #e46002; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-dark-orange:hover {
+  background-color: #b43f1b; /* Tailwind CSS amber-600과 유사 */
+}
+
+.btn-gray {
+  background-color: #d1d5db; /* gray-300 */
+  color: #1f2937; /* gray-800 */
+}
+
+.btn-gray:hover {
+  background-color: #9ca3af; /* gray-400 */
+}
+
+.margin-left-1 {
+  margin-left: 1rem;
+}
+
+.pdding-03 {
+  padding: 0.3rem;
+}
+
+.attachment-section {
+  width: 800px;
+  margin-bottom: 1.5rem; /* mb-6 */
+  padding: 1rem; /* p-4 */
+  background-color: #f9fafb; /* bg-gray-50 */
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+}
+
+/* attachment-header: "기존 첨부파일" 제목 */
+.attachment-header {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: #374151; /* text-gray-700 */
+  margin-bottom: 0.75rem; /* mb-3 */
+}
+
+/* attachment-list: 파일 목록 ul */
+.attachment-list {
+  list-style: none; /* 기본 리스트 스타일 제거 */
+  padding: 0;
+  margin: 0;
+  display: flex; /* flexbox 사용 */
+  flex-wrap: wrap; /* 내용이 넘치면 다음 줄로 */
+  gap: 0.5rem; /* 아이템 간 간격 */
+}
+
+/* attachment-item: 각 파일 항목 li */
+.attachment-item {
+  display: inline-flex; /* inline-flex로 변경하여 텍스트와 버튼을 한 줄에 */
+  align-items: center; /* 세로 중앙 정렬 */
+  background-color: #eed3b5; /* light blue background (bg-blue-50) */
+  border: 1px solid #ff9100; /* border-blue-200 */
+  border-radius: 0.375rem; /* rounded-md */
+  padding: 0.375rem 0.75rem; /* py-1.5 px-3 */
+  font-size: 0.875rem; /* text-sm */
+  color: #4e4e4e; /* text-blue-700 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  white-space: nowrap; /* 파일명이 길어도 줄바꿈 안되게 */
+  overflow: hidden; /* 넘치는 부분 숨김 */
+  text-overflow: ellipsis; /* 넘치면 ...으로 표시 */
+  max-width: 100%; /* 부모 너비에 맞춤 */
+}
+
+.date-picker-wrapper-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* 두 컴포넌트 사이의 간격 */
+  margin: 20px auto;
+}
+
+.date-picker-wrapper-container > .flex-item {
+  flex: 1;
+}
+
+.alert-error-message {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: red;
+  margin: 0 0 20px 0;
+}
+
+/* 카테고리 스타일 */
+.study-card-category {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff6f00; /* 카테고리 색상 */
+}
+
+@media (max-width: 1200px) {
+  .promotion-container {
+    width: 100%;
+  }
+  .date-picker-wrapper-container {
+    display: block;
+  }
+}
+
+/*
+  StudyPostView.css
+  - 스터디 그룹 홍보 게시글 뷰 페이지의 스타일을 정의합니다.
+*/
+
+/* --------------------
+  1. 전체 레이아웃
+-------------------- */
+.view-header-section {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.view-body-section {
+  margin-bottom: 20px;
+}
+
+.attachment-section {
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+/* --------------------
+  2. 헤더 섹션 (제목, 작성자, 메타정보)
+-------------------- */
+.view-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.view-author-info {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.view-author {
+  font-weight: 600;
+  color: #555;
+}
+
+.view-date {
+  font-weight: 400;
+}
+
+.study-post-main-content {
+  min-height: 500px; /* 로딩 여부와 관계없이 최소 높이 고정 */
+}
+/* --------------------
+  2. 로딩 스피너
+-------------------- */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 500px;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #ffae00;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------
+  3. 메타 정보 (Flexbox를 활용한 반응형 레이아웃)
+-------------------- */
+.view-meta-info-flex {
+  display: flex;
+  flex-wrap: wrap; /* 화면이 작아지면 줄바꿈 허용 */
+  gap: 10px; /* 항목 간의 간격 */
+}
+
+.meta-item {
+  display: flex;
+  flex-basis: calc(50% - 5px); /* 한 줄에 2개씩 배치 (gap 10px 고려) */
+  box-sizing: border-box;
+}
+
+.meta-label {
+  font-weight: bold;
+  color: #555;
+  background-color: #f9f9f9;
+  padding: 10px 15px;
+  width: 150px; /* 라벨의 너비를 고정하여 정렬 */
+  flex-shrink: 0;
+  border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.meta-value {
+  padding: 10px 15px;
+  color: #333;
+  width: 100%;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* 768px 이하 화면에서 한 줄에 하나씩 표시 */
+@media (max-width: 900px) {
+  .meta-item {
+    flex-basis: 100%; /* 한 줄에 1개씩 전체 너비 차지 */
+  }
+}
+
+/* --------------------
+  4. 본문 섹션
+-------------------- */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+.ql-editor {
+  min-height: 300px;
+}
+
+/* --------------------
+  5. 첨부파일 섹션
+-------------------- */
+.attachment-header {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.attachment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+/* 작성자 정보 영역 (Flexbox로 정렬) */
+.view-author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 프로필 이미지와 닉네임 사이 간격 */
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+/* 프로필 이미지 스타일 */
+.view-profile-image {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
