@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // 경로는 실제 상황에 맞게 조정
+import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -9,7 +10,7 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, logout, deleteAccount } = useAuth();
 
   // 입력값 변경 처리
   const handleInputChange = (e) => {
@@ -36,12 +37,34 @@ export default function Login() {
     setIsSubmitting(false);
   };
 
-  // 로그아웃 처리
+  // 로그아웃 핸들
   const handleLogout = async () => {
-    setIsSubmitting(true);
+    const confirmed = window.confirm("로그아웃 하시겠습니까?");
+    if (!confirmed) return;
+
     const result = await logout();
     setMessage(result.message);
-    setIsSubmitting(false);
+    alert("로그아웃되었습니다.");
+    // 로그인 화면으로 이동
+    // window.location.href = "/login";
+  };
+
+  // 회원 탈퇴 요청
+  const handleDeleteAccount = async () => {
+    // 확인 창 추가
+    if (!window.confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+
+    const result = await deleteAccount();
+
+    if (result.success) {
+      alert(result.message);
+      window.location.href = "/login";
+    } else {
+      alert(result.message);
+    }
+
   };
 
   // 로딩 중일 때 로딩 화면 표시
@@ -110,6 +133,16 @@ export default function Login() {
             >
               {isSubmitting ? '로그아웃 중...' : '로그아웃'}
             </button>
+            {/* 회원탈퇴 버튼 */}
+            <br />
+            <button
+              type="button"
+              className="!border !mt-20 !p-1"
+              onClick={handleDeleteAccount}
+            >
+              회원 탈퇴
+            </button>
+
           </div>
         ) : (
           /* 로그인 폼 */
@@ -170,19 +203,39 @@ export default function Login() {
                 >
                   {isSubmitting ? '로그인 중...' : '로그인'}
                 </button>
-                <button
-                  type="button"
+                <Link
+                  to="/join"
                   style={{
                     padding: '10px 20px',
                     backgroundColor: '#28a745',
                     color: 'white',
-                    border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer'
                   }}
                 >
                   회원가입
-                </button>
+                </Link>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }} className='!my-4'>
+                <Link
+                  to="/findId"
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid gray',
+                    borderRadius: '4px',
+                  }}
+                >
+                  아이디 찾기
+                </Link>
+                <Link
+                  to="/findPw"
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid gray',
+                    borderRadius: '4px',
+                  }}
+                >
+                  비밀번호 찾기
+                </Link>
               </div>
             </form>
             <pre className='bg-gray-200'>

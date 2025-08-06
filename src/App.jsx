@@ -47,6 +47,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import StudySidebar from "./study/components/StudySidebar";
 import StudyPostMain from "./study/post/StudyPostMain";
 
+import ProtectedRoute from "./common/auth/ProtectedRoute";
+
 function App() {
   const [count, setCount] = useState(0);
 
@@ -59,8 +61,15 @@ function App() {
 
           <Route path="/join" element={<Join />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/myPage" element={<MyPage />} />
-          <Route path="/myEdit" element={<MyEdit />} />
+
+          {/* 로그인이 필요한 페이지 */}
+          <Route element={<ProtectedRoute />}>
+
+            <Route path="/myPage" element={<MyPage />} />
+            <Route path="/myEdit" element={<MyEdit />} />
+
+          </Route>
+
           <Route path="/findId" element={<FindId />} />
           <Route path="/findPw" element={<FindPw />} />
           <Route path="/myHistory" element={<MyHistory />} />
@@ -77,7 +86,7 @@ function App() {
             path="/study/dashboard/DashboardList"
             element={<DashboardList />}
           />
-          <Route path="/study/:studyId" element={<StudyMain />} />
+          <Route path="/study/:groupId" element={<StudyMain />} />
           <Route path="/study/:studyId/member" element={<StudyMember />} />
           <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
 

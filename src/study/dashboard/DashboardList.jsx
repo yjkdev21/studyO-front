@@ -134,17 +134,18 @@ export default function DashboardList() {
           myStudies.map((study) => (
             <StudyCard
               key={`study-${study.groupId}-${study.groupName || "unknown"}`}
-              id={study.groupId}
-              category={study.category}
-              name={study.groupName}
-              description={study.groupIntroduction}
-              author={study.groupOwnerId}
-              dueDate={study.createdAt}
-              members={study.maxMembers}
-              isOffline={study.studyMode === "오프라인"}
-              location={study.region}
-              contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
-              thumbnail={study.thumbnail}
+              studyGroup={study}
+              // id={study.groupId}
+              // category={study.category}
+              // name={study.groupName}
+              // description={study.groupIntroduction}
+              // author={study.groupOwnerId}
+              // dueDate={study.createdAt}
+              // members={study.maxMembers}
+              // isOffline={study.studyMode === "오프라인"}
+              // location={study.region}
+              // contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
+              // thumbnail={study.thumbnail}
               isSelected={selectedCard === study.groupId}
               onSelect={handleCardSelect}
             />
