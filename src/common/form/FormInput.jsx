@@ -17,7 +17,7 @@ function FormInput({
       </label>
       <input
         type={type}
-        className="input-form-base-field"
+        className="input-form-normal-field"
         id={id}
         value={value}
         onChange={onChange}
