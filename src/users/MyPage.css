@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-.mypage-container *,
-.mypage-container *::before,
-.mypage-container *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-=======
->>>>>>> 7f708770bcdd204e3d16334139dae4439f9dc586
 .mypage-container {
   min-height: 100vh;
   background-color: #ffffff;
@@ -154,7 +144,7 @@
   margin-right: 0.5rem;
 }
 
-.mypage-study-cards-container {
+.mypage-studies-cards-container {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -163,7 +153,8 @@
   flex-direction: row;
 }
 
-.study-card {
+/* StudyCard.css와 충돌 방지를 위해 클래스명 변경 */
+.mypage-study-card-item {
   flex: 1 1 300px;
   max-width: 400px;
   background-color: #ffffff;
@@ -179,40 +170,40 @@
   height: 200px;
 }
 
-.study-card:hover {
+.mypage-study-card-item:hover {
   border-color: #e5e7eb;
   background-color: #ffffff;
 }
 
-.study-card.selected {
+.mypage-study-card-item.mypage-card-selected {
   border-color: #FDB515 !important;
   outline: 1px solid #FDB515 !important;
 }
 
-.study-card:focus,
-.study-card:focus-visible,
-.study-card:active {
+.mypage-study-card-item:focus,
+.mypage-study-card-item:focus-visible,
+.mypage-study-card-item:active {
   outline: none !important;
   box-shadow: none !important;
 }
 
-.study-card-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
+.mypage-study-card-header {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  flex: 1 !important;
 }
 
-.study-tags {
+.mypage-study-card-badges {
   display: flex;
   gap: 0.375rem;
   flex-wrap: wrap;
 }
 
-.tag {
+.mypage-study-card-badge {
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem; /* 0.6875rem에서 0.75rem으로 증가 */
   font-weight: 400;
   white-space: nowrap;
   border: 1px solid #d1d5db;
@@ -220,16 +211,16 @@
   color: #6b7280;
 }
 
-.tag.offline,
-.tag.location,
-.tag.members,
-.tag.bookmark {
+.mypage-study-card-badge.offline,
+.mypage-study-card-badge.location,
+.mypage-study-card-badge.members,
+.mypage-study-card-badge.bookmark {
   background-color: #f9fafb !important;
   color: #6b7280 !important;
   border: 1px solid #d1d5db !important;
 }
 
-.study-thumbnail-container {
+.mypage-study-thumbnail-wrapper {
   width: 4rem;
   height: 4rem;
   flex-shrink: 0;
@@ -239,7 +230,7 @@
   align-self: flex-start;
 }
 
-.study-thumbnail {
+.mypage-study-thumbnail-image {
   width: 100%;
   height: 100%;
   display: flex;
@@ -247,36 +238,49 @@
   justify-content: center;
 }
 
-.study-thumbnail img {
+.mypage-study-thumbnail-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.study-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
+.mypage-study-card-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+  flex: 1 !important;
 }
 
-.study-category {
-  color: #FDB515; 
-  font-weight: 600;
-  font-size: 0.75rem;
-  margin: 0;
+/* 카테고리와 제목을 가로 정렬로 변경 */
+.mypage-study-title-row {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 0.8rem !important;
+  margin-bottom: 0.5rem !important;
+  width: 100% !important;
 }
 
-.study-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-  line-height: 1.3;
+.mypage-study-card-category {
+  color: #FDB515 !important; 
+  font-weight: 700 !important;
+  font-size: 1.3rem !important; /* 1.2rem에서 1.3rem으로 증가 */
+  margin: 0 !important;
+  flex-shrink: 0 !important; /* 카테고리가 줄어들지 않도록 */
+  display: inline-block !important;
 }
 
-.study-description {
-  font-size: 0.6875rem;
+.mypage-study-card-title {
+  font-size: 1.4rem !important; /* 1.3rem에서 1.4rem으로 증가 */
+  font-weight: 700 !important;
+  color: #111827 !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  flex: 1 !important; /* 남은 공간 차지 */
+  display: inline-block !important;
+}
+
+.mypage-study-card-description {
+  font-size: 0.75rem; /* 0.6875rem에서 0.75rem으로 증가 */
   color: #6b7280;
   line-height: 1.4;
   margin: 0;
@@ -285,10 +289,17 @@
   display: block;
 }
 
-.study-author,
-.study-due-date,
-.study-contact {
-  font-size: 0.6875rem;
+.mypage-study-card-owner {
+  font-size: 0.75rem; /* 새로 추가된 그룹장 스타일 */
+  color: #374151; /* 좀 더 진한 색상 */
+  font-weight: 500;
+  margin: 0;
+}
+
+.mypage-study-card-author,
+.mypage-study-card-date,
+.mypage-study-card-contact {
+  font-size: 0.75rem; /* 0.6875rem에서 0.75rem으로 증가 */
   color: #9ca3af;
   margin: 0;
 }
@@ -329,12 +340,12 @@
     grid-template-columns: 1fr;
   }
 
-  .mypage-study-cards-container {
+  .mypage-studies-cards-container {
     flex-direction: column;
     align-items: center;
   }
 
-  .study-card {
+  .mypage-study-card-item {
     border-color: #e5e7eb;
   }
 

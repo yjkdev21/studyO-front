@@ -57,31 +57,33 @@ const StudyCard = ({
 
   return (
     <div
-      className={`study-card ${isSelected ? 'selected' : ''}`} // 선택 상태에 따라 클래스 추가
+      className={`mypage-study-card-item ${isSelected ? 'mypage-card-selected' : ''}`}
       onClick={handleClick}
     >
-      <div className="study-card-header">
+      <div className="mypage-study-card-header">
         {/* 스터디 태그 영역 (모드, 지역, 멤버 수) */}
-        <div className="study-tags">
-          <span className="tag mode">{studyMode || '모드 없음'}</span>
-          <span className="tag location">{region || '지역 정보 없음'}</span>
-          <span className="tag members">최대 {maxMembers || 0}명</span>
+        <div className="mypage-study-card-badges">
+          <span className="mypage-study-card-badge mode">{studyMode || '모드 없음'}</span>
+          <span className="mypage-study-card-badge location">{region || '지역 정보 없음'}</span>
+          <span className="mypage-study-card-badge members">최대 {maxMembers || 0}명</span>
         </div>
         {/* 스터디 상세 정보 영역 */}
-        <div className="study-card-body">
-          <p className="study-category">{category || '카테고리 없음'}</p>
-          <h3 className="study-name">{groupName || '스터디명 없음'}</h3>
-          <p className="study-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="study-author">스터디 모드: {studyMode || '모드 없음'}</p>
-          <p className="study-due-date">생성일: {formatDate(createdAt)}</p>
-          {/* 연락처가 있을 때만 표시 */}
-          {contact && <p className="study-contact">연락처: {contact}</p>}
+        <div className="mypage-study-card-content">
+          {/* 카테고리와 제목을 가로로 배치 */}
+          <div className="mypage-study-title-row">
+            <p className="mypage-study-card-category">{category || '카테고리 없음'}</p>
+            <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
+          </div>
+          <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
+          {/* 그룹장 정보 추가 */}
+          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
       {/* 썸네일 이미지가 있을 때만 표시 */}
       {thumbnail && (
-        <div className="study-thumbnail-container">
-          <div className="study-thumbnail">
+        <div className="mypage-study-thumbnail-wrapper">
+          <div className="mypage-study-thumbnail-image">
             <img
               src={thumbnail}
               alt={`${groupName} 썸네일`}
@@ -144,30 +146,33 @@ const BookmarkCard = ({
 
   const isOffline = studyMode === '오프라인' || studyMode === '온오프';
 
-  // JSX 구조는 StudyCard와 동일
+  // JSX 구조는 StudyCard와 동일하지만 클래스명 모두 변경
   return (
     <div
-      className={`study-card ${isSelected ? 'selected' : ''}`}
+      className={`mypage-study-card-item ${isSelected ? 'mypage-card-selected' : ''}`}
       onClick={handleClick}
     >
-      <div className="study-card-header">
-        <div className="study-tags">
-          <span className="tag mode">{studyMode || '모드 없음'}</span>
-          <span className="tag location">{region || '지역 정보 없음'}</span>
-          <span className="tag members">최대 {maxMembers || 0}명</span>
+      <div className="mypage-study-card-header">
+        <div className="mypage-study-card-badges">
+          <span className="mypage-study-card-badge mode">{studyMode || '모드 없음'}</span>
+          <span className="mypage-study-card-badge location">{region || '지역 정보 없음'}</span>
+          <span className="mypage-study-card-badge members">최대 {maxMembers || 0}명</span>
         </div>
-        <div className="study-card-body">
-          <p className="study-category">{category || '카테고리 없음'}</p>
-          <h3 className="study-name">{groupName || '스터디명 없음'}</h3>
-          <p className="study-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="study-author">스터디 모드: {studyMode || '모드 없음'}</p>
-          <p className="study-due-date">생성일: {formatDate(createdAt)}</p>
-          {contact && <p className="study-contact">연락처: {contact}</p>}
+        <div className="mypage-study-card-content">
+          {/* 카테고리와 제목을 가로로 배치 */}
+          <div className="mypage-study-title-row">
+            <p className="mypage-study-card-category">{category || '카테고리 없음'}</p>
+            <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
+          </div>
+          <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
+          {/* 그룹장 정보 추가 */}
+          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
       {thumbnail && (
-        <div className="study-thumbnail-container">
-          <div className="study-thumbnail">
+        <div className="mypage-study-thumbnail-wrapper">
+          <div className="mypage-study-thumbnail-image">
             <img
               src={thumbnail}
               alt={`${groupName} 썸네일`}
@@ -505,7 +510,7 @@ function MyPage() {
             <span className="mypage-chevron-right">&gt;</span>
           </div>
 
-          <div className="mypage-study-cards-container">
+          <div className="mypage-studies-cards-container">
             {/* 조건부 렌더링: 로딩/에러/빈 상태/데이터 표시 */}
             {studyLoading ? (
               // 로딩 중 표시
@@ -557,7 +562,7 @@ function MyPage() {
             <span className="mypage-chevron-right">&gt;</span>
           </div>
 
-          <div className="mypage-study-cards-container">
+          <div className="mypage-studies-cards-container">
             {/* 북마크 목록도 동일한 조건부 렌더링 패턴 */}
             {bookmarkLoading ? (
               <div className="mypage-study-loading">
