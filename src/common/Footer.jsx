@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer id="footer" className="bg-[#eee] text-[#666]">
-      <div className="footer-content px-3 max-w-7xl m-auto w-full flex">
-        <h2 className="mb-0 w-[80px]">
+      <div className="footer-content !px-3 max-w-7xl !m-auto w-full flex">
+        <h2 className="w-[80px]">
           <Link to="/">
             <img src="/images/logo-black.svg" alt="logo" className="block opacity-20" />
           </Link>
