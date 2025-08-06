@@ -14,7 +14,7 @@ const RESET_FORM = {
     contact: '',
     groupIntroduction: '',
     thumbnail: null,
-    groupOwnerId: '',
+    groupOwnerId: 1,
     nickname: ''
 };
 
@@ -26,7 +26,7 @@ const REQUIRED_FIELDS = [
 
 function GroupCreate() {
     const navigate = useNavigate();
-    const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+    const host = import.meta.env.VITE_AWS_API_HOST;
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
@@ -44,35 +44,33 @@ function GroupCreate() {
     };
 
     useEffect(() => {
-    const fetchUserNickname = async () => {
-        try {
-            const userId = 1;
-            
-            const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
-                withCredentials: true,
-            });
-            
-            if (res.data.success) {
-                const nickname = res.data.nickname;
+        const fetchUserNickname = async () => {
+            try {
+                // 임시로 userId를 1로 설정 (실제로는 세션이나 다른 방법으로 가져와야 함)
+                const userId = 1;
                 
-                setUserNickname(nickname || '');
-                setFormData(prev => ({
-                    ...prev,
-                    nickname: nickname || '',
-                    groupOwnerId: userId
-                }));
-            } else {
-                console.error("닉네임 불러오기 실패:", res.data.message);
+                const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
+                    withCredentials: true,
+                });
+                
+                if (res.data.success) {
+                    const nickname = res.data.nickname;
+                    setUserNickname(nickname || ''); // 원본 닉네임 저장
+                    setFormData(prev => ({
+                        ...prev,
+                        nickname: nickname || '', // 폼 데이터에도 설정
+                        groupOwnerId: userId // userId도 함께 설정
+                    }));
+                } else {
+                    console.error("닉네임 불러오기 실패:", res.data.message);
+                }
+            } catch (error) {
+                console.error("닉네임 불러오기 실패:", error);
             }
-        } catch (error) {
-            console.error("닉네임 불러오기 실패:", error);
-        }
-    };
+        };
 
-    if (host) { 
         fetchUserNickname();
-    }
-}, [host]);
+    }, [host]);
 
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
@@ -214,7 +212,7 @@ function GroupCreate() {
     };
 
     return (
-        <main id='study-create'>
+        <main id='studygroup-main-container'>
             {submitMessage && (
                 <div className={`message ${submitMessage.includes('실패') || submitMessage.includes('오류') ? 'error' : 'success'}`}>
                     {submitMessage}

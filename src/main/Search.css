@@ -24,18 +24,9 @@
   margin-bottom: 12px;
 }
 
-select {
+.gselect {
   padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  font-size: 14px;
-}
-
-input[type="text"] {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  width: 100%;
+  font-size: 16px;
 }
 
 .btn-write-g {
