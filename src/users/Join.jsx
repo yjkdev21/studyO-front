@@ -142,13 +142,22 @@ function Join() {
     [host]
   );
 
+  // 한글 포함 여부 확인 함수
+  const hasKorean = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
 
     switch (name) {
       case "userId":
-        if (value.trim()) {
+        if (hasKorean(value)) {
+          setMessages((prev) => ({
+            ...prev,
+            userId: "아이디에 한글을 사용할 수 없습니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, userId: "invalid" }));
+        } else if (value.trim()) {
           checkUserId(value.trim());
         } else {
           setMessages((prev) => ({ ...prev, userId: "" }));
@@ -156,6 +165,31 @@ function Join() {
         }
         break;
 
+      case "email":
+        // 이메일 앞부분 추출
+        const localPart = value.split("@")[0] || "";
+        if (hasKorean(localPart)) {
+          setMessages((prev) => ({
+            ...prev,
+            email: "이메일 앞부분에 한글을 사용할 수 없습니다.",
+          }));
+          setValidationStatus((prev) => ({ ...prev, email: "invalid" }));
+        } else {
+          const isEmailValid = validateEmail(value);
+          setMessages((prev) => ({
+            ...prev,
+            email: isEmailValid
+              ? "올바른 이메일 형식입니다."
+              : "이메일 형식이 올바르지 않습니다.",
+          }));
+          setValidationStatus((prev) => ({
+            ...prev,
+            email: isEmailValid ? "valid" : "invalid",
+          }));
+        }
+        break;
+
+      // 기존 password, passwordCheck, nickname 처리 그대로 유지
       case "nickname":
         if (value.trim()) {
           checkNickname(value.trim());
@@ -201,20 +235,6 @@ function Join() {
         }));
         break;
 
-      case "email":
-        const isEmailValid = validateEmail(value);
-        setMessages((prev) => ({
-          ...prev,
-          email: isEmailValid
-            ? "올바른 이메일 형식입니다."
-            : "이메일 형식이 올바르지 않습니다.",
-        }));
-        setValidationStatus((prev) => ({
-          ...prev,
-          email: isEmailValid ? "valid" : "invalid",
-        }));
-        break;
-
       default:
         break;
     }
@@ -222,6 +242,16 @@ function Join() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 한글 포함 추가 검사
+    if (hasKorean(form.userId)) {
+      alert("아이디에 한글은 사용할 수 없습니다.");
+      return;
+    }
+    if (hasKorean(form.email.split("@")[0])) {
+      alert("이메일 앞부분에 한글은 사용할 수 없습니다.");
+      return;
+    }
 
     // 모든 필드 검증
     if (
