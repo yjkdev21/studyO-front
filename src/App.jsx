@@ -25,7 +25,7 @@ import GroupCreate from "./study/group/GroupCreate";
 import GroupUpdate from "./study/group/GroupUpdate";
 
 import DashboardList from "./study/dashboard/DashboardList";
-import StudyDashboardWrapper from "./study/dashboard/StudyDashboardWrapper"
+import StudyDashboardWrapper from "./study/dashboard/StudyDashboardWrapper";
 import StudyMain from "./study/dashboard/StudyMain";
 import StudyMember from "./study/dashboard/StudyMember";
 import StudyCalendar from "./study/dashboard/StudyCalendar";
@@ -50,19 +50,21 @@ import StudySidebar from "./study/components/StudySidebar";
 import StudyPostMain from "./study/post/StudyPostMain";
 
 import ProtectedRoute from "./common/auth/ProtectedRoute";
-import StudyPromotion from "./study/post/StudyPromotion";
 
 function App() {
   const [count, setCount] = useState(0);
   const location = useLocation();
 
   const hideFooterPaths = [
-    '/login', '/join', '/findId', '/findPw',
-    '/groupCreate',
-    '/promotion/create',
-    '/study/dashboard/DashboardList',
+    "/login",
+    "/join",
+    "/findId",
+    "/findPw",
+    "/groupCreate",
+    "/promotion/create",
+    "/study/dashboard/DashboardList",
   ];
-  
+
   // Footer를 숨길 경로 설정
   const shouldHideFooter =
     hideFooterPaths.includes(location.pathname) || // 고정 경로는 includes()로 체크
@@ -81,7 +83,6 @@ function App() {
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
-<<<<<<< Updated upstream
             <Route path="/findId" element={<FindId />} />
             <Route path="/findPw" element={<FindPw />} />
             <Route path="/myHistory" element={<MyHistory />} />
@@ -94,15 +95,27 @@ function App() {
             <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
             <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
 
-            <Route path="/study/dashboard/DashboardList" element={<DashboardList />} />
-            <Route path="/study/:groupId/dashboard" element={<StudyDashboardWrapper />} />
+            <Route
+              path="/study/dashboard/DashboardList"
+              element={<DashboardList />}
+            />
+            <Route
+              path="/study/:groupId/dashboard"
+              element={<StudyDashboardWrapper />}
+            />
             <Route path="/study/:groupId" element={<StudyMain />} />
-            <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
-            <Route path="/study/dashboard/studyCalendar" element={<StudyCalendar />} />
+            <Route
+              path="/study/:groupId/calendar"
+              element={<StudyCalendar />}
+            />
+            <Route
+              path="/study/dashboard/studyCalendar"
+              element={<StudyCalendar />}
+            />
             <Route path="/study/:groupId/member" element={<StudyMember />} />
             <Route path="/project/:studyId/list" element={<ProjectList />} />
             <Route path="/project/create" element={<ProjectCreate />} />
-            
+
             <Route
               path="/project/:projectId/update"
               element={<ProjectUpdate />}
@@ -117,61 +130,18 @@ function App() {
               path="/project/:projectId/calendar"
               element={<ProjectCalendar />}
             />
-
-=======
-            <Route path="/myPage" element={<MyPage />} />
-            <Route path="/myEdit" element={<MyEdit />} />
->>>>>>> Stashed changes
           </Route>
 
           <Route path="/search" element={<Search />} />
 
           <Route path="/groupList" element={<GroupList />} />
           <Route path="/group/:groupId" element={<GroupDetail />} />
-<<<<<<< Updated upstream
-=======
-          <Route path="/groupCreate" element={<GroupCreate />} />
-          <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
-          <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
-          <Route path="/study/postView/:groupId" element={<StudyPromotion />} />
 
-          <Route
-            path="/study/dashboard/DashboardList"
-            element={<DashboardList />}
-          />
-          <Route path="/study/:groupId" element={<StudyMain />} />
-          <Route path="/study/:studyId/member" element={<StudyMember />} />
-          <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
-
-          <Route
-            path="/study/dashboard/studyCalendar"
-            element={<StudyCalendar />}
-          />
           <Route
             path="/study/components/studySidebar"
             element={<StudySidebar />}
           />
-          <Route path="/project/:studyId/list" element={<ProjectList />} />
 
-          <Route path="/project/create" element={<ProjectCreate />} />
-          <Route
-            path="/project/:projectId/update"
-            element={<ProjectUpdate />}
-          />
-
-          <Route path="/project/:projectId" element={<ProjectMain />} />
-          <Route
-            path="/project/:projectId/member"
-            element={<ProjectMember />}
-          />
-          <Route
-            path="/project/:projectId/calendar"
-            element={<ProjectCalendar />}
-          />
->>>>>>> Stashed changes
-
-          <Route path="/study/components/studySidebar" element={<StudySidebar />} />
-          
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {!shouldHideFooter && <Footer />}
