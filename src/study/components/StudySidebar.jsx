@@ -60,7 +60,7 @@ export default function StudySidebar({
     };
 
     // studyId가 존재할 때만 API 호출
-    if (studyId) {
+    if (groupId) {
       fetchStudyInfo();
     } else {
       setLoading(false);
@@ -87,7 +87,7 @@ export default function StudySidebar({
 
 
   return (
-    <div id={'wrap'}>
+    <div id={'sidebar-wrap'}>
       {/* 메인 사이드바 */}
       <div className={`study-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* 스터디 정보 */}

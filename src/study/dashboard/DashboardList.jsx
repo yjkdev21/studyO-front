@@ -16,7 +16,7 @@ export default function DashboardList() {
   const [selectedCard, setSelectedCard] = useState(null);
   const handleCardSelect = (groupId) => {
     setSelectedCard(groupId); // 선택 저장
-    navigate(`/study/${groupId}`); // 해당 스터디의 대시보드로 이동
+    navigate(`/study/${groupId}/dashboard`); // 해당 스터디의 대시보드로 이동
   };
 
   useEffect(() => {
@@ -134,17 +134,18 @@ export default function DashboardList() {
           myStudies.map((study) => (
             <StudyCard
               key={`study-${study.groupId}-${study.groupName || "unknown"}`}
-              id={study.groupId}
-              category={study.category}
-              name={study.groupName}
-              description={study.groupIntroduction}
-              author={study.groupOwnerId}
-              dueDate={study.createdAt}
-              members={study.maxMembers}
-              isOffline={study.studyMode === "오프라인"}
-              location={study.region}
-              contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
-              thumbnail={study.thumbnail}
+              studyGroup={study}
+              // id={study.groupId}
+              // category={study.category}
+              // name={study.groupName}
+              // description={study.groupIntroduction}
+              // author={study.groupOwnerId}
+              // dueDate={study.createdAt}
+              // members={study.maxMembers}
+              // isOffline={study.studyMode === "오프라인"}
+              // location={study.region}
+              // contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
+              // thumbnail={study.thumbnail}
               isSelected={selectedCard === study.groupId}
               onSelect={handleCardSelect}
             />

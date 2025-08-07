@@ -1,0 +1,23 @@
+.post-item {
+  border-bottom: 1px solid #ddd;
+  padding: 1rem 0;
+}
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.post-meta {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.5rem;
+}
+.post-actions {
+  margin-left: auto;
+}
+.post-title {
+  font-weight: bold;
+}
+.post-content {
+  margin-top: 0.5rem;
+}

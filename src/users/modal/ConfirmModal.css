@@ -1,4 +1,4 @@
-.modal-overlay {
+.confirm-modal-overlay { 
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -10,9 +10,8 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 9999 !important;
+    z-index: 999999 !important;
 }
-
 .modal-content {
     background-color: #FFFFFF !important;
     border-radius: 16px !important;

@@ -169,9 +169,14 @@ function MyPage() {
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
   const [bookmarkError, setBookmarkError] = useState(null);
 
-  // 새로 추가된 스터디 필터 상태들
+  // 스터디 필터 상태들
   const [activeStudyFilter, setActiveStudyFilter] = useState('all');
   const [filteredStudies, setFilteredStudies] = useState([]);
+
+  // 페이지네이션 상태들
+  const [studyCurrentPage, setStudyCurrentPage] = useState(0);
+  const [bookmarkCurrentPage, setBookmarkCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 3;
 
   // 스터디 필터 옵션들
   const studyFilterOptions = [
@@ -195,7 +200,7 @@ function MyPage() {
       case 'participating':
         filtered = myStudies.filter(study => 
           study.groupOwnerId !== user?.id && 
-          (study.status === 'active' || !study.status) // status가 없으면 active로 가정
+          (study.status === 'active' || !study.status)
         );
         break;
       case 'completed':
@@ -207,6 +212,48 @@ function MyPage() {
     
     setFilteredStudies(filtered);
     setActiveStudyFilter(filterType);
+    setStudyCurrentPage(0); // 필터 변경 시 첫 페이지로 리셋
+  };
+
+  // 페이지네이션 계산 함수들
+  const getStudyPages = () => Math.ceil(filteredStudies.length / ITEMS_PER_PAGE);
+  const getBookmarkPages = () => Math.ceil(myBookmarks.length / ITEMS_PER_PAGE);
+
+  const getCurrentStudyItems = () => {
+    const start = studyCurrentPage * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredStudies.slice(start, end);
+  };
+
+  const getCurrentBookmarkItems = () => {
+    const start = bookmarkCurrentPage * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return myBookmarks.slice(start, end);
+  };
+
+  // 페이지네이션 핸들러들
+  const handleStudyPrevPage = () => {
+    if (studyCurrentPage > 0) {
+      setStudyCurrentPage(studyCurrentPage - 1);
+    }
+  };
+
+  const handleStudyNextPage = () => {
+    if (studyCurrentPage < getStudyPages() - 1) {
+      setStudyCurrentPage(studyCurrentPage + 1);
+    }
+  };
+
+  const handleBookmarkPrevPage = () => {
+    if (bookmarkCurrentPage > 0) {
+      setBookmarkCurrentPage(bookmarkCurrentPage - 1);
+    }
+  };
+
+  const handleBookmarkNextPage = () => {
+    if (bookmarkCurrentPage < getBookmarkPages() - 1) {
+      setBookmarkCurrentPage(bookmarkCurrentPage + 1);
+    }
   };
 
   // 스터디 데이터가 변경될 때마다 필터링 업데이트
@@ -362,25 +409,6 @@ function MyPage() {
     setSelectedBookmarkCard(selectedBookmarkCard === id ? null : id);
   };
 
-  // 각 필터별 카운트 계산 함수 - 더 이상 사용하지 않음
-  // const getFilterCount = (filterType) => {
-  //   switch (filterType) {
-  //     case 'all':
-  //       return myStudies.length;
-  //     case 'owner':
-  //       return myStudies.filter(study => study.groupOwnerId === user?.id).length;
-  //     case 'participating':
-  //       return myStudies.filter(study => 
-  //         study.groupOwnerId !== user?.id && 
-  //         (study.status === 'active' || !study.status)
-  //       ).length;
-  //     case 'completed':
-  //       return myStudies.filter(study => study.status === 'completed').length;
-  //     default:
-  //       return 0;
-  //   }
-  // };
-
   if (isLoading) {
     return (
       <div className="mypage-container">
@@ -470,10 +498,32 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 스터디 섹션 - 필터 탭 추가됨 */}
+        {/* 스터디 섹션 - 페이지네이션 추가 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
-            <h3 className="mypage-section-title">스터디</h3>
+            <div className="mypage-section-header-top">
+              <h3 className="mypage-section-title">스터디</h3>
+              
+              {/* 헤더 오른쪽 화살표 버튼들 */}
+              {filteredStudies.length > 0 && (
+                <div className="mypage-header-pagination">
+                  <button 
+                    className={`mypage-header-pagination-btn prev ${studyCurrentPage === 0 ? 'disabled' : ''}`}
+                    onClick={handleStudyPrevPage}
+                    disabled={studyCurrentPage === 0}
+                  >
+                    <span className="header-arrow-icon">‹</span>
+                  </button>
+                  <button 
+                    className={`mypage-header-pagination-btn next ${studyCurrentPage >= getStudyPages() - 1 ? 'disabled' : ''}`}
+                    onClick={handleStudyNextPage}
+                    disabled={studyCurrentPage >= getStudyPages() - 1}
+                  >
+                    <span className="header-arrow-icon">›</span>
+                  </button>
+                </div>
+              )}
+            </div>
             
             {/* 스터디 필터 탭 */}
             <div className="mypage-study-filter-tabs">
@@ -489,7 +539,7 @@ function MyPage() {
             </div>
           </div>
 
-          <div className="mypage-studies-cards-container">
+          <div className="mypage-studies-section-wrapper">
             {studyLoading ? (
               <div className="mypage-study-loading">
                 스터디 목록을 불러오는 중...
@@ -507,35 +557,71 @@ function MyPage() {
                 {activeStudyFilter === 'completed' && '참여했던 스터디가 없습니다.'}
               </div>
             ) : (
-              filteredStudies.map((study) => (
-                <StudyCard
-                  key={`study-${study.groupId}-${study.groupName || 'unknown'}`}
-                  groupId={study.groupId}
-                  category={study.category}
-                  groupName={study.groupName}
-                  groupIntroduction={study.groupIntroduction}
-                  groupOwnerId={study.groupOwnerId}
-                  createdAt={study.createdAt}
-                  maxMembers={study.maxMembers}
-                  studyMode={study.studyMode}
-                  region={study.region}
-                  contact={study.contact}
-                  thumbnail={study.thumbnail}
-                  isSelected={selectedCard === study.groupId}
-                  onSelect={handleCardSelect}
-                />
-              ))
+              <>
+                {/* 스터디 카드들만 표시 */}
+                <div className="mypage-studies-cards-container">
+                  {getCurrentStudyItems().map((study) => (
+                    <StudyCard
+                      key={`study-${study.groupId}-${study.groupName || 'unknown'}`}
+                      groupId={study.groupId}
+                      category={study.category}
+                      groupName={study.groupName}
+                      groupIntroduction={study.groupIntroduction}
+                      groupOwnerId={study.groupOwnerId}
+                      createdAt={study.createdAt}
+                      maxMembers={study.maxMembers}
+                      studyMode={study.studyMode}
+                      region={study.region}
+                      contact={study.contact}
+                      thumbnail={study.thumbnail}
+                      isSelected={selectedCard === study.groupId}
+                      onSelect={handleCardSelect}
+                    />
+                  ))}
+                </div>
+
+                {/* 페이지 인디케이터 */}
+                <div className="mypage-page-indicator">
+                  {getStudyPages() > 1 && (
+                    <span>
+                      {studyCurrentPage + 1} / {getStudyPages()}
+                    </span>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
 
-        {/* 북마크 섹션 */}
+        {/* 북마크 섹션 - 페이지네이션 추가 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
-            <h3 className="mypage-section-title">북마크</h3>
+            <div className="mypage-section-header-top">
+              <h3 className="mypage-section-title">북마크</h3>
+              
+              {/* 헤더 오른쪽 화살표 버튼들 */}
+              {myBookmarks.length > 0 && (
+                <div className="mypage-header-pagination">
+                  <button 
+                    className={`mypage-header-pagination-btn prev ${bookmarkCurrentPage === 0 ? 'disabled' : ''}`}
+                    onClick={handleBookmarkPrevPage}
+                    disabled={bookmarkCurrentPage === 0}
+                  >
+                    <span className="header-arrow-icon">‹</span>
+                  </button>
+                  <button 
+                    className={`mypage-header-pagination-btn next ${bookmarkCurrentPage >= getBookmarkPages() - 1 ? 'disabled' : ''}`}
+                    onClick={handleBookmarkNextPage}
+                    disabled={bookmarkCurrentPage >= getBookmarkPages() - 1}
+                  >
+                    <span className="header-arrow-icon">›</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="mypage-studies-cards-container">
+          <div className="mypage-studies-section-wrapper">
             {bookmarkLoading ? (
               <div className="mypage-study-loading">
                 북마크 목록을 불러오는 중...
@@ -550,25 +636,60 @@ function MyPage() {
                 현재 북마크한 스터디가 없습니다.
               </div>
             ) : (
-              myBookmarks.map((bookmark) => (
-                <BookmarkCard
-                  key={`bookmark-${bookmark.id}-${bookmark.groupId}`}
-                  bookmarkId={bookmark.id}
-                  groupId={bookmark.groupId}
-                  category={bookmark.category}
-                  groupName={bookmark.groupName}
-                  groupIntroduction={bookmark.groupIntroduction}
-                  groupOwnerId={bookmark.groupOwnerId}
-                  createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
-                  maxMembers={bookmark.maxMembers}
-                  studyMode={bookmark.studyMode}
-                  region={bookmark.region}
-                  contact={bookmark.contact}
-                  thumbnail={bookmark.thumbnail}
-                  isSelected={selectedBookmarkCard === bookmark.id}
-                  onSelect={handleBookmarkCardSelect}
-                />
-              ))
+              <>
+                {/* 페이지네이션 컨테이너 */}
+                <div className="mypage-pagination-container">
+                  {/* 왼쪽 화살표 */}
+                  <button 
+                    className={`mypage-pagination-btn prev ${bookmarkCurrentPage === 0 ? 'disabled' : ''}`}
+                    onClick={handleBookmarkPrevPage}
+                    disabled={bookmarkCurrentPage === 0}
+                  >
+                    <span className="arrow-icon">‹</span>
+                  </button>
+
+                  {/* 북마크 카드들 */}
+                  <div className="mypage-studies-cards-container">
+                    {getCurrentBookmarkItems().map((bookmark) => (
+                      <BookmarkCard
+                        key={`bookmark-${bookmark.id}-${bookmark.groupId}`}
+                        bookmarkId={bookmark.id}
+                        groupId={bookmark.groupId}
+                        category={bookmark.category}
+                        groupName={bookmark.groupName}
+                        groupIntroduction={bookmark.groupIntroduction}
+                        groupOwnerId={bookmark.groupOwnerId}
+                        createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
+                        maxMembers={bookmark.maxMembers}
+                        studyMode={bookmark.studyMode}
+                        region={bookmark.region}
+                        contact={bookmark.contact}
+                        thumbnail={bookmark.thumbnail}
+                        isSelected={selectedBookmarkCard === bookmark.id}
+                        onSelect={handleBookmarkCardSelect}
+                      />
+                    ))}
+                  </div>
+
+                  {/* 오른쪽 화살표 */}
+                  <button 
+                    className={`mypage-pagination-btn next ${bookmarkCurrentPage >= getBookmarkPages() - 1 ? 'disabled' : ''}`}
+                    onClick={handleBookmarkNextPage}
+                    disabled={bookmarkCurrentPage >= getBookmarkPages() - 1}
+                  >
+                    <span className="arrow-icon">›</span>
+                  </button>
+                </div>
+
+                {/* 페이지 인디케이터 */}
+                <div className="mypage-page-indicator">
+                  {getBookmarkPages() > 1 && (
+                    <span>
+                      {bookmarkCurrentPage + 1} / {getBookmarkPages()}
+                    </span>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>

@@ -1,27 +1,24 @@
-// src/components/PromotionFormFields.jsx
+// src/components/QuillFormFields.jsx
 import React, { useState, useEffect } from "react";
 import QuillEditor from "../../common/form/QuillEditor"; // QuillEditor 경로 확인
 import FormInput from "../../common/form/FormInput"; // FormInput 경로 확인
 import FileInput from "../../common/form/FileInput"; // FileInput 경로 확인
 
 export default function QuillFormFields({
-  initialTitle = "",
-  initialContent = "",
+  title, // prop으로 받음
+  content, // prop으로 받음
+  onTitleChange, // 제목 변경 콜백
+  onContentChange, // 내용 변경 콜백
   initialAttachments = [], // 초기 첨부파일 (수정 시 기존 파일 정보)
   onSubmit, // (title, content, attachments) => void
   onCancel, // () => void
   isLoading, // boolean
 }) {
-  const [title, setTitle] = useState(initialTitle);
-  const [content, setContent] = useState(initialContent);
   const [attachments, setAttachments] = useState(initialAttachments);
 
-  // initial props가 변경될 때 (예: 수정할 게시글이 바뀔 때) 상태 업데이트
   useEffect(() => {
-    setTitle(initialTitle);
-    setContent(initialContent);
     setAttachments(initialAttachments);
-  }, [initialTitle, initialContent, initialAttachments]);
+  }, [initialAttachments]);
 
   // 파일 변경 핸들러
   const handleNewFileChange = (e) => {
@@ -31,7 +28,7 @@ export default function QuillFormFields({
   // 폼 제출 핸들러
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(title, content, attachments);
+    onSubmit(title, content, attachments); // 현재 prop으로 받은 title, content 사용
   };
 
   return (
@@ -40,8 +37,8 @@ export default function QuillFormFields({
         <FormInput
           id="title"
           label="제목"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={title} // prop으로 받은 title 사용
+          onChange={(e) => onTitleChange(e.target.value)} // 부모의 onTitleChange 호출
           required={true}
           placeholder="제목을 입력하세요"
           disabled={isLoading}
@@ -51,8 +48,8 @@ export default function QuillFormFields({
       <div>
         <label className="input-form-label">내용</label>
         <QuillEditor
-          value={content}
-          onChange={setContent}
+          value={content} // prop으로 받은 content 사용
+          onChange={onContentChange} // 부모의 onContentChange 호출
           placeholder={"홍보글을 작성해 주세요."}
           readOnly={isLoading}
         />
