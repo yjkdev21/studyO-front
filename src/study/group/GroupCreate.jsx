@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -14,7 +15,7 @@ const RESET_FORM = {
     contact: '',
     groupIntroduction: '',
     thumbnail: null,
-    groupOwnerId: 1,
+    groupOwnerId: null,
     nickname: ''
 };
 
@@ -26,11 +27,41 @@ const REQUIRED_FIELDS = [
 
 function GroupCreate() {
     const navigate = useNavigate();
+    const { user, isAuthenticated, isLoading } = useAuth();
     const host = import.meta.env.VITE_AWS_API_HOST;
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
-    const [userNickname, setUserNickname] = useState(''); // 원본 닉네임 저장
+    const [userNickname, setUserNickname] = useState('');
+
+    // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
+    if (!isAuthenticated) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh' 
+            }}>
+                <h2>로그인이 필요합니다</h2>
+                <p>스터디 그룹을 생성하려면 먼저 로그인해주세요.</p>
+                <button 
+                    onClick={() => navigate('/login')}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    로그인하러 가기
+                </button>
+            </div>
+        );
+    }
 
     // 이름 중복 확인 함수
     const checkGroupNameDuplicate = async (groupName) => {
@@ -44,33 +75,36 @@ function GroupCreate() {
     };
 
     useEffect(() => {
-        const fetchUserNickname = async () => {
-            try {
-                // 임시로 userId를 1로 설정 (실제로는 세션이나 다른 방법으로 가져와야 함)
-                const userId = 1;
-                
-                const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
-                    withCredentials: true,
-                });
-                
-                if (res.data.success) {
-                    const nickname = res.data.nickname;
-                    setUserNickname(nickname || ''); // 원본 닉네임 저장
-                    setFormData(prev => ({
-                        ...prev,
-                        nickname: nickname || '', // 폼 데이터에도 설정
-                        groupOwnerId: userId // userId도 함께 설정
-                    }));
-                } else {
-                    console.error("닉네임 불러오기 실패:", res.data.message);
+        // 로그인한 사용자가 있을 때만 닉네임을 가져옴
+        if (isAuthenticated && user) {
+            const fetchUserNickname = async () => {
+                try {
+                    // user 객체에서 userId 가져오기 (실제 user 객체 구조에 맞게 수정 필요)
+                    const userId = user.id || user.userId || 1;
+                    
+                    const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
+                        withCredentials: true,
+                    });
+                    
+                    if (res.data.success) {
+                        const nickname = res.data.nickname;
+                        setUserNickname(nickname || ''); // 원본 닉네임 저장
+                        setFormData(prev => ({
+                            ...prev,
+                            nickname: nickname || '', // 폼 데이터에도 설정
+                            groupOwnerId: userId // userId도 함께 설정
+                        }));
+                    } else {
+                        console.error("닉네임 불러오기 실패:", res.data.message);
+                    }
+                } catch (error) {
+                    console.error("닉네임 불러오기 실패:", error);
                 }
-            } catch (error) {
-                console.error("닉네임 불러오기 실패:", error);
-            }
-        };
+            };
 
-        fetchUserNickname();
-    }, [host]);
+            fetchUserNickname();
+        }
+    }, [host, isAuthenticated, user]);
 
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
@@ -194,7 +228,13 @@ function GroupCreate() {
 
             if (response.data.success) {
                 setSubmitMessage('스터디 그룹이 성공적으로 등록되었습니다.');
-                setTimeout(() => navigate('/groupList'), 1500);
+                // 등록 성공 시 해당 그룹의 상세 페이지로 이동
+                const groupId = response.data.groupId || response.data.data?.groupId;
+                if (groupId) {
+                    setTimeout(() => navigate(`/group/${groupId}`), 1500);
+                } else {
+                    setTimeout(() => navigate('/'), 1500);
+                }
             } else {
                 setSubmitMessage(response.data.message || '등록에 실패했습니다.');
             }
@@ -212,7 +252,7 @@ function GroupCreate() {
     };
 
     return (
-        <main id='studygroup-main-container'>
+        <main id='studygroup-container'>
             {submitMessage && (
                 <div className={`message ${submitMessage.includes('실패') || submitMessage.includes('오류') ? 'error' : 'success'}`}>
                     {submitMessage}
@@ -228,7 +268,7 @@ function GroupCreate() {
                 isSubmitting={isSubmitting}
                 submitMessage={submitMessage}
                 submitLabel="작성하기"
-                userNickname={userNickname} // 원본 닉네임 전달
+                userNickname={userNickname}
             />
         </main>
     );

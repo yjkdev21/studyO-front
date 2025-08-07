@@ -136,22 +136,32 @@ function Search() {
       return;
     }
 
-    const userId = user.id;
+    const userId = user.id; // 예: AuthContext에서 받아온 로그인된 사용자 ID
 
     try {
       if (userBookmarks.includes(groupId)) {
+        // 북마크 삭제
         await axios.delete(
           `http://localhost:8081/api/bookmark/${userId}/${groupId}`
         );
         alert("북마크가 삭제되었습니다.");
       } else {
-        const payload = { userId, groupId };
+        // 북마크 추가
+        const payload = {
+          userId: userId,
+          groupId: groupId ?? null, // groupId가 없으면 null로 명시
+        };
+        console.log("북마크 추가 요청 payload:", {
+          userId: user.id,
+          groupId: groupId ?? null,
+        });
+
         await axios.post(`http://localhost:8081/api/bookmark`, payload);
         alert("북마크가 추가되었습니다.");
       }
 
-      await fetchUserBookmarks();
-      await fetchBookmarkViewCounts(); // ★ 북마크 수 새로고침 추가
+      // 북마크 상태 업데이트
+      fetchUserBookmarks();
     } catch (error) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
@@ -186,9 +196,8 @@ function Search() {
 
   const mergedPosts = posts.map((post) => {
     const bookmarkView = bookmarkViewList.find(
-      (b) => String(b.groupId) === String(post.groupId)
+      (b) => b.groupId == post.groupId
     );
-
     // userBookmarks 배열에 groupId가 포함되어 있는지 확인
     const isBookmarked = userBookmarks.includes(post.groupId);
     const viewCount =
@@ -308,7 +317,7 @@ function Search() {
         모집중만 보기
       </button>
       <div className="write-button-wrapper">
-        <Link to="/studyPost" className="btn-write-g">
+        <Link to="/groupCreate" className="btn-write-g">
           글 작성하기
         </Link>
       </div>
