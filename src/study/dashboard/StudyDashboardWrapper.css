@@ -1,0 +1,15 @@
+/* StudyDashboardWrapper.css */
+
+.study-layout-wrapper {
+  display: flex;
+  height: 100vh;             /* 전체 높이 고정 */
+  overflow: hidden;          /* 사이드바 고정, 콘텐츠만 스크롤되게 */
+  background-color: #f9f9f9; /* 필요하면 배경색 지정 */
+}
+
+.main-scrollable-area {
+  flex: 1;                   /* 나머지 영역 모두 차지 */
+  height: 100vh;             /* 사이드바와 높이 맞추기 */
+  padding: 20px 40px;        /* 콘텐츠 여백 */
+  box-sizing: border-box;
+}

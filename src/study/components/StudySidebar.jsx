@@ -60,7 +60,7 @@ export default function StudySidebar({
     };
 
     // studyId가 존재할 때만 API 호출
-    if (studyId) {
+    if (groupId) {
       fetchStudyInfo();
     } else {
       setLoading(false);

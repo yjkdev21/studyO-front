@@ -16,7 +16,7 @@ export default function DashboardList() {
   const [selectedCard, setSelectedCard] = useState(null);
   const handleCardSelect = (groupId) => {
     setSelectedCard(groupId); // 선택 저장
-    navigate(`/study/${groupId}`); // 해당 스터디의 대시보드로 이동
+    navigate(`/study/${groupId}/dashboard`); // 해당 스터디의 대시보드로 이동
   };
 
   useEffect(() => {

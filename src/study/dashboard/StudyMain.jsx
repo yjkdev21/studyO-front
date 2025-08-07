@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import './StudyMain.css';
 import { useAuth } from '../../contexts/AuthContext';
 
+import StudySidebar from '../components/StudySidebar';
+
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
   const { user } = useAuth(); // 현재 로그인한 사용자 정보
