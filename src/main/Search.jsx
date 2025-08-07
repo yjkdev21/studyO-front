@@ -356,15 +356,18 @@ function Search() {
             <p>검색 결과가 없습니다.</p>
           ) : (
             mergedPosts.map((post) => (
-              <div
+              <Link
+                to={`/study/postView/${post.groupId}`} // 그룹 ID를 URL 파라미터로 전달
                 key={post.studyPostId}
                 style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
                   borderBottom: "1px solid #ddd",
                   padding: 10,
-                  position: "relative",
-                  display: "flex",
                   gap: "20px",
                   alignItems: "flex-start",
+                  position: "relative",
                 }}
               >
                 <img
@@ -387,9 +390,10 @@ function Search() {
                       color: post.isBookmarked ? "orange" : "#ddd",
                       fontSize: "24px",
                     }}
-                    onClick={() =>
-                      handleBookmarkToggle(post.groupId, post.isBookmarked)
-                    }
+                    onClick={(e) => {
+                      e.preventDefault(); // 링크 이동 막고 북마크 기능만 작동하게
+                      handleBookmarkToggle(post.groupId, post.isBookmarked);
+                    }}
                   >
                     {post.isBookmarked ? "★" : "☆"}
                   </div>
@@ -428,7 +432,7 @@ function Search() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
