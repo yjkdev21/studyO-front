@@ -104,19 +104,13 @@ function App() {
               path="/study/dashboard/DashboardList"
               element={<DashboardList />}
             />
-            <Route
-              path="/study/:groupId/dashboard"
-              element={<StudyDashboardWrapper />}
-            />
-            <Route path="/study/:groupId" element={<StudyMain />} />
-            <Route
-              path="/study/:groupId/calendar"
-              element={<StudyCalendar />}
-            />
-            <Route
-              path="/study/dashboard/studyCalendar"
-              element={<StudyCalendar />}
-            />
+            <Route path="/study/:groupId/dashboard" element={<StudyDashboardWrapper />} >
+              <Route index element={<StudyMain />} />
+              <Route path="member" element={<StudyMember />} />
+              <Route path="calendar" element={<StudyCalendar />} />
+              <Route path="project" element={<ProjectList />} />
+            </Route>
+            {/* <Route path="/study/:groupId" element={<StudyMain />} /> */}
             <Route path="/study/:groupId/member" element={<StudyMember />} />
             <Route path="/project/:studyId/list" element={<ProjectList />} />
             <Route path="/project/create" element={<ProjectCreate />} />

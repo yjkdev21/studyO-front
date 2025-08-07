@@ -34,10 +34,10 @@ export default function StudyCalendar() {
   }, [groupId]);
 
   const isHost = useMemo(() => {
-    return !!(user?.id && studyInfo?.hostId && user.id === studyInfo.hostId);
-  }, [user?.id, studyInfo?.hostId]);
+    return !!(user?.id && studyInfo?.groupOwnerId && user.id === studyInfo.groupOwnerId);
+  }, [user?.id, studyInfo?.groupOwnerId]);
 
-  
+
 
   // 일정 목록 조회
   useEffect(() => {
@@ -78,25 +78,29 @@ export default function StudyCalendar() {
     };
 
     try {
-      await axios.post(`${host}/api/study/calendar`, newEvent, {
+      const res = await axios.post(`${host}/api/study/calendar`, newEvent, {
         headers: {
           'X-USER-ID': userId
         }
       });
-      alert('등록 완료');
+      const saved = res.data;
 
-      // 화면에 추가
+      // 화면에 바로 반영
       setEvents((prev) => [
         ...prev,
         {
-          ...newEvent,
-          id: Date.now(),
+          id: saved.id,
+          title: saved.title,
+          start: saved.startDate,
+          end: saved.endDate,
           allDay: true,
-          backgroundColor: newEvent.bgColor,
-          textColor: newEvent.textColor,
-          extendedProps: { content },
+          backgroundColor: saved.bgColor,
+          textColor: saved.textColor,
+          extendedProps: { content: saved.content },
         },
       ]);
+
+      alert('등록 완료');
     } catch (err) {
       console.error("등록 실패:", err);
       alert('등록 실패');
@@ -118,6 +122,7 @@ export default function StudyCalendar() {
         id: selectedEvent.id,
         title: newTitle,
         content: newContent,
+        groupId: groupId,
       }, {
         headers: {
           'X-USER-ID': userId

@@ -1,31 +1,28 @@
-// StudyMainPageWrapper.jsx
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, useParams, useLocation, Outlet } from 'react-router-dom';
 import StudySidebar from '../components/StudySidebar';
 
-import StudyMain from './StudyMain'; // 대시보드 메인 화면
-import StudyCalendar from './StudyCalendar'; // 캘린더
-import StudyMember from './StudyMember'; // 멤버 페이지
-import ProjectList from './ProjectList'; // 프로젝트
+
 import './StudyDashboardWrapper.css';
 
 export default function StudyMainPageWrapper() {
   const { groupId } = useParams();
-  const [currentTab, setCurrentTab] = useState('dashboard'); // 기본 탭
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // 탭에 따라 다른 컴포넌트 렌더링
-  const renderTabContent = () => {
-    switch (currentTab) {
-      case 'dashboard':
-        return <StudyMain />;
-      case 'member':
-        return <StudyMember />;
-      case 'calendar':
-        return <StudyCalendar />;
-      case 'project':
-        return <ProjectList />;
-      default:
-        return <StudyMain />;
+  // 현재 경로에서 어떤 탭인지 추출
+  const currentPath = location.pathname;
+  let currentTab = 'dashboard';
+
+  if (currentPath.includes('/member')) currentTab = 'member';
+  else if (currentPath.includes('/calendar')) currentTab = 'calendar';
+  else if (currentPath.includes('/project')) currentTab = 'project';
+
+  const handleMenuClick = (tabId) => {
+    if (tabId === 'dachboard') {
+      navigate(`/study/${groupId}/dashboard`);
+    } else {
+      navigate(`/study/${groupId}/dashboard/${tabId}`);
     }
   };
 
@@ -34,10 +31,10 @@ export default function StudyMainPageWrapper() {
       <StudySidebar
         groupId={groupId}
         initialTab={currentTab}
-        onMenuClick={(tabId) => setCurrentTab(tabId)}
+        onMenuClick={handleMenuClick}
       />
       <div className="main-scrollable-area">
-        {renderTabContent()}
+        <Outlet />
       </div>
     </div>
   );
