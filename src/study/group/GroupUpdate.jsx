@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -14,7 +15,7 @@ const RESET_FORM = {
     contact: '',
     groupIntroduction: '',
     thumbnail: null,
-    groupOwnerId: 1,
+    groupOwnerId: null,
     nickname: ''
 };
 
@@ -28,55 +29,98 @@ const DISABLED_FIELDS = ['category', 'studyMode', 'region'];
 
 function GroupUpdate() {
     const navigate = useNavigate();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    
     const { groupId } = useParams();
     const host = import.meta.env.VITE_AWS_API_HOST;
+    
 
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [submitMessage, setSubmitMessage] = useState('');
-    const [userNickname, setUserNickname] = useState(''); // 원본 닉네임 저장
+    const [userNickname, setUserNickname] = useState('');
+
+
+    // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
+    if (!isAuthenticated) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh' 
+            }}>
+                <h2>로그인이 필요합니다</h2>
+                <p>스터디 그룹을 수정하려면 먼저 로그인해주세요.</p>
+                <button 
+                    onClick={() => navigate('/login')}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    로그인하러 가기
+                </button>
+            </div>
+        );
+    }
 
     useEffect(() => {
-        const fetchStudyData = async () => {
-            try {
-                setIsLoading(true);
-                
-                // 로컬 하고 서버 올라갔을때 host 주소가 변경
-                const response = await axios.get(`${host}/api/study/${groupId}`, {
-                    withCredentials: true, // 자격 증명(쿠키 등)을 요청에 포함
-                });
-
-                if (response.data.success && response.data.data) {
-                    const data = response.data.data;
-                    setFormData({
-                        groupName: data.groupName || '',
-                        category: data.category || '',
-                        maxMembers: data.maxMembers || '',
-                        studyMode: data.studyMode || '',
-                        region: data.region || '',
-                        contact: data.contact || '',
-                        groupIntroduction: data.groupIntroduction || '',
-                        thumbnail: data.thumbnail || '',
-                        groupOwnerId: data.groupOwnerId || 1,
-                        nickname: data.nickname || '' // study_membership에서 가져온 닉네임
+        // 로그인한 사용자가 있을 때만 데이터를 가져옴
+        if (isAuthenticated && user && groupId) {
+            const fetchStudyData = async () => {
+                try {
+                    setIsLoading(true);
+                    
+                    // 로컬 하고 서버 올라갔을때 host 주소가 변경
+                    const response = await axios.get(`${host}/api/study/${groupId}`, {
+                        withCredentials: true, // 자격 증명(쿠키 등)을 요청에 포함
                     });
-                    setUserNickname(data.nickname || ''); // 원본 닉네임도 저장
-                } else {
-                    setSubmitMessage('데이터를 불러올 수 없습니다.');
+
+                    if (response.data.success && response.data.data) {
+                        const data = response.data.data;
+                        
+                        // 현재 로그인한 사용자가 그룹의 소유자인지 확인
+                        const userId = user.id || user.userId;
+                        if (data.groupOwnerId !== userId) {
+                            setSubmitMessage('수정 권한이 없습니다. 그룹의 소유자만 수정할 수 있습니다.');
+                            setTimeout(() => navigate(`/group/${groupId}`), 2000);
+                            return;
+                        }
+                        
+                        setFormData({
+                            groupName: data.groupName || '',
+                            category: data.category || '',
+                            maxMembers: data.maxMembers || '',
+                            studyMode: data.studyMode || '',
+                            region: data.region || '',
+                            contact: data.contact || '',
+                            groupIntroduction: data.groupIntroduction || '',
+                            thumbnail: data.thumbnail || '',
+                            groupOwnerId: data.groupOwnerId || 1,
+                            nickname: data.nickname || '' // study_membership에서 가져온 닉네임
+                        });
+                        setUserNickname(data.nickname || ''); // 원본 닉네임도 저장
+                    } else {
+                        setSubmitMessage('데이터를 불러올 수 없습니다.');
+                    }
+                } catch (error) {
+                    console.error('스터디 그룹 데이터 불러오기 실패:', error);
+                    setSubmitMessage(`데이터 불러오기 실패: ${error.response?.data?.message || '알 수 없는 오류가 발생했습니다.'}`);
+                } finally {
+                    setIsLoading(false);
                 }
-            } catch (error) {
-                console.error('스터디 그룹 데이터 불러오기 실패:', error);
-                setSubmitMessage(`데이터 불러오기 실패: ${error.response?.data?.message || '알 수 없는 오류가 발생했습니다.'}`);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        if (groupId) {
+            };
+            
             fetchStudyData();
         }
-    }, [groupId, host]);
+    }, [groupId, host, isAuthenticated, user, navigate]);
 
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
@@ -214,7 +258,7 @@ function GroupUpdate() {
                 withCredentials: true,
             });
             alert('스터디 그룹이 삭제되었습니다.');
-            navigate('/groupList', { replace: true });
+            navigate(-1); // 이전 페이지로 돌아가기
         } catch (error) {
             console.error('삭제 실패:', error);
             alert('삭제에 실패했습니다.');
@@ -239,7 +283,7 @@ function GroupUpdate() {
         <div id="studygroup-update-container">
             <div id="studygroup-form-wrapper">
                 {submitMessage && (
-                    <div id={submitMessage.includes('실패') || submitMessage.includes('입력') ? 'studygroup-error-message' : 'studygroup-success-message'}>
+                    <div id={submitMessage.includes('실패') || submitMessage.includes('입력') || submitMessage.includes('권한') ? 'studygroup-error-message' : 'studygroup-success-message'}>
                         {submitMessage}
                     </div>
                 )}
@@ -255,7 +299,7 @@ function GroupUpdate() {
                     isSubmitting={isSubmitting}
                     disabledFields={DISABLED_FIELDS}
                     submitLabel="수정하기"
-                    userNickname={userNickname} // 원본 닉네임 전달
+                    userNickname={userNickname}
                 />
             </div>
         </div>

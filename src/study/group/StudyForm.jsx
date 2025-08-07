@@ -6,6 +6,7 @@ const StudyForm = ({
     onChange,
     onFileChange,
     onSubmit,
+    onCancel, // 취소 버튼 핸들러 추가
     isSubmitting,
     submitLabel,
     disabledFields = [],
@@ -49,6 +50,16 @@ const StudyForm = ({
         return disabledFields.includes(fieldName) || isSubmitting;
     };
 
+    // 취소 버튼 클릭 핸들러
+    const handleCancel = () => {
+        if (onCancel) {
+            onCancel();
+        } else {
+            // 기본 동작: 이전 페이지로 돌아가기
+            window.history.back();
+        }
+    };
+
     return (
         <>
             {/* 스터디 기본 정보 섹션 헤더 */}
@@ -56,24 +67,6 @@ const StudyForm = ({
                 <div id="studygroup-basic-info-icon"></div>
                 스터디 기본 정보
             </div>
-            <div>
-                <label>닉네임 </label>
-                <input
-                    type="text"
-                    name="nickname"
-                    value={formData.nickname || ''}
-                    onChange={onChange}
-                    disabled={isFieldDisabled('nickname')}
-                    required
-                    placeholder="스터디에서 사용할 닉네임을 입력하세요"
-                />
-                {userNickname && formData.nickname !== userNickname && (
-                    <small style={{ color: '#666', display: 'block', marginTop: '4px' }}>
-                        닉네임: {userNickname}
-                    </small>
-                )}
-            </div>
-
             <form id="studygroup-main-form" onSubmit={onSubmit} encType="multipart/form-data">
                 
                 {/* 썸네일 업로드 섹션 */}
@@ -144,12 +137,13 @@ const StudyForm = ({
                             value={formData.nickname || ''}
                             onChange={onChange}
                             disabled={isFieldDisabled('nickname')}
-                            placeholder="스터디에서 사용할  닉네임을  6글자 이내로 입력하세요."
+                            placeholder="스터디에서 사용할 닉네임을 6글자 이내로 입력하세요."
                             required
                         />
-                        {userNickname && formData.nickname !== userNickname && (
+                        {/* 원본 닉네임과 다를 때만 표시 */}
+                        {userNickname && formData.nickname && formData.nickname !== userNickname && (
                             <small id="studygroup-nickname-help">
-                                닉네임: {userNickname}
+                                원본 닉네임: {userNickname}
                             </small>
                         )}
                     </div>
@@ -225,13 +219,10 @@ const StudyForm = ({
                             required={formData.studyMode === '오프라인' || formData.studyMode === '온오프'}
                             placeholder={
                                 formData.studyMode === '온라인'
-                                    ? '온라인 모드에서는 지역이 자동으로 무효화됩니다'
+                                    ? '온라인 모드에서는 지역 정보가 필요하지 않습니다.'
                                     : '지역을 입력하세요'
                             }
                         />
-                        {formData.studyMode === '온라인' && (
-                            <small id="studygroup-region-help">온라인 모드에서는 지역 정보가 필요하지 않습니다.</small>
-                        )}
                     </div>
 
                     {/* 연락방법 */}
@@ -273,6 +264,7 @@ const StudyForm = ({
                     <button
                         id="studygroup-cancel-btn"
                         type="button"
+                        onClick={handleCancel}
                         disabled={isSubmitting}
                     >
                         취소
