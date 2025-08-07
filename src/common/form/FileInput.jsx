@@ -13,12 +13,12 @@ function FileInput({
   return (
     <>
       <div>
-        <label htmlFor={id} className="input-form-label">
+        <label htmlFor={id} className="input-form-attach-label">
           {label}
         </label>
         <input
           type="file"
-          className="input-form-field"
+          className="input-form-file-field"
           id={id}
           multiple={multiple}
           accept={accept}

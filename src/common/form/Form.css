@@ -1,11 +1,8 @@
-/* 라벨 스타일 (기존과 동일) */
-.input-form-label {
+.input-form-attach-label {
   display: block;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: bold;
   margin-bottom: 8px;
-  font-family: sans-serif;
-  color: #333;
 }
 
 .input-form-normal-field {
@@ -16,6 +13,53 @@
   box-sizing: border-box;
   transition: border-color 0.3s;
   min-width: 100%;
+}
+
+.form-text {
+  margin: 10px 0px;
+}
+/* 파일 입력 필드 스타일 */
+.input-form-file-field {
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid #d1d1d1; /* 테두리 색상을 더 진하게 변경 */
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+  min-width: 100%;
+  background-color: #ffffff; /* 파일 내용 배경을 흰색으로 유지 */
+}
+
+/* 파일 선택 버튼 스타일 */
+.input-form-file-field::-webkit-file-upload-button {
+  background-color: lightgray; /* 옅은 회색 배경 */
+  color: #333;
+  padding: 8px 12px;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  margin-right: 10px; /* 버튼과 파일명 사이 간격 */
+  border-radius: 8px; /* 둥근 모서리 */
+}
+
+.input-form-file-field::file-selector-button {
+  /* 표준 속성 */
+  background-color: lightgray; /* 옅은 회색 배경 */
+  color: #333;
+  padding: 8px 12px;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  margin-right: 10px; /* 버튼과 파일명 사이 간격 */
+  border-radius: 8px; /* 둥근 모서리 */
+}
+
+.input-form-file-field::-webkit-file-upload-button:hover,
+.input-form-file-field::file-selector-button:hover {
+  background-color: #d0d0d0; /* 호버 시 약간 더 어둡게 */
+  border-color: #999;
 }
 
 /* Form.css */
@@ -84,4 +128,15 @@
   width: 100%;
   height: 100%;
   fill: currentColor;
+}
+
+@media (max-width: 760px) {
+  .input-form-attach-label {
+    padding-top: 40px;
+  }
+}
+@media (max-width: 500px) {
+  .input-form-attach-label {
+    padding-top: 60px;
+  }
 }

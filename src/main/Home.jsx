@@ -7,7 +7,7 @@ export default function Home() {
           <Link to="/sample/5" className="border bg-gray-300 block">
             Go to Sample 5
           </Link>
-          <Link to="/study/postMain/3" className="border bg-gray-300 block">
+          <Link to="/study/postMain/10" className="border bg-gray-300 block">
             Go Promotion List
           </Link>
           <Link to="/groupCreate" className="border bg-gray-300 block">

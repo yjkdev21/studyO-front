@@ -5,10 +5,14 @@ import StudyCarousel from "./components/StudyCarousel";
 import StudyPostInput from "./StudyPostInput";
 import StudyPostView from "./StudyPostView";
 import "./Post.css";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function StudyPostMain() {
   const host = import.meta.env.VITE_AWS_API_HOST;
-  const { userId } = useParams();
+  const { user } = useAuth();
+  const userId = 10; //user?.id;
+
+  //console.log("user.id: " + userId);
 
   const [selectedStudyId, setSelectedStudyId] = useState(null);
   const [selectStudy, setSelectStudy] = useState(null);
@@ -20,7 +24,7 @@ export default function StudyPostMain() {
 
   // StudyCarousel로부터 선택된 스터디 ID와 전체 스터디 리스트를 받을 콜백 함수
   const handleStudySelect = (groupId, allStudies) => {
-    console.log("groupId: ", groupId);
+    //console.log("groupId: ", groupId);
     const selectedStudy = allStudies.find((study) => study.groupId === groupId);
     if (selectedStudy) {
       setSelectedStudyId(groupId);
@@ -74,13 +78,6 @@ export default function StudyPostMain() {
 
   return (
     <div className="promotion-container">
-      {errorMessage && (
-        <div className="alert-error-message">{errorMessage}</div>
-      )}
-      {successMessage && (
-        <div className="alert-success-message">{successMessage}</div>
-      )}
-
       <h2 className="form-title">
         <span className="form-badge">✔</span>
         스터디 선택
@@ -91,6 +88,13 @@ export default function StudyPostMain() {
         selectedGroupId={selectedStudyId}
         onSelectStudy={handleStudySelect}
       />
+
+      {errorMessage && (
+        <div className="alert-error-message">{errorMessage}</div>
+      )}
+      {successMessage && (
+        <div className="alert-success-message">{successMessage}</div>
+      )}
 
       {postMode === "loading" && <div>로딩 중...</div>}
 
