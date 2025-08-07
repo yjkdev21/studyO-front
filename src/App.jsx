@@ -20,7 +20,6 @@ import MyStudy from "./users/MyStudy";
 import StudyList from "./study/StudyList";
 
 import GroupDetail from "./study/group/GroupDetail";
-import GroupList from "./study/group/GroupList";
 import GroupCreate from "./study/group/GroupCreate";
 import GroupUpdate from "./study/group/GroupUpdate";
 
@@ -134,7 +133,6 @@ function App() {
 
           <Route path="/search" element={<Search />} />
 
-          <Route path="/groupList" element={<GroupList />} />
           <Route path="/group/:groupId" element={<GroupDetail />} />
 
           <Route
