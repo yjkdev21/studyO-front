@@ -109,6 +109,20 @@ main#home-page {
                   Header
 ======================================== */
 
+header {
+  position: relative;
+  height: 80px;
+}
+
+#header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  z-index: 100;
+}
+
 #header .header-logo {
   margin-right: 30px;
 }
@@ -163,13 +177,13 @@ main#home-page {
     width: 100%;
     top: 100%;
     left: 0;
-    z-index: 1;
+    z-index: 100;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
     max-height: 400px;
     transition: all .4s;
-    background-color: var(--main-color);
+    background-color: #eee;
   }
 
   #header .header-category.on {
