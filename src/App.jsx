@@ -50,6 +50,7 @@ import StudySidebar from "./study/components/StudySidebar";
 import StudyPostMain from "./study/post/StudyPostMain";
 
 import ProtectedRoute from "./common/auth/ProtectedRoute";
+import StudyPromotion from "./study/post/StudyPromotion";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -80,6 +81,7 @@ function App() {
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
+<<<<<<< Updated upstream
             <Route path="/findId" element={<FindId />} />
             <Route path="/findPw" element={<FindPw />} />
             <Route path="/myHistory" element={<MyHistory />} />
@@ -116,12 +118,57 @@ function App() {
               element={<ProjectCalendar />}
             />
 
+=======
+            <Route path="/myPage" element={<MyPage />} />
+            <Route path="/myEdit" element={<MyEdit />} />
+>>>>>>> Stashed changes
           </Route>
 
           <Route path="/search" element={<Search />} />
 
           <Route path="/groupList" element={<GroupList />} />
           <Route path="/group/:groupId" element={<GroupDetail />} />
+<<<<<<< Updated upstream
+=======
+          <Route path="/groupCreate" element={<GroupCreate />} />
+          <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
+          <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
+          <Route path="/study/postView/:groupId" element={<StudyPromotion />} />
+
+          <Route
+            path="/study/dashboard/DashboardList"
+            element={<DashboardList />}
+          />
+          <Route path="/study/:groupId" element={<StudyMain />} />
+          <Route path="/study/:studyId/member" element={<StudyMember />} />
+          <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
+
+          <Route
+            path="/study/dashboard/studyCalendar"
+            element={<StudyCalendar />}
+          />
+          <Route
+            path="/study/components/studySidebar"
+            element={<StudySidebar />}
+          />
+          <Route path="/project/:studyId/list" element={<ProjectList />} />
+
+          <Route path="/project/create" element={<ProjectCreate />} />
+          <Route
+            path="/project/:projectId/update"
+            element={<ProjectUpdate />}
+          />
+
+          <Route path="/project/:projectId" element={<ProjectMain />} />
+          <Route
+            path="/project/:projectId/member"
+            element={<ProjectMember />}
+          />
+          <Route
+            path="/project/:projectId/calendar"
+            element={<ProjectCalendar />}
+          />
+>>>>>>> Stashed changes
 
           <Route path="/study/components/studySidebar" element={<StudySidebar />} />
           

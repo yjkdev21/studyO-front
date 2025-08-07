@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Post.css";
+import AttachmentManager from "./components/AttachmentManager";
 
-export default function StudyPostView({ groupId, onPostDeleted }) {
+export default function StudyPostView({
+  groupId,
+  onPostEdit,
+  onPostDeleted,
+  onStudyJoin,
+}) {
   const host = import.meta.env.VITE_AWS_API_HOST;
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -50,14 +56,18 @@ export default function StudyPostView({ groupId, onPostDeleted }) {
 
   const handleDownLoadFile = async (storedFileName, originalFileName) => {
     try {
+      // originalFileName을 URL 쿼리 파라미터로 추가하여 서버로 전달
       const response = await axios.get(
-        `${host}/api/file/download/${storedFileName}`,
+        `${host}/api/file/download/${storedFileName}?originalFileName=${encodeURIComponent(
+          originalFileName
+        )}`,
         {
-          responseType: "blob",
-          withCredentials: true,
+          responseType: "blob", // 바이너리 데이터로 응답 받기
+          withCredentials: true, // 쿠키 등 인증 정보 포함
         }
       );
 
+      // 응답으로 받은 Blob 데이터를 사용하여 다운로드 링크 생성
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -79,12 +89,9 @@ export default function StudyPostView({ groupId, onPostDeleted }) {
           alert("삭제할 게시글 정보가 없습니다.");
           return;
         }
-        await axios.delete(
-          `${host}/api/study/promotion/delete/${post.studyPostId}`,
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.delete(`${host}/api/study-groups/post/${post.groupId}`, {
+          withCredentials: true,
+        });
         alert("게시글이 성공적으로 삭제되었습니다.");
         if (onPostDeleted) {
           onPostDeleted();
@@ -94,6 +101,10 @@ export default function StudyPostView({ groupId, onPostDeleted }) {
         alert("게시글 삭제에 실패했습니다.");
       }
     }
+  };
+
+  const handleJoin = () => {
+    alert("가입신청 모달 팝업 떠야 되여~~");
   };
 
   const formatDate = (dateString) => {
@@ -176,50 +187,46 @@ export default function StudyPostView({ groupId, onPostDeleted }) {
               </div>
             </div>
           </div>
-
           <div className="view-body-section">
-            <h3 className="section-title">프로젝트 소개</h3>
+            <h3 className="section-title">스터디 소개</h3>
             <div
               className="ql-editor"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>
-
-          {post.attachFile && post.attachFile.length > 0 && (
-            <div className="attachment-section">
-              <label className="attachment-header">첨부파일</label>
-              <ul className="attachment-list">
-                {post.attachFile.map((file) => (
-                  <li className="attachment-item" key={file.storedFileName}>
-                    {file.fileName}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDownLoadFile(file.storedFileName, file.fileName)
-                      }
-                      className="btn-base btn-primary margin-left-1 pdding-03"
-                    >
-                      다운로드
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <AttachmentManager
+            files={post.attachFile || []}
+            mode="view"
+            onDownload={handleDownLoadFile}
+          />
 
           <div className="button-container">
-            <Link
-              to={`/study/promotion/edit/${post.studyPostId}`}
-              className="btn-base btn-primary margin-left-1"
-            >
-              수정
-            </Link>
-            <button
-              className="btn-base btn-dark-orange margin-left-1"
-              onClick={handleDelete}
-            >
-              삭제
-            </button>
+            {onStudyJoin != null && (
+              <button
+                className="btn-base btn-dark-orange margin-left-1"
+                onClick={handleJoin}
+              >
+                가입신청
+              </button>
+            )}
+
+            {onPostEdit != null && (
+              <Link
+                to={`/study-groups/post/edit/${post.studyPostId}`}
+                className="btn-base btn-primary margin-left-1"
+              >
+                수정
+              </Link>
+            )}
+
+            {onPostDeleted != null && (
+              <button
+                className="btn-base btn-dark-orange margin-left-1"
+                onClick={handleDelete}
+              >
+                삭제
+              </button>
+            )}
           </div>
         </>
       )}
