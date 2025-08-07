@@ -49,6 +49,7 @@ import StudySidebar from "./study/components/StudySidebar";
 import StudyPostMain from "./study/post/StudyPostMain";
 
 import ProtectedRoute from "./common/auth/ProtectedRoute";
+import StudyPromotion from "./study/post/StudyPromotion";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -93,6 +94,10 @@ function App() {
             <Route path="/groupCreate" element={<GroupCreate />} />
             <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
             <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
+            <Route
+              path="/study/postView/:groupId"
+              element={<StudyPromotion />}
+            />
 
             <Route
               path="/study/dashboard/DashboardList"
