@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const host = import.meta.env.VITE_AWS_API_HOST; 
+
 export const studySidebarApi = {
   getStudyInfo: async (groupId) => {  // 함수명, 매개변수명 수정
-    const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
 
     try {
       const response = await axios.get(`${host}/api/sidebar/study/${groupId}`);
@@ -15,4 +16,4 @@ export const studySidebarApi = {
       return null;
     }
   }
-};
+}; 

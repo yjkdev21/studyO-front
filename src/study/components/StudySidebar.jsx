@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './StudySideBar.css';
-import { studySidebarApi } from '../components/StusySidebarApi';
+import { studySidebarApi } from './StudySidebarApi';
 
 
 export default function StudySidebar({
@@ -99,7 +99,7 @@ export default function StudySidebar({
             {loading ? '로딩 중...' : (studyInfo.name || '스터디이름')}
           </p>
           <p className='sidebar-contact'>
-            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}D
+            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}
           </p>
         </div>
         {/* 대시보드 메뉴 */}
