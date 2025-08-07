@@ -1,43 +1,102 @@
 #sidebar-wrap {
-  height: 100vh;
-  position: relative;
-  transition: width 0.3s ease;
   display: flex;
+  align-items: end;
+  /* min-height: 100vh; */
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: left .3s;
 }
+
+/* 사이드바 닫혔을 때 */
+#sidebar-wrap.collapsed {
+  left: -280px;
+}
+
+/* ========== 사이드바 ========== */
 
 .study-sidebar {
   width: 280px;
-  height: 100vh;
-  background-color: 
-#FDB515;
+  height: 100%;
+  background-color: #FDB515;
   text-align: center;
-  transition: width 0.3s ease;
+
+  overflow-y: auto;
 }
 
-.study-sidebar.collapsed {
-  width: 0;
+.study-info {
+  padding-top: 90px;
+}
+
+.sidebar-category {
+  color: #666;
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.sidebar-group-name {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.sidebar-contact {
+  width: 50%;
+  font-size: 14px;
+  background-color: #FFCC5B;
+  color: #666;
+  padding: 10px;
+  border-radius: 100px;
+  margin: 10px auto 20px;
+
+  /* 말줄임표 */
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sidebar-toggle {
+.current-tab-display {
+  font-size: 18px;
+}
+
+.sidebar-study-menu {
   display: flex;
+  flex-direction: column;
+  align-items: end;
+
+}
+
+.sidebar-study-menu .menu-tab {
+  width: 240px;
+  padding: 12px 20px;
+  border-radius: 100px 0 0 100px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #333;
+  padding: 25px 0;
+}
+
+/* 활성화된 탭 */
+.sidebar-study-menu .menu-tab.active {
+  background-color: #fff ;
+}
+
+/* ========== 토글 버튼 ========== */
+.sidebar-toggle {
   align-items: center;
-  height: 100vh;
-  align-items: flex-end; /* 하단 정렬로 변경 */
 }
 
 .toggle-button{
   width: 40px;
   height: 40px;
+  margin-bottom: 10px;
   background-color: #333;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-radius: 0 5px 5px 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
-
 }
 
 .toggle-bars {
@@ -60,67 +119,13 @@
 }
 
 /* 토글시 내용 숨기기 */
-#wrap .study-sidebar.collapsed .study-info,
+/* #wrap .study-sidebar.collapsed .study-info,
 #wrap .study-sidebar.collapsed .sidebar-study-menu {
   display: none;
-}
-
-.study-info {
-  padding-top: 95px;
-}
-
-.sidebar-category {
-  color: #666;
-  font-weight: 400;
-  font-size: 18px;
-}
-
-.sidebar-group-name {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.sidebar-contact {
-  width: 150px;
-  font-size: 14px;
-  background-color: 
-#FFCC5B;
-  color: #666;
-  padding: 10px;
-  border-radius: 100px;
-  margin: 10px auto 20px;
-}
-
-.current-tab-display {
-  font-size: 18px;
-}
-
-.sidebar-study-menu {
-  cursor: pointer;
-  list-style: none;
-
-}
-
-.menu-tab {
-  width: 240px;
-  margin-left: 40px;
-  padding: 12px 20px;
-  border-top-right-radius: 100px;
-  border-bottom-right-radius: 100px;
-  cursor: pointer;
-  font-size: 18px;
-  color: #333;
-  padding: 30px 0;
-}
-
-/* 활성화된 탭 */
-.menu-tab.active {
-  background-color: #fff !important;
-  color: #333 !important;
-}
+} */
 
 /* 접근성 개선 */
-.toggle-button:focus {
+/* .toggle-button:focus {
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
@@ -128,9 +133,9 @@
 .menu-tab:focus {
   outline: 2px solid #fff;
   outline-offset: 2px;
-}
+} */
 
 /* 텍스트 선택 방지 */
-#wrap {
+/* #wrap {
   user-select: none;
-}
+} */
