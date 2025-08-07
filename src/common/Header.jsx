@@ -24,17 +24,18 @@ export default function Header() {
     if (!confirmed) return;
 
     const result = await logout();
-    console.log(result.message);
     alert("로그아웃되었습니다.");
+    // 로그인 화면으로 이동
+    window.location.href = "/login";
   };
 
   return (
     <header id="header" className="border-b border-[#eee]">
-      <div className="relative px-3 max-w-7xl m-auto w-full h-[80px] flex items-center">
+      <div className="relative !px-3 max-w-7xl !m-auto w-full h-[80px] flex items-center">
         {/* 헤더 왼쪽: 로고 & 카테고리 */}
         <div className="header-nav flex items-center">
           {/* 헤더 로고 */}
-          <h1 className="header-logo mb-0">
+          <h1 className="header-logo">
             <Link to="/">
               <img src="/images/logo.svg" alt="logo" className="block" />
             </Link>
@@ -52,28 +53,28 @@ export default function Header() {
           {/* 헤더 카테고리 */}
           <ul className={`header-category flex ${isMenuOpen ? "" : "on"}`}>
             <li>
-              <Link to="/">전체</Link>
+              <Link to="/search">전체</Link>
             </li>
             <li>
-              <Link to="/">IT</Link>
+              <Link to="/search">IT</Link>
             </li>
             <li>
-              <Link to="/">자격증</Link>
+              <Link to="/search">자격증</Link>
             </li>
             <li>
-              <Link to="/">언어</Link>
+              <Link to="/search">언어</Link>
             </li>
             <li>
-              <Link to="/">전공</Link>
+              <Link to="/search">전공</Link>
             </li>
             <li>
-              <Link to="/">취업/면접</Link>
+              <Link to="/search">취업/면접</Link>
             </li>
             <li>
-              <Link to="/">취미</Link>
+              <Link to="/search">취미</Link>
             </li>
             <li>
-              <Link to="/">기타</Link>
+              <Link to="/search">기타</Link>
             </li>
           </ul>
         </div>
@@ -82,11 +83,9 @@ export default function Header() {
           {isAuthenticated ? (
             // 로그인 중인 메뉴
             <ul className="flex items-center !space-x-[30px]">
+              <li><span>{user?.nickname || user?.userId} 님</span>(확인용)</li>
               <li>
-                <span>{user?.nickname || user?.userId} 님</span>
-              </li>
-              <li>
-                <Link to="/groupCreate">그룹생성</Link>
+                <Link to="/groupCreate" className="header-study-btn text-sm">스터디 생성</Link>
               </li>
               <li>
                 <button
@@ -98,8 +97,8 @@ export default function Header() {
                 </button>
                 {/* 드롭 메뉴 */}
                 {open && (
-                  <div className="absolute top-[70px] right-3 p-3 border border-[#eee] rounded-lg bg-white z-50">
-                    <ul className="min-w-[120px] space-y-4 text-sm">
+                  <div className="absolute top-[70px] right-3 !p-3 border border-[#eee] rounded-lg bg-white z-50">
+                    <ul className="min-w-[120px] !space-y-4 text-sm">
                       <li>
                         <Link to="study/dashboard/dashboardList">대시보드</Link>
                       </li>
@@ -129,7 +128,7 @@ export default function Header() {
                 <Link to="/join">회원가입</Link>{" "}
               </li>
               <li>
-                <Link to="/groupCreate">그룹생성</Link>
+                <Link to="/groupCreate" className="header-study-btn text-sm">스터디 생성</Link>(임시)
               </li>
             </ul>
           )}

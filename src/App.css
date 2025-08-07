@@ -122,6 +122,18 @@ main#home-page {
   padding-right: 30px;
 }
 
+#header .header-study-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--main-color);
+  border-radius: 5px;
+  color: var(--main-color);
+  transition: background-color .2s, color .2s;
+}
+#header .header-study-btn:hover {
+  background-color: var(--main-color);
+  color: white;
+}
+
 #header .header-profile-btn {
   border: 1px solid transparent;
   transition: border-color .1s;

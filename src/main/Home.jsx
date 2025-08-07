@@ -3,11 +3,11 @@ export default function Home() {
   return (
     <main id="home-page">
       <div className="main-center">
-        <div className="absolute top-23 left-1 space-y-1 z-10">
+        <div className="absolute top-23 left-1 z-10">
           <Link to="/sample/5" className="border bg-gray-300 block">
             Go to Sample 5
           </Link>
-          <Link to="/study/postMain/3" className="border bg-gray-300 block">
+          <Link to="/study/postMain/10" className="border bg-gray-300 block">
             Go Promotion List
           </Link>
           <Link to="/groupCreate" className="border bg-gray-300 block">
@@ -23,8 +23,8 @@ export default function Home() {
             {/* 배너 텍스트 */}
             <div className="banner-text flex flex-col">
               <h2 className="font-bold tracking-wider">
-                <span className="block mb-2">모든 스터디의</span>
-                <span className="block mb-2">시작</span>
+                <span className="block !mb-2">모든 스터디의</span>
+                <span className="block !mb-2">시작</span>
               </h2>
               <img
                 src="/images/logo-black.svg"
@@ -33,7 +33,7 @@ export default function Home() {
               />
             </div>
             {/* 배너 버튼 */}
-            <div className="mt-40">
+            <div className="!mt-40">
               <button type="button" className="shadow-btn">
                 <Link to="/">스터디 시작하기 →</Link>
               </button>

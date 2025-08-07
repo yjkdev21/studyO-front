@@ -28,3 +28,5 @@ npm install gh-pages
 npm install quill-blot-formatter@^1.0.5
 npm install react-quill@^2.0.0
 npm install quill@^1.3.7
+npm install -D tailwindcss @tailwindcss/vite
+npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
