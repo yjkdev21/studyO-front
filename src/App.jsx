@@ -53,6 +53,20 @@ import ProtectedRoute from "./common/auth/ProtectedRoute";
 
 function App() {
   const [count, setCount] = useState(0);
+  const location = useLocation();
+
+  const hideFooterPaths = [
+    '/login', '/join', '/findId', '/findPw',
+    '/groupCreate',
+    '/promotion/create',
+    '/study/dashboard/DashboardList',
+  ];
+  
+  // Footer를 숨길 경로 설정
+  const shouldHideFooter =
+    hideFooterPaths.includes(location.pathname) || // 고정 경로는 includes()로 체크
+    /^\/groupUpdate\/\d+$/.test(location.pathname) || // /groupUpdate/숫자 → 그룹 수정
+    /^\/promotion\/edit\/\d+$/.test(location.pathname); // /promotion/edit/숫자 → 홍보글 수정
 
   return (
     <div>
@@ -66,61 +80,54 @@ function App() {
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/findId" element={<FindId />} />
+            <Route path="/findPw" element={<FindPw />} />
+            <Route path="/myHistory" element={<MyHistory />} />
+            <Route path="/myStudy" element={<MyStudy />} />
 
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/myEdit" element={<MyEdit />} />
 
+            <Route path="/groupCreate" element={<GroupCreate />} />
+            <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
+            <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
+
             <Route path="/study/dashboard/DashboardList" element={<DashboardList />} />
             <Route path="/study/:groupId/dashboard" element={<StudyDashboardWrapper />} />
+            <Route path="/study/:groupId" element={<StudyMain />} />
+            <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
+            <Route path="/study/dashboard/studyCalendar" element={<StudyCalendar />} />
+            <Route path="/study/:groupId/member" element={<StudyMember />} />
+            <Route path="/project/:studyId/list" element={<ProjectList />} />
+            <Route path="/project/create" element={<ProjectCreate />} />
+            
+            <Route
+              path="/project/:projectId/update"
+              element={<ProjectUpdate />}
+            />
+
+            <Route path="/project/:projectId" element={<ProjectMain />} />
+            <Route
+              path="/project/:projectId/member"
+              element={<ProjectMember />}
+            />
+            <Route
+              path="/project/:projectId/calendar"
+              element={<ProjectCalendar />}
+            />
 
           </Route>
 
-          <Route path="/findId" element={<FindId />} />
-          <Route path="/findPw" element={<FindPw />} />
-          <Route path="/myHistory" element={<MyHistory />} />
-          <Route path="/myStudy" element={<MyStudy />} />
           <Route path="/search" element={<Search />} />
 
           <Route path="/groupList" element={<GroupList />} />
           <Route path="/group/:groupId" element={<GroupDetail />} />
-          <Route path="/groupCreate" element={<GroupCreate />} />
-          <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
-          <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
 
+          <Route path="/study/components/studySidebar" element={<StudySidebar />} />
           
-          <Route path="/study/:groupId" element={<StudyMain />} />
-          <Route path="/study/:studyId/member" element={<StudyMember />} />
-          <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
-
-          <Route
-            path="/study/dashboard/studyCalendar"
-            element={<StudyCalendar />}
-          />
-          <Route
-            path="/study/components/studySidebar"
-            element={<StudySidebar />}
-          />
-          <Route path="/project/:studyId/list" element={<ProjectList />} />
-
-          <Route path="/project/create" element={<ProjectCreate />} />
-          <Route
-            path="/project/:projectId/update"
-            element={<ProjectUpdate />}
-          />
-
-          <Route path="/project/:projectId" element={<ProjectMain />} />
-          <Route
-            path="/project/:projectId/member"
-            element={<ProjectMember />}
-          />
-          <Route
-            path="/project/:projectId/calendar"
-            element={<ProjectCalendar />}
-          />
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <Footer />
+        {!shouldHideFooter && <Footer />}
       </AuthProvider>
     </div>
   );
