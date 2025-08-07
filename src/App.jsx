@@ -23,7 +23,9 @@ import GroupDetail from "./study/group/GroupDetail";
 import GroupList from "./study/group/GroupList";
 import GroupCreate from "./study/group/GroupCreate";
 import GroupUpdate from "./study/group/GroupUpdate";
+
 import DashboardList from "./study/dashboard/DashboardList";
+import StudyDashboardWrapper from "./study/dashboard/StudyDashboardWrapper"
 import StudyMain from "./study/dashboard/StudyMain";
 import StudyMember from "./study/dashboard/StudyMember";
 import StudyCalendar from "./study/dashboard/StudyCalendar";
@@ -68,6 +70,9 @@ function App() {
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/myEdit" element={<MyEdit />} />
 
+            <Route path="/study/dashboard/DashboardList" element={<DashboardList />} />
+            <Route path="/study/:groupId/dashboard" element={<StudyDashboardWrapper />} />
+
           </Route>
 
           <Route path="/findId" element={<FindId />} />
@@ -82,13 +87,10 @@ function App() {
           <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
           <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
 
-          <Route
-            path="/study/dashboard/DashboardList"
-            element={<DashboardList />}
-          />
+          
           <Route path="/study/:groupId" element={<StudyMain />} />
           <Route path="/study/:studyId/member" element={<StudyMember />} />
-          <Route path="/study/:studyId/calendar" element={<StudyCalendar />} />
+          <Route path="/study/:groupId/calendar" element={<StudyCalendar />} />
 
           <Route
             path="/study/dashboard/studyCalendar"
