@@ -13,9 +13,6 @@ export default function Home() {
           <Link to="/groupCreate" className="border bg-gray-300 block">
             스터디그룹생성
           </Link>
-          <Link to="/groupList" className="border bg-gray-300 block">
-            스터디그룹리스트
-          </Link>
           <br />
           <br />
         </div>
