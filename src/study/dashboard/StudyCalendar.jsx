@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from "react-router-dom";
 import axios from 'axios';
 import './StudyCalendar.css';
 
@@ -16,18 +17,31 @@ export default function StudyCalendar() {
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-
+  const [studyInfo, setStudyInfo] = useState(null);
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
 
   const { user } = useAuth();
   const userId = user?.id;
-  const groupId = 1; // 임시 고정
+  const { groupId: groupIdParam } = useParams();
+  const groupId = Number(groupIdParam);
+
+
+  // 스터디 정보 조회
+  useEffect(() => {
+    axios.get(`${host}/api/study/${groupId}`).then((res) => {
+      setStudyInfo(res.data.data);
+    });
+  }, [groupId]);
+
+  const isHost = useMemo(() => {
+    return !!(user?.id && studyInfo?.groupOwnerId && user.id === studyInfo.groupOwnerId);
+  }, [user?.id, studyInfo?.groupOwnerId]);
+
+
 
   // 일정 목록 조회
   useEffect(() => {
     axios.get(`${host}/api/study/calendar/study/${groupId}`).then((res) => {
-      console.log("최초 1회만 API 호출");
-
       const fetched = res.data.map((e) => ({
         id: e.id,
         title: e.title,
@@ -40,14 +54,15 @@ export default function StudyCalendar() {
           content: e.content,
         },
       }));
-      // 변환된 일정 저장, FullCalendar에 반영
       setEvents(fetched);
     });
-  }, []);
+  }, [groupId]);
 
 
   // 일정 등록
   const handleSelect = async (info) => {
+    if (!isHost) return; // 스터디장만 등록 가능
+
     let title = prompt("제목을 입력하세요 (필수):");
     if (!title) return;
     const content = prompt("내용을 입력하세요 (선택):");
@@ -63,27 +78,31 @@ export default function StudyCalendar() {
     };
 
     try {
-      await axios.post(`${host}/api/study/calendar`, newEvent, {
+      const res = await axios.post(`${host}/api/study/calendar`, newEvent, {
         headers: {
-          'X-USER-ID': userId // 로그인 사용자 ID를 헤더에 포함
+          'X-USER-ID': userId
         }
       });
-      alert('등록 완료');
+      const saved = res.data;
 
-      // 화면에 추가
+      // 화면에 바로 반영
       setEvents((prev) => [
         ...prev,
         {
-          ...newEvent,
-          id: Date.now(), // 임시 아이디
+          id: saved.id,
+          title: saved.title,
+          start: saved.startDate,
+          end: saved.endDate,
           allDay: true,
-          backgroundColor: newEvent.bgColor,
-          textColor: newEvent.textColor,
-          extendedProps: { content },
+          backgroundColor: saved.bgColor,
+          textColor: saved.textColor,
+          extendedProps: { content: saved.content },
         },
       ]);
+
+      alert('등록 완료');
     } catch (err) {
-      console.error("등록 실패:", err); 
+      console.error("등록 실패:", err);
       alert('등록 실패');
     }
   };
@@ -103,7 +122,8 @@ export default function StudyCalendar() {
         id: selectedEvent.id,
         title: newTitle,
         content: newContent,
-      },  {
+        groupId: groupId,
+      }, {
         headers: {
           'X-USER-ID': userId
         }
@@ -124,7 +144,7 @@ export default function StudyCalendar() {
     if (!window.confirm('삭제하시겠습니까?')) return;
 
     try {
-      await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}` ,{
+      await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}`, {
         headers: {
           'X-USER-ID': userId
         }
@@ -142,7 +162,7 @@ export default function StudyCalendar() {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        selectable={true}
+        selectable={isHost}
         select={handleSelect}
         // selectMirror={true}
         events={events}
@@ -161,6 +181,7 @@ export default function StudyCalendar() {
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder='제목을 입력하세요'
                 className="modal-input"
+                readOnly={!isHost}
               />
             </div>
 
@@ -173,15 +194,18 @@ export default function StudyCalendar() {
                 placeholder='내용을 입력하세요'
                 rows="3"
                 className="modal-textarea"
+                readOnly={!isHost}
               />
             </div>
 
             {/* 버튼 섹션 */}
             <div className="modal-buttons">
-              <div className="action-buttons">
-                <button onClick={handleUpdate} className="update-button">수정</button>
-                <button onClick={handleDelete} className="delete-button">삭제</button>
-              </div>
+              {isHost && (
+                <div className="action-buttons">
+                  <button onClick={handleUpdate} className="update-button">수정</button>
+                  <button onClick={handleDelete} className="delete-button">삭제</button>
+                </div>
+              )}
               <button onClick={() => setShowModal(false)} className="close-button">닫기</button>
             </div>
           </div>

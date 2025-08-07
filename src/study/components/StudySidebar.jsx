@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './StudySideBar.css';
-import { studySidebarApi } from '../components/StusySidebarApi';
+import { studySidebarApi } from './StudySidebarApi';
 
 
 export default function StudySidebar({
   groupId,
-  initialTab = 'dashboard', //기본 활성화 탭
+  initialTab = 'main', //기본 활성화 탭
   onMenuClick
 }) {
 
@@ -27,7 +27,7 @@ export default function StudySidebar({
 
   // 사이드 바 메뉴
   const menuItems = [
-    { id: 'dashboard', label: '대시보드' },
+    { id: 'main', label: '대시보드' },
     { id: 'member', label: '멤버' },
     { id: 'calendar', label: '캘린더' },
     { id: 'project', label: '프로젝트' }
@@ -87,9 +87,9 @@ export default function StudySidebar({
 
 
   return (
-    <div id={'sidebar-wrap'}>
+    <div id={'sidebar-wrap'} className={` ${isCollapsed ? 'collapsed' : ''}`}>
       {/* 메인 사이드바 */}
-      <div className={`study-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className={`study-sidebar`}>
         {/* 스터디 정보 */}
         <div className='study-info'>
           <p className='sidebar-category'>
@@ -99,13 +99,13 @@ export default function StudySidebar({
             {loading ? '로딩 중...' : (studyInfo.name || '스터디이름')}
           </p>
           <p className='sidebar-contact'>
-            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}D
+            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}
           </p>
         </div>
         {/* 대시보드 메뉴 */}
         <ul className='sidebar-study-menu'>
           <li className={`menu-tab dashboard-tab ${currentTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('dashboard')}>
+            onClick={() => handleMenuClick('')}>
             대시보드
           </li>
           <li className={`menu-tab member-tab ${currentTab === 'member' ? 'active' : ''}`}
