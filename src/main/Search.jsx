@@ -31,6 +31,10 @@ function Search() {
   const debounceTimer = useRef(null);
   const DEFAULT_THUMBNAIL_URL = "https://placehold.co/150x100?text=No+Image";
 
+  // **페이지네이션 상태 추가**
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 2; // 한 페이지에 8개씩 보여줌
+
   const getMinMaxMembers = (recruitmentCount) => {
     if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 4 };
     if (recruitmentCount === "5~10") return { minMembers: 5, maxMembers: 10 };
@@ -136,7 +140,7 @@ function Search() {
       return;
     }
 
-    const userId = user.id; // 예: AuthContext에서 받아온 로그인된 사용자 ID
+    const userId = user.id;
 
     try {
       if (userBookmarks.includes(groupId)) {
@@ -149,7 +153,7 @@ function Search() {
         // 북마크 추가
         const payload = {
           userId: userId,
-          groupId: groupId ?? null, // groupId가 없으면 null로 명시
+          groupId: groupId ?? null,
         };
         console.log("북마크 추가 요청 payload:", {
           userId: user.id,
@@ -187,6 +191,7 @@ function Search() {
       fetchPosts(filters);
       fetchBookmarkViewCounts();
       fetchUserBookmarks();
+      setCurrentPage(1); // 필터 변경 시 페이지 1로 초기화
     }, 300);
 
     return () => {
@@ -194,11 +199,11 @@ function Search() {
     };
   }, [filters, isAuthenticated]);
 
+  // posts + bookmarkViewList + userBookmarks 병합
   const mergedPosts = posts.map((post) => {
     const bookmarkView = bookmarkViewList.find(
       (b) => b.groupId == post.groupId
     );
-    // userBookmarks 배열에 groupId가 포함되어 있는지 확인
     const isBookmarked = userBookmarks.includes(post.groupId);
     const viewCount =
       post.viewCount ?? (bookmarkView ? bookmarkView.viewCount : 0);
@@ -210,6 +215,18 @@ function Search() {
       isBookmarked: isBookmarked,
     };
   });
+
+  // 페이지네이션 관련 인덱스 계산
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = mergedPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(mergedPosts.length / postsPerPage);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="search-filter">
@@ -355,85 +372,212 @@ function Search() {
           {mergedPosts.length === 0 ? (
             <p>검색 결과가 없습니다.</p>
           ) : (
-            mergedPosts.map((post) => (
-              <Link
-                to={`/study/postView/${post.groupId}`} // 그룹 ID를 URL 파라미터로 전달
-                key={post.studyPostId}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  borderBottom: "1px solid #ddd",
-                  padding: 10,
-                  gap: "20px",
-                  alignItems: "flex-start",
-                  position: "relative",
-                }}
-              >
-                <img
-                  src={post.thumbnail || DEFAULT_THUMBNAIL_URL}
-                  alt={`${post.title} 썸네일`}
+            <>
+              {currentPosts.map((post) => (
+                <Link
+                  to={`/study/postView/${post.groupId}`} // 그룹 ID를 URL 파라미터로 전달
+                  key={post.studyPostId}
                   style={{
-                    width: "250px",
-                    height: "250px",
-                    objectFit: "cover",
-                    borderRadius: "5px",
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "flex",
+                    borderBottom: "1px solid #ddd",
+                    padding: 10,
+                    gap: "20px",
+                    alignItems: "flex-start",
+                    position: "relative",
                   }}
-                />
-                <div>
-                  <div
+                >
+                  <img
+                    src={post.thumbnail || DEFAULT_THUMBNAIL_URL}
+                    alt={`${post.title} 썸네일`}
                     style={{
-                      position: "absolute",
-                      top: "10px",
-                      right: "10px",
-                      cursor: "pointer",
-                      color: post.isBookmarked ? "orange" : "#ddd",
-                      fontSize: "24px",
+                      width: "250px",
+                      height: "250px",
+                      objectFit: "cover",
+                      borderRadius: "5px",
                     }}
-                    onClick={(e) => {
-                      e.preventDefault(); // 링크 이동 막고 북마크 기능만 작동하게
-                      handleBookmarkToggle(post.groupId, post.isBookmarked);
-                    }}
-                  >
-                    {post.isBookmarked ? "★" : "☆"}
-                  </div>
+                  />
+                  <div>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        cursor: "pointer",
+                        color: post.isBookmarked ? "orange" : "#ddd",
+                        fontSize: "24px",
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleBookmarkToggle(post.groupId, post.isBookmarked);
+                      }}
+                    >
+                      {post.isBookmarked ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="orange"
+                          strokeWidth={1.5} // 조금 얇게 조절
+                        >
+                          <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#bbb"
+                          strokeWidth={1} // 기본 얇은 회색 테두리
+                        >
+                          <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+                        </svg>
+                      )}
+                    </div>
 
-                  <h3>{post.title}</h3>
-                  <p>작성자: {post.authorName ?? "알 수 없음"}</p>
-                  <p>카테고리: {post.category}</p>
-                  <p>진행방식: {post.studyMode}</p>
-                  <p>모집인원: {post.maxMembers}</p>
-                  <p>지역: {post.region || "지역 미정 (온라인)"}</p>
-                  <p>
-                    모집 마감일:{" "}
-                    {post.recruitEndDate
-                      ? new Date(post.recruitEndDate).toLocaleDateString()
-                      : "마감일 없음"}
-                  </p>
-                  <p>
-                    모집 기간:{" "}
-                    {post.recruitStartDate
-                      ? new Date(post.recruitStartDate).toLocaleDateString()
-                      : "미정"}{" "}
-                    ~{" "}
-                    {post.recruitEndDate
-                      ? new Date(post.recruitEndDate).toLocaleDateString()
-                      : "미정"}
-                  </p>
-                  <p>{post.content}</p>
-                  <div
-                    style={{ marginTop: 10, fontSize: "0.9em", color: "#555" }}
-                  >
-                    <span style={{ marginRight: 15 }}>
-                      조회수: <strong>{post.viewCount ?? 0}</strong>
-                    </span>
-                    <span style={{ marginRight: 15 }}>
-                      북마크: <strong>{post.bookmarkCount ?? 0}</strong>
-                    </span>
+                    <h3>{post.title}</h3>
+                    <p>작성자: {post.authorName ?? "알 수 없음"}</p>
+                    <p>카테고리: {post.category}</p>
+                    <p>진행방식: {post.studyMode}</p>
+                    <p>모집인원: {post.maxMembers}</p>
+                    <p>지역: {post.region || "지역 미정 (온라인)"}</p>
+                    <p>
+                      모집 마감일:{" "}
+                      {post.recruitEndDate
+                        ? new Date(post.recruitEndDate).toLocaleDateString()
+                        : "마감일 없음"}
+                    </p>
+                    <p>
+                      모집 기간:{" "}
+                      {post.recruitStartDate
+                        ? new Date(post.recruitStartDate).toLocaleDateString()
+                        : "미정"}{" "}
+                      ~{" "}
+                      {post.recruitEndDate
+                        ? new Date(post.recruitEndDate).toLocaleDateString()
+                        : "미정"}
+                    </p>
+                    <p className="gtruncated-text">{post.content}</p>
+                    <div
+                      style={{
+                        marginTop: 10,
+                        fontSize: "0.9em",
+                        color: "#555",
+                      }}
+                    >
+                      <span style={{ marginRight: 15 }}>
+                        조회수: <strong>{post.viewCount ?? 0}</strong>
+                      </span>
+                      <span style={{ marginRight: 15 }}>
+                        북마크: <strong>{post.bookmarkCount ?? 0}</strong>
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))
+                </Link>
+              ))}
+
+              {/* 페이지네이션 버튼 */}
+              <div style={{ marginTop: 20, textAlign: "center" }}>
+                {/* << 맨 처음으로 */}
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  style={{
+                    margin: "0 3px",
+                    padding: "5px 8px",
+
+                    backgroundColor: "white",
+                    color: currentPage === 1 ? "#aaa" : "black",
+                    cursor: currentPage === 1 ? "default" : "pointer",
+                  }}
+                >
+                  &laquo;
+                </button>
+
+                {/* < 이전 */}
+                <button
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    margin: "0 3px",
+                    padding: "5px 8px",
+                    backgroundColor: "white",
+                    color: currentPage === 1 ? "#aaa" : "black",
+                    cursor: currentPage === 1 ? "default" : "pointer",
+                  }}
+                >
+                  &lt;
+                </button>
+
+                {/* 숫자 버튼 (최대 5개) */}
+                {[...Array(5)].map((_, i) => {
+                  const startPage = Math.max(
+                    1,
+                    Math.min(currentPage - 2, totalPages - 4)
+                  );
+                  const pageNumber = startPage + i;
+
+                  if (pageNumber > totalPages) return null;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => handlePageChange(pageNumber)}
+                      style={{
+                        margin: "0 3px",
+                        padding: "5px 10px",
+                        borderRadius: 4,
+                        border:
+                          pageNumber === currentPage ? "2px solid orange" : "",
+                        backgroundColor:
+                          pageNumber === currentPage ? "orange" : "white",
+                        color: pageNumber === currentPage ? "white" : "black",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+
+                {/* > 다음 */}
+                <button
+                  onClick={() =>
+                    handlePageChange(Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  style={{
+                    margin: "0 3px",
+                    padding: "5px 8px",
+                    backgroundColor: "white",
+                    color: currentPage === totalPages ? "#aaa" : "black",
+                    cursor: currentPage === totalPages ? "default" : "pointer",
+                  }}
+                >
+                  &gt;
+                </button>
+
+                {/* >> 맨 끝으로 */}
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    margin: "0 3px",
+                    padding: "5px 8px",
+                    backgroundColor: "white",
+                    color: currentPage === totalPages ? "#aaa" : "black",
+                    cursor: currentPage === totalPages ? "default" : "pointer",
+                  }}
+                >
+                  &raquo;
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}

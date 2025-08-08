@@ -40,8 +40,19 @@ html,
 body {
   height: auto;
   overflow-y: auto;
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.search-filter {
+  padding-bottom: 80px; /* 푸터 높이만큼 */
+}
+.gtruncated-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .filters-wrapper {
