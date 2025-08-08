@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import "./Search.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // useLocation 추가
 import { useAuth } from "../contexts/AuthContext";
+import "./Search.css";
 
 function Search() {
-  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
+  const debounceTimer = useRef(null);
+
+  // 헤더에서 전달된 카테고리 상태를 초기값으로 사용합니다.
+  const initialCategoryFromHeader = location.state?.category || "전체";
+
+  // 상태 변수를 통합하고 초기화 로직을 개선합니다.
   const [filters, setFilters] = useState({
-    category: "",
+    category:
+      initialCategoryFromHeader === "전체" ? "" : initialCategoryFromHeader,
     studyMode: "",
     region: "",
     search: "",
@@ -22,46 +30,52 @@ function Search() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { user, isAuthenticated } = useAuth();
-  const debounceTimer = useRef(null);
   const DEFAULT_THUMBNAIL_URL = "https://placehold.co/150x100?text=No+Image";
-
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
+
+  // 헤더에서 카테고리를 클릭했을 때 필터 상태를 업데이트하는 로직
+  useEffect(() => {
+    const newCategory = location.state?.category;
+    if (newCategory !== undefined) {
+      setFilters((prev) => ({
+        ...prev,
+        category: newCategory === "전체" ? "" : newCategory,
+      }));
+    }
+  }, [location.state]);
 
   const getMinMaxMembers = (recruitmentCount) => {
     if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 4 };
     if (recruitmentCount === "5~10") return { minMembers: 5, maxMembers: 10 };
     if (recruitmentCount === "10이상")
-      return { minMembers: 11, maxMembers: null };
+      return { minMembers: 10, maxMembers: null };
     return { minMembers: null, maxMembers: null };
   };
 
   const fetchPosts = async (filterParams) => {
+    const { minMembers, maxMembers } = getMinMaxMembers(
+      filterParams.recruitmentCount
+    );
+    const recruitingOnlyInt = filterParams.recruitingOnly ? 1 : 0;
+
+    const params = {
+      ...filterParams,
+      category: filterParams.category || "",
+      recruitingOnly: recruitingOnlyInt,
+      minMembers: minMembers,
+      maxMembers: maxMembers,
+      search: filterParams.search || "",
+    };
+
     try {
-      const { minMembers, maxMembers } = getMinMaxMembers(
-        filterParams.recruitmentCount
-      );
-      const recruitingOnlyInt = filterParams.recruitingOnly ? 1 : 0;
-
-      const params = {};
-      if (filterParams.category) params.category = filterParams.category;
-      if (filterParams.studyMode) params.studyMode = filterParams.studyMode;
-      if (filterParams.region) params.region = filterParams.region;
-      if (filterParams.search) params.search = filterParams.search;
-      if (filterParams.recruitingOnly !== undefined)
-        params.recruitingOnly = recruitingOnlyInt;
-      if (minMembers !== null) params.minMembers = minMembers;
-      if (maxMembers !== null) params.maxMembers = maxMembers;
-
       const res = await axios.get("http://localhost:8081/api/searchPosts", {
         params,
       });
       console.log("포스트 API 응답:", res.data);
-
       if (Array.isArray(res.data)) {
         setPosts(res.data);
-      } else if (res.data && Array.isArray(res.data.posts)) {
+      } else if (res.data?.posts && Array.isArray(res.data.posts)) {
         setPosts(res.data.posts);
       } else {
         setPosts([]);
@@ -98,19 +112,12 @@ function Search() {
   };
 
   const fetchBookmarkViewCounts = async () => {
-    if (!isAuthenticated) {
-      setCountsData({});
-      return;
-    }
     try {
       const res = await axios.get("http://localhost:8081/api/bookmark/counts");
       console.log("북마크+조회수 API 응답:", res.data);
-
       if (res.data.success && Array.isArray(res.data.data)) {
         const newCountsData = res.data.data.reduce((acc, item) => {
-          // 백엔드에서 실제로 보내는 대문자 필드명을 사용합니다.
           const groupId = item.GROUPID;
-
           if (groupId !== undefined && groupId !== null) {
             acc[groupId] = {
               viewCount: 0,
@@ -153,54 +160,51 @@ function Search() {
     }
   };
 
-  const handleRecruitmentCountChange = (value) => {
-    setFilters((prev) => ({ ...prev, recruitmentCount: value }));
-  };
-
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
   };
 
+  // 모든 API 호출을 한 번에 처리하는 메인 useEffect 훅
   useEffect(() => {
     setIsLoading(true);
     setError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    debounceTimer.current = setTimeout(() => {
-      if (!isAuthenticated) {
-        setPosts([]);
-        setCountsData({});
-        setUserBookmarks([]);
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        await Promise.all([
+          fetchPosts(filters),
+          fetchBookmarkViewCounts(),
+          isAuthenticated && user?.id
+            ? fetchUserBookmarks()
+            : Promise.resolve(),
+        ]);
+      } catch (err) {
+        setError("데이터를 불러오는 데 실패했습니다.");
+        console.error("데이터 불러오기 실패:", err);
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      const fetchData = async () => {
-        try {
-          await Promise.all([
-            fetchPosts(filters),
-            fetchBookmarkViewCounts(),
-            fetchUserBookmarks(),
-          ]);
-        } catch (err) {
-          setError("데이터를 불러오는 데 실패했습니다.");
-          console.error("데이터 불러오기 실패:", err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchData();
       setCurrentPage(1);
     }, 300);
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
-  }, [filters, isAuthenticated]);
+  }, [filters, isAuthenticated, user?.id]);
+
+  // 헤더에서 카테고리 클릭 시 필터 상태 업데이트
+  useEffect(() => {
+    const newCategory = location.state?.category;
+    if (newCategory !== undefined) {
+      setFilters((prev) => ({
+        ...prev,
+        category: newCategory === "전체" ? "" : newCategory,
+      }));
+    }
+  }, [location.state]);
 
   const mergedPosts = posts.map((post) => {
-    // 💡 백엔드에서 group_id로 응답을 보내므로, countsData의 키도 group_id로 사용해야 합니다.
-    // 하지만 post 객체에는 groupId가 있으므로, countsData의 키를 맞춰야 합니다.
     const counts = countsData[post.groupId] || {
       viewCount: 0,
       bookmarkCount: 0,
@@ -227,7 +231,7 @@ function Search() {
 
   return (
     <div className="search-filter">
-      <div className="category-tabs">
+      <div className="category-tabs" style={{ display: "none" }}>
         {[
           "전체",
           "자격증",
@@ -240,11 +244,15 @@ function Search() {
         ].map((cat) => (
           <button
             key={cat}
-            className={selectedCategory === cat ? "active" : ""}
+            className={
+              (filters.category === "" && cat === "전체") ||
+              filters.category === cat
+                ? "active"
+                : ""
+            }
             onClick={() => {
               const newCategory = cat === "전체" ? "" : cat;
-              setSelectedCategory(cat);
-              handleFilterChange({ ...filters, category: newCategory });
+              setFilters({ ...filters, category: newCategory });
             }}
           >
             {cat}
@@ -297,7 +305,9 @@ function Search() {
         className="gselect"
         name="recruitmentCount"
         value={filters.recruitmentCount}
-        onChange={(e) => handleRecruitmentCountChange(e.target.value)}
+        onChange={(e) =>
+          handleFilterChange({ ...filters, recruitmentCount: e.target.value })
+        }
       >
         <option value="">모집인원</option>
         <option value="1~5">1~5</option>
@@ -387,7 +397,7 @@ function Search() {
               {currentPosts.map((post) => (
                 <Link
                   to={`/study/postView/${post.groupId}`}
-                  key={post.studyPostId}
+                  key={post.groupId}
                   style={{
                     textDecoration: "none",
                     color: "inherit",
