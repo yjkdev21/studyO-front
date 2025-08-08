@@ -1,0 +1,138 @@
+/* ApplicationModal.css */
+
+/* 모달의 배경을 어둡게 처리하는 오버레이 */
+/* 모달의 배경을 어둡게 처리하는 오버레이 */
+.request-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* 모달의 실제 내용 컨테이너 */
+.request-modal-content {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 모달 헤더 (썸네일과 이름) */
+.request-modal-header {
+  display: block;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.request-group-thumbnail {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0px auto;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.group-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 모달 본문 (신청 내용 textarea) */
+.request-modal-body {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.application-textarea {
+  margin-bottom: 20px;
+  width: 100%;
+  height: 150px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  resize: vertical;
+  box-sizing: border-box;
+  background-color: #eeeeee;
+}
+
+.application-textarea:focus {
+  outline: none;
+  border-color: #ff8000;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.request-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-cancel-btn {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  flex-grow: 1;
+  border-bottom-left-radius: 10px;
+}
+
+.modal-submit-btn {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  flex-grow: 1;
+  border-bottom-right-radius: 10px;
+}
+
+.modal-cancel-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.modal-cancel-btn:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.modal-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-submit-btn {
+  background-color: #fdb515;
+  color: white;
+}
+
+.modal-submit-btn:hover:not(:disabled) {
+  background-color: #f59e0b;
+}
+
+.modal-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .request-modal-content {
+    margin: 0px 10px;
+  }
+}
