@@ -31,7 +31,7 @@ export default function Header() {
   };
 
   return (
-    <header >
+    <header>
       <div id="header" className="border-b border-[#eee]">
         <div className="relative !px-3 max-w-7xl !m-auto w-full h-[80px] flex items-center">
           {/* 헤더 왼쪽: 로고 & 카테고리 */}
@@ -55,28 +55,44 @@ export default function Header() {
             {/* 헤더 카테고리 */}
             <ul className={`header-category flex ${isMenuOpen ? "" : "on"}`}>
               <li>
-                <Link to="/search">전체</Link>
+                <Link to="/search" state={{ category: "전체" }}>
+                  전체
+                </Link>
               </li>
               <li>
-                <Link to="/search">IT</Link>
+                <Link to="/search" state={{ category: "IT" }}>
+                  IT
+                </Link>
               </li>
               <li>
-                <Link to="/search">자격증</Link>
+                <Link to="/search" state={{ category: "자격증" }}>
+                  자격증
+                </Link>
               </li>
               <li>
-                <Link to="/search">언어</Link>
+                <Link to="/search" state={{ category: "언어" }}>
+                  언어
+                </Link>
               </li>
               <li>
-                <Link to="/search">전공</Link>
+                <Link to="/search" state={{ category: "전공" }}>
+                  전공
+                </Link>
               </li>
               <li>
-                <Link to="/search">취업/면접</Link>
+                <Link to="/search" state={{ category: "취업/면접" }}>
+                  취업/면접
+                </Link>
               </li>
               <li>
-                <Link to="/search">취미</Link>
+                <Link to="/search" state={{ category: "취미" }}>
+                  취미
+                </Link>
               </li>
               <li>
-                <Link to="/search">기타</Link>
+                <Link to="/search" state={{ category: "기타" }}>
+                  기타
+                </Link>
               </li>
             </ul>
           </div>
@@ -86,7 +102,9 @@ export default function Header() {
               // 로그인 중인 메뉴
               <ul className="flex items-center !space-x-[30px]">
                 <li>
-                  <Link to="/groupCreate" className="header-study-btn text-sm">스터디 생성</Link>
+                  <Link to="/groupCreate" className="header-study-btn text-sm">
+                    스터디 생성
+                  </Link>
                 </li>
                 <li>
                   <button
@@ -101,7 +119,9 @@ export default function Header() {
                     <div className="header-dropmenu absolute top-[70px] right-3 !p-3 border border-[#eee] rounded-lg bg-white z-50">
                       <ul className="min-w-[120px] !space-y-4 text-sm">
                         <li>
-                          <Link to="study/dashboard/dashboardList">대시보드</Link>
+                          <Link to="study/dashboard/dashboardList">
+                            대시보드
+                          </Link>
                         </li>
                         <li>
                           <Link to="/myPage">마이페이지</Link>
