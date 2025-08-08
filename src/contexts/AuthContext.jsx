@@ -8,9 +8,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // 처음에 true로 시작
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+
+  const [skipAuthCheck, setSkipAuthCheck] = useState(false);
+
 
   //axios 기본 설정
   const baseConfig = {
@@ -82,22 +83,25 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       const response = await authApi.post("/logout");
-      const data = response.data;
 
       setUser(null);
       setIsAuthenticated(false);
+      setSkipAuthCheck(true);
 
-      return { success: true, message: data.message || "로그아웃되었습니다." };
+      return { success: true, message: response.data.message || "로그아웃되었습니다." };
     } catch (error) {
       console.error("로그아웃 오류:", error);
 
       // 에러가 발생해도 프론트엔드에서는 로그아웃 처리
       setUser(null);
       setIsAuthenticated(false);
+      setSkipAuthCheck(true);
 
       return { success: false, message: "로그아웃 중 오류가 발생했습니다." };
     }
   };
+
+  const clearAuthCheck = () => setSkipAuthCheck(false);
 
   // 아이디 찾기
   const findUserId = async (email) => {
@@ -167,7 +171,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     deleteAccount,
     findUserId,
-    resetPassword
+    resetPassword,
+    skipAuthCheck,
+    clearAuthCheck,
   };
 
   return (

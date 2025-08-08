@@ -13,6 +13,7 @@
 
 /* 그림자 버튼 */
 .shadow-btn {
+  display: block;
   width: 300px;
   padding: 20px;
   border: 1px solid black;
@@ -20,7 +21,18 @@
   background-color: white;
   font-weight: bold;
   letter-spacing: 0.07em;
+}
 
+.shadow-btn:hover {
+  background-color: var(--sub-color);
+}
+
+.shadow-btn span {
+  transition: all .3s;
+}
+
+.shadow-btn:hover span {
+  margin-left: 20px;
 }
 
 /* ========================================
@@ -44,6 +56,7 @@ main {
 
 main#home-page {
   padding: 80px 0;
+  position: relative;
 }
 
 #home-page .main-center {
@@ -80,10 +93,22 @@ main#home-page {
   margin-right: 5px;
 }
 
+#home-page .main-banner-btn {
+  position: absolute;
+  bottom: 15%;
+  left: calc(50% - 150px);
+  /* width: 100%; */
+}
+
 /* 태블릿 - 화면 1023px 이하 */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   #home-page .main-banner {
-    background-position-y: top;
+    background-size: cover;
+    background-position: 5% center;
+  }
+
+  #home-page .banner-text {
+    margin-right: -30vw;
   }
 }
 
@@ -96,14 +121,13 @@ main#home-page {
 
   #home-page .banner-text {
     font-size: 48px;
-    margin-right: -20vw;
+    margin-right: -15vw;
   }
 
   #home-page .banner-text img {
     width: 200px;
   }
 }
-
 
 /* ========================================
                   Header
@@ -143,6 +167,7 @@ header {
   color: var(--main-color);
   transition: background-color .2s, color .2s;
 }
+
 #header .header-study-btn:hover {
   background-color: var(--main-color);
   color: white;
@@ -157,14 +182,26 @@ header {
   border-color: var(--main-color);
 }
 
+#header .header-dropmenu li>* {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
 /* 태블릿 - 화면 1023px 이하 */
 @media (max-width: 1023px) {
-  #header .header-logo {
-    margin-right: 5px;
-  }
-
   #header .header-nav {
     justify-content: center;
+    height: 80px;
+    position: fixed;
+    top: 0;
+    left: calc(50% - 50px);
+    z-index: 40;
+  }
+
+  #header .header-logo {
+    width: 100px;
+    margin-right: 5px;
   }
 
   #header .header-mobile-btn {
@@ -173,11 +210,11 @@ header {
 
   #header .header-category {
     padding: 20px 0;
-    position: absolute;
+    position: fixed;
     width: 100%;
-    top: 100%;
+    top: 80px;
     left: 0;
-    z-index: 100;
+    z-index: 40;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
@@ -189,7 +226,6 @@ header {
   #header .header-category.on {
     padding: 0;
     max-height: 0;
-
   }
 
   #header .header-category li {
@@ -198,8 +234,12 @@ header {
 }
 
 /* 모바일 - 화면 767px 이하 */
-@media (max-width: 767px) {}
-
+@media (max-width: 767px) {
+  #header .header-info .join,
+  #header .header-study-btn {
+    display: none;
+  }
+}
 
 /* ========================================
                   Footer

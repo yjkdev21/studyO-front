@@ -3,7 +3,8 @@ export default function Home() {
   return (
     <main id="home-page">
       <div className="main-center">
-        <div className="absolute top-23 left-1 z-10">
+        {/* 추후 삭제 -- 시작 */}
+        <div className="absolute top-1 left-1 z-10">
           <Link to="/sample/5" className="border bg-gray-300 block">
             Go to Sample 5
           </Link>
@@ -16,6 +17,7 @@ export default function Home() {
           <br />
           <br />
         </div>
+        {/* 추후 삭제 -- 끝 */}
         {/* 메인 배너 */}
         <div className="main-banner relative">
           {/* 배너 컨텐츠 */}
@@ -33,10 +35,8 @@ export default function Home() {
               />
             </div>
             {/* 배너 버튼 */}
-            <div className="!mt-40">
-              <button type="button" className="shadow-btn">
-                <Link to="/">스터디 시작하기 →</Link>
-              </button>
+            <div className="main-banner-btn">
+              <Link to="/groupCreate" className="shadow-btn">스터디 시작하기 <span>→</span></Link>
             </div>
           </div>
         </div>

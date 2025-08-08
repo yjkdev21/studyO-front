@@ -7,6 +7,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 카테고리 메뉴 (태블릿용)
   const location = useLocation();
+
   // 페이지 이동 시 메뉴 닫기
   useEffect(() => {
     setOpen(false);
@@ -23,10 +24,10 @@ export default function Header() {
     const confirmed = window.confirm("로그아웃 하시겠습니까?");
     if (!confirmed) return;
 
+    window.location.href = "/";
+
     const result = await logout();
-    alert("로그아웃되었습니다.");
-    // 로그인 화면으로 이동
-    window.location.href = "/login";
+    alert(result.message);
   };
 
   return (
@@ -84,7 +85,6 @@ export default function Header() {
             {isAuthenticated ? (
               // 로그인 중인 메뉴
               <ul className="flex items-center !space-x-[30px]">
-                <li><span>{user?.nickname || user?.userId} 님</span>(확인용)</li>
                 <li>
                   <Link to="/groupCreate" className="header-study-btn text-sm">스터디 생성</Link>
                 </li>
@@ -98,7 +98,7 @@ export default function Header() {
                   </button>
                   {/* 드롭 메뉴 */}
                   {open && (
-                    <div className="absolute top-[70px] right-3 !p-3 border border-[#eee] rounded-lg bg-white z-50">
+                    <div className="header-dropmenu absolute top-[70px] right-3 !p-3 border border-[#eee] rounded-lg bg-white z-50">
                       <ul className="min-w-[120px] !space-y-4 text-sm">
                         <li>
                           <Link to="study/dashboard/dashboardList">대시보드</Link>
@@ -121,15 +121,12 @@ export default function Header() {
               </ul>
             ) : (
               // 비회원 메뉴
-              <ul className="flex !space-x-[30px]">
-                <li>
+              <ul className="flex md:!space-x-[30px] !space-x-0">
+                <li className="login">
                   <Link to="/login">로그인</Link>
                 </li>
-                <li>
+                <li className="join">
                   <Link to="/join">회원가입</Link>{" "}
-                </li>
-                <li>
-                  <Link to="/groupCreate" className="header-study-btn text-sm">스터디 생성</Link>(임시)
                 </li>
               </ul>
             )}
