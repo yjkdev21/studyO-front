@@ -151,40 +151,37 @@
   margin: 0;
 }
 
-/* 헤더 페이지네이션 버튼들 */
 .mypage-header-pagination {
   display: flex;
-  gap: 8px;
+  gap: 16px;
 }
 
 .mypage-header-pagination-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 2px solid #ddd;
-  background: white;
-  border-radius: 8px;
+  width: auto;
+  height: auto;
+  border: none;
+  background: none;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #333;
+  padding: 8px;
 }
 
 .mypage-header-pagination-btn:hover:not(.disabled) {
-  background: #f8f9fa;
-  border-color: #FDB515;
+  color: #FDB515;
+  transform: scale(1.1);
 }
 
 .mypage-header-pagination-btn.disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  background: #f9f9f9;
-  border-color: #e0e0e0;
 }
 
 .header-arrow-icon {
-  font-size: 20px;
+  font-size: 40px;
   font-weight: bold;
   line-height: 1;
 }
@@ -219,9 +216,6 @@
   color: #ffffff;
 }
 
-/* 페이지네이션 컨테이너는 제거 - 더 이상 사용하지 않음 */
-
-/* 스터디 카드 컨테이너 (페이지네이션용) */
 .mypage-studies-cards-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -230,12 +224,10 @@
   min-height: 200px;
 }
 
-/* 섹션 래퍼 */
 .mypage-studies-section-wrapper {
   width: 100%;
 }
 
-/* 페이지 인디케이터 */
 .mypage-page-indicator {
   display: flex;
   justify-content: center;
@@ -298,15 +290,6 @@
   border: 1px solid #d1d5db;
   background-color: #f9fafb;
   color: #6b7280;
-}
-
-.mypage-study-card-badge.offline,
-.mypage-study-card-badge.location,
-.mypage-study-card-badge.members,
-.mypage-study-card-badge.bookmark {
-  background-color: #f9fafb;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
 }
 
 .mypage-study-thumbnail-wrapper {
@@ -398,12 +381,6 @@
   margin-right: 0.5rem;
 }
 
-.mypage-chevron-right {
-  font-size: 1rem;
-  color: #000000;
-  font-weight: bold;
-}
-
 .mypage-loading,
 .mypage-error,
 .mypage-study-loading,
@@ -415,19 +392,13 @@
   color: #666;
 }
 
-/* 반응형 처리 */
 @media (max-width: 1024px) {
   .mypage-studies-cards-container {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .mypage-header-pagination-btn {
-    width: 36px;
-    height: 36px;
-  }
-  
   .header-arrow-icon {
-    font-size: 18px;
+    font-size: 36px;
   }
 }
 
@@ -473,12 +444,7 @@
     font-size: 13px;
   }
   
-  .mypage-header-pagination-btn {
-    width: 32px;
-    height: 32px;
-  }
-  
   .header-arrow-icon {
-    font-size: 16px;
+    font-size: 32px;
   }
 }

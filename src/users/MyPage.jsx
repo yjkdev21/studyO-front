@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ConfirmModal from "./modal/ConfirmModal";
+import PasswordModal from './modal/PasswordModal';
 import './MyPage.css';
 
-// StudyCard와 BookmarkCard 컴포넌트는 기존과 동일하므로 생략...
 const StudyCard = ({
   groupId,
   category,
@@ -14,7 +15,6 @@ const StudyCard = ({
   maxMembers,
   studyMode,
   region,
-  contact,
   thumbnail,
   isSelected,
   onSelect,
@@ -88,7 +88,6 @@ const BookmarkCard = ({
   maxMembers,
   studyMode,
   region,
-  contact,
   thumbnail,
   isSelected,
   onSelect,
@@ -159,7 +158,6 @@ function MyPage() {
     user.profileImage : 
     "/images/default-profile.png";
 
-  // 기존 상태들
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedBookmarkCard, setSelectedBookmarkCard] = useState(null);
   const [myStudies, setMyStudies] = useState([]);
@@ -168,17 +166,18 @@ function MyPage() {
   const [myBookmarks, setMyBookmarks] = useState([]);
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
   const [bookmarkError, setBookmarkError] = useState(null);
-
-  // 스터디 필터 상태들
   const [activeStudyFilter, setActiveStudyFilter] = useState('all');
   const [filteredStudies, setFilteredStudies] = useState([]);
-
-  // 페이지네이션 상태들
   const [studyCurrentPage, setStudyCurrentPage] = useState(0);
   const [bookmarkCurrentPage, setBookmarkCurrentPage] = useState(0);
+  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
   const ITEMS_PER_PAGE = 3;
 
-  // 스터디 필터 옵션들
   const studyFilterOptions = [
     { key: 'all', label: '전체 스터디' },
     { key: 'owner', label: '내가 관리하는' },
@@ -186,7 +185,6 @@ function MyPage() {
     { key: 'completed', label: '참여했던' }
   ];
 
-  // 스터디 필터링 함수
   const filterStudies = (filterType) => {
     let filtered = [];
     
@@ -212,10 +210,9 @@ function MyPage() {
     
     setFilteredStudies(filtered);
     setActiveStudyFilter(filterType);
-    setStudyCurrentPage(0); // 필터 변경 시 첫 페이지로 리셋
+    setStudyCurrentPage(0);
   };
 
-  // 페이지네이션 계산 함수들
   const getStudyPages = () => Math.ceil(filteredStudies.length / ITEMS_PER_PAGE);
   const getBookmarkPages = () => Math.ceil(myBookmarks.length / ITEMS_PER_PAGE);
 
@@ -231,7 +228,6 @@ function MyPage() {
     return myBookmarks.slice(start, end);
   };
 
-  // 페이지네이션 핸들러들
   const handleStudyPrevPage = () => {
     if (studyCurrentPage > 0) {
       setStudyCurrentPage(studyCurrentPage - 1);
@@ -256,12 +252,88 @@ function MyPage() {
     }
   };
 
-  // 스터디 데이터가 변경될 때마다 필터링 업데이트
+  const handleEditProfile = () => {
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmEdit = () => {
+    setShowConfirmModal(false);
+    setShowPasswordModal(true);
+    setPasswordError('');
+  };
+
+  const handleCancelEdit = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handlePasswordConfirm = async (password) => {
+    setPasswordLoading(true);
+    setPasswordError('');
+
+    console.log('비밀번호 확인 시도:', { 
+      password, 
+      userId: user.userId, 
+      userInfo: user 
+    });
+
+    try {
+      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      console.log('API 호출 URL:', `${apiUrl}/api/user/verify-password`);
+      
+      const requestBody = {
+        userId: user.userId,
+        password: password
+      };
+      console.log('요청 본문:', requestBody);
+
+      const response = await fetch(`${apiUrl}/api/user/verify-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('응답 상태:', response.status, response.statusText);
+
+      const data = await response.json();
+      console.log('응답 데이터:', data);
+
+      if (response.ok && data.success) {
+        console.log('비밀번호 확인 성공');
+        setShowPasswordModal(false);
+        navigate('/myedit');
+      } else {
+        console.log('비밀번호 확인 실패:', data);
+        setPasswordError(data.message || '비밀번호가 일치하지 않습니다.');
+      }
+    } catch (error) {
+      console.error('비밀번호 확인 오류:', error);
+      setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setShowPasswordModal(false);
+    setPasswordError('');
+  };
+
+  const handleCardSelect = (id) => {
+    setSelectedCard(selectedCard === id ? null : id);
+  };
+
+  const handleBookmarkCardSelect = (id) => {
+    setSelectedBookmarkCard(selectedBookmarkCard === id ? null : id);
+  };
+
   useEffect(() => {
     filterStudies(activeStudyFilter);
   }, [myStudies, user?.id]);
 
-  // 기존 useEffect들 (스터디 및 북마크 데이터 fetch)
   useEffect(() => {
     const fetchMyActiveStudies = async () => {
       if (!isAuthenticated || !user?.id) {
@@ -285,26 +357,11 @@ function MyPage() {
           credentials: 'include',
         });
 
-        if (response.status === 403) {
-          throw new Error('서버 접근 권한이 없습니다. CORS 설정을 확인해주세요.');
-        }
-
-        if (response.status === 404) {
-          throw new Error('API 엔드포인트를 찾을 수 없습니다.');
-        }
-
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('서버에서 올바른 JSON 응답을 받지 못했습니다.');
-        }
-
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('스터디 데이터:', data);
 
         if (data.success && Array.isArray(data.data)) {
           const sortedStudies = data.data.sort((a, b) => {
@@ -312,13 +369,11 @@ function MyPage() {
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
-
           setMyStudies(sortedStudies);
         } else {
           throw new Error(data.message || '데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        console.error('스터디 데이터 조회 실패:', error);
         setStudyError(`스터디 데이터를 불러올 수 없습니다: ${error.message}`);
         setMyStudies([]);
       } finally {
@@ -352,26 +407,11 @@ function MyPage() {
           credentials: 'include',
         });
 
-        if (response.status === 403) {
-          throw new Error('서버 접근 권한이 없습니다. CORS 설정을 확인해주세요.');
-        }
-
-        if (response.status === 404) {
-          throw new Error('북마크 API 엔드포인트를 찾을 수 없습니다.');
-        }
-
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('서버에서 올바른 JSON 응답을 받지 못했습니다.');
-        }
-
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('북마크 데이터:', data);
 
         if (data.success && Array.isArray(data.data)) {
           const sortedBookmarks = data.data.sort((a, b) => {
@@ -379,13 +419,11 @@ function MyPage() {
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
-
           setMyBookmarks(sortedBookmarks);
         } else {
           throw new Error(data.message || '북마크 데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        console.error('북마크 데이터 조회 실패:', error);
         setBookmarkError(`북마크 데이터를 불러올 수 없습니다: ${error.message}`);
         setMyBookmarks([]);
       } finally {
@@ -395,19 +433,6 @@ function MyPage() {
 
     fetchMyBookmarks();
   }, [isAuthenticated, user?.id]);
-
-  // 기존 핸들러 함수들
-  const handleEditProfile = () => {
-    navigate('/myedit');
-  };
-
-  const handleCardSelect = (id) => {
-    setSelectedCard(selectedCard === id ? null : id);
-  };
-
-  const handleBookmarkCardSelect = (id) => {
-    setSelectedBookmarkCard(selectedBookmarkCard === id ? null : id);
-  };
 
   if (isLoading) {
     return (
@@ -430,7 +455,6 @@ function MyPage() {
       <div className="mypage-top-background"></div>
 
       <div className="mypage-main-content">
-        {/* 프로필 섹션 */}
         <div className="mypage-profile-section">
           <div className="mypage-profile-image-wrapper">
             <div className="mypage-profile-image">
@@ -453,7 +477,6 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 할 일/습관/업적 섹션 */}
         <div className="mypage-categories-grid">
           <div className="mypage-category-card">
             <div className="mypage-category-header">
@@ -498,13 +521,11 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 스터디 섹션 - 페이지네이션 추가 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">스터디</h3>
               
-              {/* 헤더 오른쪽 화살표 버튼들 */}
               {filteredStudies.length > 0 && (
                 <div className="mypage-header-pagination">
                   <button 
@@ -525,7 +546,6 @@ function MyPage() {
               )}
             </div>
             
-            {/* 스터디 필터 탭 */}
             <div className="mypage-study-filter-tabs">
               {studyFilterOptions.map(option => (
                 <button
@@ -547,7 +567,6 @@ function MyPage() {
             ) : studyError ? (
               <div className="mypage-study-error">
                 <p>오류: {studyError}</p>
-                <small>API 서버가 실행 중인지, 엔드포인트가 올바른지 확인해주세요.</small>
               </div>
             ) : filteredStudies.length === 0 ? (
               <div className="mypage-study-empty">
@@ -558,7 +577,6 @@ function MyPage() {
               </div>
             ) : (
               <>
-                {/* 스터디 카드들만 표시 */}
                 <div className="mypage-studies-cards-container">
                   {getCurrentStudyItems().map((study) => (
                     <StudyCard
@@ -572,7 +590,6 @@ function MyPage() {
                       maxMembers={study.maxMembers}
                       studyMode={study.studyMode}
                       region={study.region}
-                      contact={study.contact}
                       thumbnail={study.thumbnail}
                       isSelected={selectedCard === study.groupId}
                       onSelect={handleCardSelect}
@@ -580,7 +597,6 @@ function MyPage() {
                   ))}
                 </div>
 
-                {/* 페이지 인디케이터 */}
                 <div className="mypage-page-indicator">
                   {getStudyPages() > 1 && (
                     <span>
@@ -593,13 +609,11 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 북마크 섹션 - 페이지네이션 추가 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">북마크</h3>
               
-              {/* 헤더 오른쪽 화살표 버튼들 */}
               {myBookmarks.length > 0 && (
                 <div className="mypage-header-pagination">
                   <button 
@@ -629,7 +643,6 @@ function MyPage() {
             ) : bookmarkError ? (
               <div className="mypage-study-error">
                 <p>오류: {bookmarkError}</p>
-                <small>API 서버가 실행 중인지, 북마크 엔드포인트가 올바른지 확인해주세요.</small>
               </div>
             ) : myBookmarks.length === 0 ? (
               <div className="mypage-study-empty">
@@ -637,51 +650,27 @@ function MyPage() {
               </div>
             ) : (
               <>
-                {/* 페이지네이션 컨테이너 */}
-                <div className="mypage-pagination-container">
-                  {/* 왼쪽 화살표 */}
-                  <button 
-                    className={`mypage-pagination-btn prev ${bookmarkCurrentPage === 0 ? 'disabled' : ''}`}
-                    onClick={handleBookmarkPrevPage}
-                    disabled={bookmarkCurrentPage === 0}
-                  >
-                    <span className="arrow-icon">‹</span>
-                  </button>
-
-                  {/* 북마크 카드들 */}
-                  <div className="mypage-studies-cards-container">
-                    {getCurrentBookmarkItems().map((bookmark) => (
-                      <BookmarkCard
-                        key={`bookmark-${bookmark.id}-${bookmark.groupId}`}
-                        bookmarkId={bookmark.id}
-                        groupId={bookmark.groupId}
-                        category={bookmark.category}
-                        groupName={bookmark.groupName}
-                        groupIntroduction={bookmark.groupIntroduction}
-                        groupOwnerId={bookmark.groupOwnerId}
-                        createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
-                        maxMembers={bookmark.maxMembers}
-                        studyMode={bookmark.studyMode}
-                        region={bookmark.region}
-                        contact={bookmark.contact}
-                        thumbnail={bookmark.thumbnail}
-                        isSelected={selectedBookmarkCard === bookmark.id}
-                        onSelect={handleBookmarkCardSelect}
-                      />
-                    ))}
-                  </div>
-
-                  {/* 오른쪽 화살표 */}
-                  <button 
-                    className={`mypage-pagination-btn next ${bookmarkCurrentPage >= getBookmarkPages() - 1 ? 'disabled' : ''}`}
-                    onClick={handleBookmarkNextPage}
-                    disabled={bookmarkCurrentPage >= getBookmarkPages() - 1}
-                  >
-                    <span className="arrow-icon">›</span>
-                  </button>
+                <div className="mypage-studies-cards-container">
+                  {getCurrentBookmarkItems().map((bookmark) => (
+                    <BookmarkCard
+                      key={`bookmark-${bookmark.id}-${bookmark.groupId}`}
+                      bookmarkId={bookmark.id}
+                      groupId={bookmark.groupId}
+                      category={bookmark.category}
+                      groupName={bookmark.groupName}
+                      groupIntroduction={bookmark.groupIntroduction}
+                      groupOwnerId={bookmark.groupOwnerId}
+                      createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
+                      maxMembers={bookmark.maxMembers}
+                      studyMode={bookmark.studyMode}
+                      region={bookmark.region}
+                      thumbnail={bookmark.thumbnail}
+                      isSelected={selectedBookmarkCard === bookmark.id}
+                      onSelect={handleBookmarkCardSelect}
+                    />
+                  ))}
                 </div>
 
-                {/* 페이지 인디케이터 */}
                 <div className="mypage-page-indicator">
                   {getBookmarkPages() > 1 && (
                     <span>
@@ -694,6 +683,23 @@ function MyPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onCancel={handleCancelEdit}
+        onConfirm={handleConfirmEdit}
+        type="editProfileSimple"
+        userName={user?.nickname || user?.userId}
+        profileImage={profileImageSrc}
+      />
+
+      <PasswordModal
+        isOpen={showPasswordModal}
+        onCancel={handlePasswordCancel}
+        onConfirm={handlePasswordConfirm}
+        loading={passwordLoading}
+        error={passwordError}
+      />
     </div>
   );
 }

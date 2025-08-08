@@ -15,7 +15,6 @@ import MyEdit from "./users/MyEdit";
 import FindId from "./users/FindId";
 import FindPw from "./users/FindPw";
 import MyHistory from "./users/MyHistory";
-import MyStudy from "./users/MyStudy";
 
 import StudyList from "./study/StudyList";
 
@@ -87,7 +86,6 @@ function App() {
             <Route path="/findId" element={<FindId />} />
             <Route path="/findPw" element={<FindPw />} />
             <Route path="/myHistory" element={<MyHistory />} />
-            <Route path="/myStudy" element={<MyStudy />} />
 
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/myEdit" element={<MyEdit />} />
