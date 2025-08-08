@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./Search.css";
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext"; // AuthContext 경로에 맞게 수정
+import { useAuth } from "../contexts/AuthContext";
 
 function Search() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -16,24 +16,18 @@ function Search() {
   });
 
   const [posts, setPosts] = useState([]);
-  const [bookmarkViewList, setBookmarkViewList] = useState([]);
-
-  // AuthContext에서 로그인 상태와 사용자 정보를 가져옵니다.
-  const { user, isAuthenticated } = useAuth();
-  const userId = isAuthenticated ? user?.id : null; // 숫자 ID 사용
-
-  console.log("Auth user object: ", user);
-  console.log("user.id (number): ", user?.id);
-  console.log("user.userId (string): ", user?.userId);
-
+  const [countsData, setCountsData] = useState({});
   const [userBookmarks, setUserBookmarks] = useState([]);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const { user, isAuthenticated } = useAuth();
   const debounceTimer = useRef(null);
   const DEFAULT_THUMBNAIL_URL = "https://placehold.co/150x100?text=No+Image";
 
-  // **페이지네이션 상태 추가**
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 2; // 한 페이지에 8개씩 보여줌
+  const postsPerPage = 2;
 
   const getMinMaxMembers = (recruitmentCount) => {
     if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 4 };
@@ -44,12 +38,6 @@ function Search() {
   };
 
   const fetchPosts = async (filterParams) => {
-    // isAuthenticated 상태를 사용하여 로그인 여부를 확인합니다.
-    if (!isAuthenticated) {
-      setPosts([]);
-      return;
-    }
-
     try {
       const { minMembers, maxMembers } = getMinMaxMembers(
         filterParams.recruitmentCount
@@ -81,16 +69,13 @@ function Search() {
       }
     } catch (error) {
       console.error("포스트 조회 실패", error);
-      setPosts([]);
+      throw new Error("포스트를 불러오는 데 실패했습니다.");
     }
   };
 
-  // AuthContext에서 받아온 userId가 string일 수도 있으니 숫자로 변환
-  const userIdNum = userId ? Number(userId) : null;
-
   const fetchUserBookmarks = async () => {
-    if (!user || !user.id) {
-      console.log("userId가 유효하지 않습니다.");
+    if (!isAuthenticated || !user?.id) {
+      setUserBookmarks([]);
       return;
     }
     try {
@@ -105,67 +90,63 @@ function Search() {
         setUserBookmarks(bookmarkGroupIds);
       } else {
         setUserBookmarks([]);
-        console.warn("사용자 북마크 응답 데이터가 올바르지 않습니다.");
       }
     } catch (error) {
       console.error("사용자 북마크 조회 실패", error);
-      setUserBookmarks([]);
+      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
     }
   };
 
   const fetchBookmarkViewCounts = async () => {
-    // isAuthenticated 상태를 사용하여 로그인 여부를 확인합니다.
     if (!isAuthenticated) {
-      setBookmarkViewList([]);
+      setCountsData({});
       return;
     }
     try {
       const res = await axios.get("http://localhost:8081/api/bookmark/counts");
       console.log("북마크+조회수 API 응답:", res.data);
+
       if (res.data.success && Array.isArray(res.data.data)) {
-        setBookmarkViewList(res.data.data);
+        const newCountsData = res.data.data.reduce((acc, item) => {
+          // 백엔드에서 실제로 보내는 대문자 필드명을 사용합니다.
+          const groupId = item.GROUPID;
+
+          if (groupId !== undefined && groupId !== null) {
+            acc[groupId] = {
+              viewCount: 0,
+              bookmarkCount: item.BOOKMARKCOUNT,
+            };
+          }
+          return acc;
+        }, {});
+        setCountsData(newCountsData);
+        console.log("변환된 countsData:", newCountsData);
       } else {
-        setBookmarkViewList([]);
-        console.warn("북마크+조회수 응답 데이터가 배열이 아닙니다.");
+        setCountsData({});
       }
     } catch (error) {
-      console.error("북마크+조회수 조회 실패", error);
-      setBookmarkViewList([]);
+      console.error("북마크 수 조회 실패", error);
+      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
     }
   };
 
   const handleBookmarkToggle = async (groupId) => {
-    if (!user) {
+    if (!isAuthenticated || !user) {
       alert("로그인 후 이용해주세요.");
       return;
     }
-
-    const userId = user.id;
-
     try {
       if (userBookmarks.includes(groupId)) {
-        // 북마크 삭제
         await axios.delete(
-          `http://localhost:8081/api/bookmark/${userId}/${groupId}`
+          `http://localhost:8081/api/bookmark/${user.id}/${groupId}`
         );
         alert("북마크가 삭제되었습니다.");
       } else {
-        // 북마크 추가
-        const payload = {
-          userId: userId,
-          groupId: groupId ?? null,
-        };
-        console.log("북마크 추가 요청 payload:", {
-          userId: user.id,
-          groupId: groupId ?? null,
-        });
-
+        const payload = { userId: user.id, groupId };
         await axios.post(`http://localhost:8081/api/bookmark`, payload);
         alert("북마크가 추가되었습니다.");
       }
-
-      // 북마크 상태 업데이트
-      fetchUserBookmarks();
+      await Promise.all([fetchUserBookmarks(), fetchBookmarkViewCounts()]);
     } catch (error) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
@@ -173,25 +154,43 @@ function Search() {
   };
 
   const handleRecruitmentCountChange = (value) => {
-    setFilters((prev) => ({
-      ...prev,
-      recruitmentCount: value,
-    }));
+    setFilters((prev) => ({ ...prev, recruitmentCount: value }));
   };
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
   };
 
-  // 로그인 상태와 필터가 변경될 때마다 데이터를 가져오도록 수정
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(() => {
-      fetchPosts(filters);
-      fetchBookmarkViewCounts();
-      fetchUserBookmarks();
-      setCurrentPage(1); // 필터 변경 시 페이지 1로 초기화
+      if (!isAuthenticated) {
+        setPosts([]);
+        setCountsData({});
+        setUserBookmarks([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const fetchData = async () => {
+        try {
+          await Promise.all([
+            fetchPosts(filters),
+            fetchBookmarkViewCounts(),
+            fetchUserBookmarks(),
+          ]);
+        } catch (err) {
+          setError("데이터를 불러오는 데 실패했습니다.");
+          console.error("데이터 불러오기 실패:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchData();
+      setCurrentPage(1);
     }, 300);
 
     return () => {
@@ -199,30 +198,28 @@ function Search() {
     };
   }, [filters, isAuthenticated]);
 
-  // posts + bookmarkViewList + userBookmarks 병합
   const mergedPosts = posts.map((post) => {
-    const bookmarkView = bookmarkViewList.find(
-      (b) => b.groupId == post.groupId
-    );
+    // 💡 백엔드에서 group_id로 응답을 보내므로, countsData의 키도 group_id로 사용해야 합니다.
+    // 하지만 post 객체에는 groupId가 있으므로, countsData의 키를 맞춰야 합니다.
+    const counts = countsData[post.groupId] || {
+      viewCount: 0,
+      bookmarkCount: 0,
+    };
     const isBookmarked = userBookmarks.includes(post.groupId);
-    const viewCount =
-      post.viewCount ?? (bookmarkView ? bookmarkView.viewCount : 0);
-    const bookmarkCount = bookmarkView ? bookmarkView.bookmarkCount : 0;
+
     return {
       ...post,
-      viewCount: viewCount,
-      bookmarkCount: bookmarkCount,
+      viewCount: counts.viewCount,
+      bookmarkCount: counts.bookmarkCount,
       isBookmarked: isBookmarked,
     };
   });
 
-  // 페이지네이션 관련 인덱스 계산
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = mergedPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(mergedPosts.length / postsPerPage);
 
-  // 페이지 변경 핸들러
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -348,9 +345,23 @@ function Search() {
         }
         style={{ marginTop: 10, width: "100%", padding: "5px 10px" }}
       />
-
-      {/* 로그인하지 않았을 때 메시지를 표시 */}
-      {!isAuthenticated ? (
+      {isLoading ? (
+        <div style={{ textAlign: "center", padding: "50px", fontSize: "20px" }}>
+          데이터를 불러오는 중입니다...
+        </div>
+      ) : error ? (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "50px",
+            color: "red",
+            border: "1px solid #ddd",
+            marginTop: "20px",
+          }}
+        >
+          <p>{error}</p>
+        </div>
+      ) : !isAuthenticated ? (
         <div
           style={{
             textAlign: "center",
@@ -375,7 +386,7 @@ function Search() {
             <>
               {currentPosts.map((post) => (
                 <Link
-                  to={`/study/postView/${post.groupId}`} // 그룹 ID를 URL 파라미터로 전달
+                  to={`/study/postView/${post.groupId}`}
                   key={post.studyPostId}
                   style={{
                     textDecoration: "none",
@@ -390,7 +401,7 @@ function Search() {
                 >
                   <img
                     src={post.thumbnail || DEFAULT_THUMBNAIL_URL}
-                    alt={`${post.title} 썸네일`}
+                    alt={`${post.groupName} 썸네일`}
                     style={{
                       width: "250px",
                       height: "250px",
@@ -410,7 +421,7 @@ function Search() {
                       }}
                       onClick={(e) => {
                         e.preventDefault();
-                        handleBookmarkToggle(post.groupId, post.isBookmarked);
+                        handleBookmarkToggle(post.groupId);
                       }}
                     >
                       {post.isBookmarked ? (
@@ -421,7 +432,7 @@ function Search() {
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="orange"
-                          strokeWidth={1.5} // 조금 얇게 조절
+                          strokeWidth={1.5}
                         >
                           <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
                         </svg>
@@ -433,14 +444,13 @@ function Search() {
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="#bbb"
-                          strokeWidth={1} // 기본 얇은 회색 테두리
+                          strokeWidth={1}
                         >
                           <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
                         </svg>
                       )}
                     </div>
-
-                    <h3>{post.title}</h3>
+                    <h3>{post.groupName}</h3>
                     <p>작성자: {post.authorName ?? "알 수 없음"}</p>
                     <p>카테고리: {post.category}</p>
                     <p>진행방식: {post.studyMode}</p>
@@ -462,7 +472,7 @@ function Search() {
                         ? new Date(post.recruitEndDate).toLocaleDateString()
                         : "미정"}
                     </p>
-                    <p className="gtruncated-text">{post.content}</p>
+                    <p className="gtruncated-text">{post.groupIntroduction}</p>
                     <div
                       style={{
                         marginTop: 10,
@@ -480,17 +490,13 @@ function Search() {
                   </div>
                 </Link>
               ))}
-
-              {/* 페이지네이션 버튼 */}
               <div style={{ marginTop: 20, textAlign: "center" }}>
-                {/* << 맨 처음으로 */}
                 <button
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                   style={{
                     margin: "0 3px",
                     padding: "5px 8px",
-
                     backgroundColor: "white",
                     color: currentPage === 1 ? "#aaa" : "black",
                     cursor: currentPage === 1 ? "default" : "pointer",
@@ -498,8 +504,6 @@ function Search() {
                 >
                   &laquo;
                 </button>
-
-                {/* < 이전 */}
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
@@ -513,17 +517,13 @@ function Search() {
                 >
                   &lt;
                 </button>
-
-                {/* 숫자 버튼 (최대 5개) */}
                 {[...Array(5)].map((_, i) => {
                   const startPage = Math.max(
                     1,
                     Math.min(currentPage - 2, totalPages - 4)
                   );
                   const pageNumber = startPage + i;
-
                   if (pageNumber > totalPages) return null;
-
                   return (
                     <button
                       key={pageNumber}
@@ -533,7 +533,9 @@ function Search() {
                         padding: "5px 10px",
                         borderRadius: 4,
                         border:
-                          pageNumber === currentPage ? "2px solid orange" : "",
+                          pageNumber === currentPage
+                            ? "2px solid orange"
+                            : "none",
                         backgroundColor:
                           pageNumber === currentPage ? "orange" : "white",
                         color: pageNumber === currentPage ? "white" : "black",
@@ -544,8 +546,6 @@ function Search() {
                     </button>
                   );
                 })}
-
-                {/* > 다음 */}
                 <button
                   onClick={() =>
                     handlePageChange(Math.min(totalPages, currentPage + 1))
@@ -561,8 +561,6 @@ function Search() {
                 >
                   &gt;
                 </button>
-
-                {/* >> 맨 끝으로 */}
                 <button
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
