@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Post.css";
 import AttachmentManager from "./components/AttachmentManager";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function StudyPostView({
   groupId,
@@ -10,12 +11,16 @@ export default function StudyPostView({
   onPostDeleted,
   onStudyJoin,
 }) {
+  const { user } = useAuth();
+  const userId = user?.id;
   const host = import.meta.env.VITE_AWS_API_HOST;
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [hasApplied, setHasApplied] = useState(false); // 기존가입여부
 
   useEffect(() => {
     const fetchPostAndGroup = async () => {
@@ -36,8 +41,13 @@ export default function StudyPostView({
           setGroup(groupDto);
         }
         if (postDto) {
+          //console.log("AAAAA postId", postDto.studyPostId);
           setPost(postDto);
           setError(null);
+
+          if (groupId && userId) {
+            checkApplicationStatus(postDto.studyPostId);
+          }
         } else {
           setError("게시글 정보를 찾을 수 없습니다.");
           setPost(null);
@@ -51,7 +61,34 @@ export default function StudyPostView({
         setLoading(false);
       }
     };
+
     fetchPostAndGroup();
+
+    // 가입신청 또는 가입한 이력이 있는 지 확인...
+    const checkApplicationStatus = async (postId) => {
+      // console.log(
+      //   `checkApplicationStatus = ${host}/api/userRequest/exist/${groupId}/${userId}/${postId}`
+      // );
+
+      try {
+        const response = await axios.get(
+          `${host}/api/userRequest/exist/${groupId}/${userId}/${postId}`
+        );
+
+        // console.log(
+        //   "exists: ",
+        //   response.data.exists,
+        //   "g: ",
+        //   groupId,
+        //   "u:",
+        //   userId
+        // );
+        setHasApplied(response.data.exists);
+      } catch (error) {
+        console.error("가입 신청 여부 확인 실패:", error?.message || error);
+        setHasApplied(false);
+      }
+    };
   }, [groupId, host]);
 
   const handleDownLoadFile = async (storedFileName, originalFileName) => {
@@ -101,10 +138,6 @@ export default function StudyPostView({
         alert("게시글 삭제에 실패했습니다.");
       }
     }
-  };
-
-  const handleJoin = () => {
-    alert("가입신청 모달 팝업 떠야 되여~~");
   };
 
   const formatDate = (dateString) => {
@@ -201,10 +234,12 @@ export default function StudyPostView({
           />
 
           <div className="button-container">
-            {onStudyJoin != null && (
+            {onStudyJoin != null && hasApplied == false && post != null && (
               <button
                 className="btn-base btn-dark-orange margin-left-1"
-                onClick={handleJoin}
+                onClick={() => {
+                  onStudyJoin(post?.studyPostId);
+                }}
               >
                 가입신청
               </button>

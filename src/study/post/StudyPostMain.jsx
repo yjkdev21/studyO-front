@@ -10,9 +10,9 @@ import { useAuth } from "../../contexts/AuthContext";
 export default function StudyPostMain() {
   const host = import.meta.env.VITE_AWS_API_HOST;
   const { user } = useAuth();
-  const userId = 10; //user?.id;
+  const userId = user?.id;
 
-  //console.log("user.id: " + userId);
+  // console.log("StudyPostMain userId :", userId);
 
   const [selectedStudyId, setSelectedStudyId] = useState(null);
   const [selectStudy, setSelectStudy] = useState(null);
