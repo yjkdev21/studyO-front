@@ -1,0 +1,91 @@
+/* ========== 멤버 대시보드 - 내 정보 ========== */
+
+#study-member .material-symbols-rounded {
+    font-weight: 900;
+}
+
+#study-member .dashboard-my-info {
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-my-info .profile-image {
+    width: 120px;
+    height: 120px;
+    margin-right: 20px;
+}
+
+.dashboard-my-info .profile-text {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: baseline;
+}
+
+.dashboard-my-info .edit-nickname-wrap {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dashboard-my-info .nickname-input {
+    padding: 4px 8px;
+    width: 160px;
+    height: 100%;
+    font-size: 20px;
+    color: #333;
+    cursor: text;
+}
+
+.dashboard-my-info .nickname-input.editing {
+    background-color: #fff;
+    /* border: 1px dashed #ddd; */
+    outline: auto;
+    outline-color: var(--sub-color);
+    border-radius: 5px;
+}
+
+.dashboard-my-info .nickname-input:read-only {
+    cursor: auto;
+}
+
+.dashboard-my-info .nickname-btn {
+    margin-left: 10px;
+    width: 40px;
+    height: 40px;
+    color: #999;
+    background-color: #ddd;
+    border-radius: 100px;
+}
+
+.dashboard-my-info .nickname-btn.save {
+    background-color: var(--sub-color);
+    color: #666;
+}
+
+/* ========== 멤버 대시보드 - 멤버 ========== */
+
+#study-member .dashboard-member-wrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#study-member .dashboard-member-list {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+}
+
+#study-member .dashboard-member-list .profile-image {
+    width: 50px;
+    height: 50px;
+}
+
+#study-member .dashboard-member-list .member-btn {
+    border: 1px solid;
+    border-radius: 5px;
+    padding: 5px 15px;
+}

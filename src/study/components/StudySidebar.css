@@ -1,7 +1,6 @@
 #sidebar-wrap {
   display: flex;
   align-items: end;
-  /* min-height: 100vh; */
   height: 100%;
   position: fixed;
   top: 0;
@@ -24,6 +23,12 @@
   text-align: center;
 
   overflow-y: auto;
+  -ms-overflow-style: none;
+}
+
+/* 스크롤 제거 */
+.study-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .study-info {
@@ -64,12 +69,11 @@
   display: flex;
   flex-direction: column;
   align-items: end;
-
+  margin-bottom: 40px;
 }
 
 .sidebar-study-menu .menu-tab {
   width: 240px;
-  padding: 12px 20px;
   border-radius: 100px 0 0 100px;
   cursor: pointer;
   font-size: 18px;
@@ -79,15 +83,47 @@
 
 /* 활성화된 탭 */
 .sidebar-study-menu .menu-tab.active {
-  background-color: #fff ;
+  background-color: #fff;
 }
+
+/* 모바일 - 화면 767px 이하 */
+@media (max-width: 767px) {
+
+  /* 사이드바 닫혔을 때 */
+  #sidebar-wrap.collapsed {
+    left: -200px;
+  }
+
+  .study-sidebar {
+    width: 200px;
+  }
+
+  .sidebar-category {
+    font-size: 16px;
+  }
+
+  .sidebar-group-name {
+    font-size: 20px;
+  }
+
+  .sidebar-contact {
+    font-size: 12px;
+  }
+
+  .sidebar-study-menu .menu-tab {
+    width: 180px;
+    font-size: 16px;
+    padding: 10px 0;
+  }
+}
+
 
 /* ========== 토글 버튼 ========== */
 .sidebar-toggle {
   align-items: center;
 }
 
-.toggle-button{
+.toggle-button {
   width: 40px;
   height: 40px;
   margin-bottom: 10px;
@@ -117,25 +153,3 @@
 .toggle-bars:last-child {
   margin-bottom: 0;
 }
-
-/* 토글시 내용 숨기기 */
-/* #wrap .study-sidebar.collapsed .study-info,
-#wrap .study-sidebar.collapsed .sidebar-study-menu {
-  display: none;
-} */
-
-/* 접근성 개선 */
-/* .toggle-button:focus {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-.menu-tab:focus {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-} */
-
-/* 텍스트 선택 방지 */
-/* #wrap {
-  user-select: none;
-} */
