@@ -117,6 +117,11 @@
     text-align: center;
 }
 
+/* 제목에서 "수정" 텍스트를 주황색으로 */
+.modal-greeting .highlight {
+    color: #FDB515;
+}
+
 .modal-sub-message {
     font-size: 12px;
     color: #666;
