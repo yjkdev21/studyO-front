@@ -36,6 +36,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: #666;
 }
 
 /* ✨ 새로운 드롭다운 컨테이너 스타일 */
@@ -112,7 +113,7 @@
   padding: 8px 16px;
   cursor: pointer;
   white-space: nowrap;
-  color: #333;
+  color: #666;
 }
 .g-dropdown-item:hover {
   background-color: #f0f0f0;
@@ -183,6 +184,7 @@
   text-align: center;
   padding: 200px;
   grid-column: 1 / -1;
+  color: #666;
 }
 
 .g-error-message {
@@ -192,7 +194,7 @@
 .g-post-item {
   display: block;
   border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 30px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -206,7 +208,7 @@
 }
 
 .g-post-item:hover {
-  transform: translateY(-5px);
+  transform: translateY(-7px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
@@ -266,17 +268,23 @@
 .g-bookmark-svg {
   width: 24px;
   height: 24px;
-  fill: none; /* 채우기 없앰 */
+  fill: #a0a0a0; /* 채우기 없앰 */
   stroke: #a0a0a0;
   transition: all 0.2s;
+  stroke-width: 0px;
 }
 .g-bookmark-svg:hover {
-  stroke: #666;
+  fill: orange;
+  stroke: orange;
 }
 
 .g-bookmark-svg.g-bookmarked {
-  fill: #ffcc00;
-  stroke: #ffcc00;
+  fill: orange;
+  stroke: orange;
+  stroke-width: 1px;
+}
+.feather-eye {
+  stroke: #999;
 }
 
 .g-truncated-text {
@@ -292,12 +300,12 @@
 
 .g-meta-item strong {
   font-weight: 500;
-  color: #333;
+  color: #999999;
 }
 
 /* 페이지네이션 스타일 */
 .g-pagination-controls {
-  margin-top: 20px;
+  margin-top: 80px;
   text-align: center;
   grid-column: 1 / -1;
 }
@@ -305,10 +313,10 @@
 .g-pagination-btn {
   margin: 0 3px;
   padding: 5px 10px;
-  border-radius: 4px;
+  border-radius: 10px;
   border: 1px solid #ccc;
   background-color: white;
-  color: black;
+  color: #999;
   cursor: pointer;
 }
 
@@ -327,7 +335,7 @@
 }
 
 .g-bookmark-svg1 {
-  fill: #888; /* 북마크 아이콘 색상 조정 */
+  fill: #b8b6b6; /* 북마크 아이콘 색상 조정 */
 }
 
 .g-post-meta {

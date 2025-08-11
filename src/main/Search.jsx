@@ -443,7 +443,9 @@ function Search() {
                     <span className="g-tag">
                       {post.region || "지역 미정 (온라인)"}
                     </span>
-                    <span className="g-tag">모집인원 {post.maxMembers}</span>
+                    <span className="g-tag">
+                      모집인원 &nbsp; {post.maxMembers}
+                    </span>
                   </div>
                   <img
                     src={getThumbnailUrl(post)}
@@ -467,12 +469,6 @@ function Search() {
                         <svg
                           className="g-bookmark-svg g-bookmarked"
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={1.5}
                         >
                           <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
                         </svg>
@@ -480,11 +476,6 @@ function Search() {
                         <svg
                           className="g-bookmark-svg g-not-bookmarked"
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
                         >
                           <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
                         </svg>
@@ -513,7 +504,7 @@ function Search() {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="feather feather-eye"
+                            className="feather-eye"
                             style={{
                               position: "relative",
                               top: "1px",
@@ -535,7 +526,6 @@ function Search() {
                             width="20"
                             height="24"
                             viewBox="0 0 24 24"
-                            fill="#666"
                             style={{
                               position: "relative",
                               top: "1px",
