@@ -155,31 +155,71 @@ export default function StudyMain() {
     setEditedContent('');
   };
 
+  // const handleConfirmEdit = async () => {
+  //   try {
+  //     const res = await fetch(`${host}/api/study/board`, {
+  //       method: 'PUT',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-USER-ID': user.id
+  //       },
+  //       body: JSON.stringify({
+  //         id: editingPostId,
+  //         userId: user.id,
+  //         groupId: groupId,
+  //         dashboardPostTitle: editedTitle,
+  //         dashboardPostText: editedContent
+  //       })
+  //     });
+
+  //     if (!res.ok) throw new Error('수정 실패');
+
+  //     await fetchPosts();
+  //     handleCancelEdit(); // 편집상태 종료
+  //   } catch (error) {
+  //     console.error('수정 오류', error);
+  //   }
+  // };
+
   const handleConfirmEdit = async () => {
-    try {
-      const res = await fetch(`${host}/api/study/board`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-USER-ID': user.id
-        },
-        body: JSON.stringify({
-          id: editingPostId,
-          userId: user.id,
-          groupId: groupId,
-          dashboardPostTitle: editedTitle,
-          dashboardPostText: editedContent
-        })
-      });
+  try {
+    const res = await fetch(`${host}/api/study/board`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-USER-ID': user.id
+      },
+      body: JSON.stringify({
+        id: editingPostId,
+        userId: user.id,
+        groupId: groupId,
+        dashboardPostTitle: editedTitle,
+        dashboardPostText: editedContent
+      })
+    });
 
-      if (!res.ok) throw new Error('수정 실패');
+    if (!res.ok) throw new Error('수정 실패');
 
-      await fetchPosts();
-      handleCancelEdit(); // 편집상태 종료
-    } catch (error) {
-      console.error('수정 오류', error);
-    }
-  };
+    // 상태 직접 업데이트 (fetchPosts 없이)
+    setAllNotices(prev => prev.map(post => 
+      post.id === editingPostId 
+        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+        : post
+    ));
+    
+    setAllPosts(prev => prev.map(post => 
+      post.id === editingPostId 
+        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+        : post
+    ));
+
+    // 편집 상태 해제
+    handleCancelEdit();
+    
+  } catch (error) {
+    console.error('수정 오류', error);
+  }
+};
 
   const handleDelete = async (postId) => {
     if (!window.confirm('정말 삭제하시겠습니까?'))
@@ -300,126 +340,136 @@ export default function StudyMain() {
 
       {/* 전체 게시글 목록(공지 + 일반글) */}
       <ul className='all-post-list'>
-  {/* 공지글 먼저 출력 */}
-  {allNotices.map((post) => (
-    <li key={post.id} className='post-item notice'>
-      <div className='post-layout'>
-        {/* 왼쪽: 프로필 이미지 + 닉네임 */}
-        <div className='post-left'>
-          <img
-            src={post.writerProfileImage || '/default-profile.png'}
-            alt='프로필'
-            className='profile-img'
-          />
-          <div className='nickname'>{post.writerNickname}</div> {/* 뱃지 제거 */}
-        </div>
-
-        {/* 오른쪽: 글 제목 + 내용 + 하단(날짜, 수정삭제) */}
-        <div className='post-right'>
-          <div className='post-content-area'>
-            {editingPostId === post.id ? (
-              <>
-                <input
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
+        {/* 공지글 먼저 출력 */}
+        {allNotices.map((post) => (
+          <li key={post.id} className='post-item notice'>
+            <div className='post-layout'>
+              {/* 왼쪽: 프로필 이미지 + 닉네임 */}
+              <div className='post-left'>
+                <img
+                  src={post.writerProfileImage ||
+                    (post.userId === user?.id ? user.profileImage : null) ||
+                    '/images/default-profile.png'}
+                  alt='프로필'
+                  className='profile-img'
                 />
-                <textarea
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                />
-              </>
-            ) : (
-              <>
-                <div className='post-title'>
-                  <span className='badge'>공지</span> {/* 뱃지를 제목 앞으로 이동 */}
-                  {post.dashboardPostTitle}
+                <div className='nickname'>
+                  {post.writerNickname || (post.userId === user?.id ? user.nickname : '작성자')}
                 </div>
-                <p className='post-content'>{post.dashboardPostText}</p>
-              </>
-            )}
-          </div>
-
-          {/* 하단: 날짜 + 수정삭제 버튼 */}
-          <div className='post-bottom'>
-            <span className='post-date'>{post.createdAt?.slice(0, 10)}</span>
-            {user?.id === post.writerId && (
-              <div className='post-actions'>
-                {editingPostId === post.id ? (
-                  <>
-                    <button onClick={handleConfirmEdit}>확인</button>
-                    <button onClick={handleCancelEdit}>취소</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleStartEdit(post)}>수정</button>
-                    <button onClick={() => handleDelete(post.id)}>삭제</button>
-                  </>
-                )}
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </li>
-  ))}
 
-  {/* 일반글은 그대로 */}
-  {allPosts.map((post) => (
-    <li key={post.id} className='post-item'>
-      <div className='post-layout'>
-        <div className='post-left'>
-          <img
-            src={post.writerProfileImage || '/default-profile.png'}
-            alt='프로필'
-            className='profile-img'
-          />
-          <div className='nickname'>{post.writerNickname}</div>
-        </div>
+              {/* 오른쪽: 글 제목 + 내용 + 하단(날짜, 수정삭제) */}
+              <div className='post-right'>
+                <div className='post-content-area'>
+                  {editingPostId === post.id ? (
+                    <>
+                      <input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                      />
+                      <textarea
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <div className='post-title'>
+                        <span className='badge'>공지</span>
+                        {post.dashboardPostTitle}
+                      </div>
+                      <p className='post-content'>{post.dashboardPostText}</p>
+                    </>
+                  )}
+                </div>
 
-        <div className='post-right'>
-          <div className='post-content-area'>
-            {editingPostId === post.id ? (
-              <>
-                <input
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                />
-                <textarea
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                />
-              </>
-            ) : (
-              <>
-                <strong className='post-title'>{post.dashboardPostTitle}</strong>
-                <p className='post-content'>{post.dashboardPostText}</p>
-              </>
-            )}
-          </div>
-
-          <div className='post-bottom'>
-            <span className='post-date'>{post.createdAt?.slice(0, 10)}</span>
-            {user?.id === post.writerId && (
-              <div className='post-actions'>
-                {editingPostId === post.id ? (
-                  <>
-                    <button onClick={handleConfirmEdit}>확인</button>
-                    <button onClick={handleCancelEdit}>취소</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleStartEdit(post)}>수정</button>
-                    <button onClick={() => handleDelete(post.id)}>삭제</button>
-                  </>
-                )}
+                {/* 하단: 날짜 + 수정삭제 버튼 */}
+                <div className='post-bottom'>
+                  
+                  {(user?.id === post.writerId || user?.id === post.userId) && (
+                    <div className='post-actions'>
+                      {editingPostId === post.id ? (
+                        <>
+                          <button onClick={handleConfirmEdit}>확인</button>
+                          <button onClick={handleCancelEdit}>취소</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => handleStartEdit(post)}>수정</button>
+                          <button onClick={() => handleDelete(post.id)}>삭제</button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <span className='post-date'>{post.createdAt?.slice(0, 10)}</span>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </li>
-  ))}
-</ul>
+            </div>
+          </li>
+        ))}
+
+        {/* 일반글은 그대로 */}
+        {allPosts.map((post) => (
+          <li key={post.id} className='post-item'>
+            <div className='post-layout'>
+              <div className='post-left'>
+                <img
+                  src={post.writerProfileImage ||
+                    (post.userId === user?.id ? user.profileImage : null) ||
+                    '/images/default-profile.png'}
+                  alt='프로필'
+                  className='profile-img'
+                />
+                <div className='nickname'>
+                  {post.writerNickname || post.studyNickname || (post.userId === user?.id ? user.nickname : '작성자')}
+                </div>
+              </div>
+
+              <div className='post-right'>
+                <div className='post-content-area'>
+                  {editingPostId === post.id ? (
+                    <>
+                      <input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                      />
+                      <textarea
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <strong className='post-title'>{post.dashboardPostTitle}</strong>
+                      <p className='post-content'>{post.dashboardPostText}</p>
+                    </>
+                  )}
+                </div>
+
+                <div className='post-bottom'>
+                  
+                  {(user?.id === post.writerId || user?.id === post.userId) && (
+                    <div className='post-actions'>
+                      {editingPostId === post.id ? (
+                        <>
+                          <button onClick={handleConfirmEdit}>확인</button>
+                          <button onClick={handleCancelEdit}>취소</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => handleStartEdit(post)}>수정</button>
+                          <button onClick={() => handleDelete(post.id)}>삭제</button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <span className='post-date'>{post.createdAt?.slice(0, 10)}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

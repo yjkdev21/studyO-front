@@ -206,11 +206,9 @@
 }
 
 .nickname {
-  font-size: 14px;
+  font-size: 14px !important;
   text-align: center;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
+  margin-top: 5px;
 }
 
 .post-right {
@@ -240,21 +238,21 @@
 
 .post-bottom {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding-top: 10px;
-}
-
-.post-date {
-  font-size: 14px;
-  color: #666;
-  right: 0;
 }
 
 .post-actions {
   display: flex;
   gap: 5px;
+  margin-right: 20px;
 }
+
+.post-date {
+  font-size: 14px;
+  color: #666;
+  
+}
+
 
 .post-actions button {
   background: none;
@@ -272,4 +270,32 @@
   border-radius: 4px;
   font-size: 12px;
   margin-bottom: 4px;
+}
+
+/* 수정 모드 input, textarea 스타일 */
+.post-content-area input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.post-content-area textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 80px;
+}
+
+.post-content-area input:focus,
+.post-content-area textarea:focus {
+  outline: none;
+  border-color: #FDB515;
 }
