@@ -3,26 +3,49 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from "./modal/ConfirmModal";
 import PasswordModal from './modal/PasswordModal';
+import SimpleCalendar from './components/MyPageCalendar'; 
 import './MyPage.css';
 
+// StudyCard와 BookmarkCard 컴포넌트
 const StudyCard = ({
   groupId,
   category,
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
   region,
   thumbnail,
+  thumbnailFullPath,
   isSelected,
   onSelect,
 }) => {
-  const handleClick = () => {
-    if (onSelect) {
-      onSelect(groupId);
+  const navigate = useNavigate();
+  
+  // GroupDetail과 동일한 썸네일 URL 처리 함수
+  const getThumbnailUrl = () => {
+    // 1순위: S3 전체 URL 사용 (thumbnailFullPath)
+    if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
+      console.log('S3 썸네일 URL 사용:', thumbnailFullPath);
+      return thumbnailFullPath;
     }
+    
+    // 2순위: 기존 썸네일 필드 사용 (thumbnail)
+    if (thumbnail && !thumbnail.includes('default')) {
+      console.log('썸네일 필드 사용:', thumbnail);
+      return thumbnail;
+    }
+    
+    // 3순위: 기본 이미지
+    console.log('기본 썸네일 이미지 사용');
+    return '/images/default-thumbnail.png';
+  };
+
+  const handleClick = () => {
+    navigate(`/group/${groupId}`);
   };
 
   const formatDate = (dateString) => {
@@ -56,23 +79,25 @@ const StudyCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
-      {thumbnail && (
-        <div className="mypage-study-thumbnail-wrapper">
-          <div className="mypage-study-thumbnail-image">
-            <img
-              src={thumbnail}
-              alt={`${groupName} 썸네일`}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
+      <div className="mypage-study-thumbnail-wrapper">
+        <div className="mypage-study-thumbnail-image">
+          <img
+            src={getThumbnailUrl()}
+            alt={`${groupName} 썸네일`}
+            width="200"
+            onError={(e) => { 
+              console.log('이미지 로딩 실패, 기본 이미지로 변경');
+              e.target.src = '/images/default-thumbnail.png'; 
+            }}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -84,18 +109,33 @@ const BookmarkCard = ({
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
   region,
   thumbnail,
+  thumbnailFullPath,
   isSelected,
   onSelect,
 }) => {
-  const handleClick = () => {
-    if (onSelect) {
-      onSelect(bookmarkId);
+  const navigate = useNavigate();
+  
+  // 동일한 썸네일 URL 처리 함수
+  const getThumbnailUrl = () => {
+    if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
+      return thumbnailFullPath;
     }
+    
+    if (thumbnail && !thumbnail.includes('default')) {
+      return thumbnail;
+    }
+    
+    return '/images/default-thumbnail.png';
+  };
+
+  const handleClick = () => {
+    navigate(`/group/${groupId}`);
   };
 
   const formatDate = (dateString) => {
@@ -129,23 +169,25 @@ const BookmarkCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
-      {thumbnail && (
-        <div className="mypage-study-thumbnail-wrapper">
-          <div className="mypage-study-thumbnail-image">
-            <img
-              src={thumbnail}
-              alt={`${groupName} 썸네일`}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
+      <div className="mypage-study-thumbnail-wrapper">
+        <div className="mypage-study-thumbnail-image">
+          <img
+            src={getThumbnailUrl()}
+            alt={`${groupName} 썸네일`}
+            width="200"
+            onError={(e) => { 
+              console.log('이미지 로딩 실패, 기본 이미지로 변경');
+              e.target.src = '/images/default-thumbnail.png'; 
+            }}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -184,6 +226,15 @@ function MyPage() {
     { key: 'participating', label: '참여중인' },
     { key: 'completed', label: '참여했던' }
   ];
+
+  // 스터디 상세 페이지로 이동하는 핸들러
+  const handleNavigateToStudy = (groupId) => {
+    if (!groupId) {
+      console.error('그룹 ID가 없습니다.');
+      return;
+    }
+    navigate(`/group/${groupId}`);
+  };
 
   const filterStudies = (filterType) => {
     let filtered = [];
@@ -481,6 +532,13 @@ function MyPage() {
           </div>
         </div>
 
+        {/* 캘린더 섹션 - 프로필 바로 아래로 이동 */}
+        <div className="mypage-section-card">
+          <div className="mypage-calendar-wrapper">
+            <SimpleCalendar />
+          </div>
+        </div>
+
         <div className="mypage-categories-grid">
           <div className="mypage-category-card">
             <div className="mypage-category-header">
@@ -590,11 +648,13 @@ function MyPage() {
                       groupName={study.groupName}
                       groupIntroduction={study.groupIntroduction}
                       groupOwnerId={study.groupOwnerId}
+                      ownerNickname={study.ownerNickname}
                       createdAt={study.createdAt}
                       maxMembers={study.maxMembers}
                       studyMode={study.studyMode}
                       region={study.region}
                       thumbnail={study.thumbnail}
+                      thumbnailFullPath={study.thumbnailFullPath}
                       isSelected={selectedCard === study.groupId}
                       onSelect={handleCardSelect}
                     />
@@ -664,11 +724,13 @@ function MyPage() {
                       groupName={bookmark.groupName}
                       groupIntroduction={bookmark.groupIntroduction}
                       groupOwnerId={bookmark.groupOwnerId}
+                      ownerNickname={bookmark.ownerNickname}
                       createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
                       maxMembers={bookmark.maxMembers}
                       studyMode={bookmark.studyMode}
                       region={bookmark.region}
                       thumbnail={bookmark.thumbnail}
+                      thumbnailFullPath={bookmark.thumbnailFullPath}
                       isSelected={selectedBookmarkCard === bookmark.id}
                       onSelect={handleBookmarkCardSelect}
                     />

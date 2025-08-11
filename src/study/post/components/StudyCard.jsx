@@ -2,6 +2,26 @@
 import React from "react";
 import "./StudyCard.css"; // 순수 CSS 파일을 import (기존 CSS 파일명 유지)
 
+const getThumbnailUrl = (group) => {
+  if (!group) {
+    return '/images/default-thumbnail.png';
+  }
+
+  // thumbnailFullPath가 있으면 S3 URL 사용
+  if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
+    return group.thumbnailFullPath;
+  }
+
+  // thumbnail 필드만 있는 경우 - GroupDetail과 동일한 URL 패턴 사용
+  if (group.thumbnail && !group.thumbnail.includes('default')) {
+    const fullUrl = `https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/studygroupimg/${group.thumbnail}`;
+    return fullUrl;
+  }
+
+  // 기본 이미지
+  return '/images/default-thumbnail.png';
+};
+
 // studyGroup 데이터와 함께 isSelected, onSelect props를 받습니다.
 const StudyCard = ({ studyGroup, isSelected, onSelect }) => {
   // console.log(isSelected, "isSelected");
@@ -50,12 +70,19 @@ const StudyCard = ({ studyGroup, isSelected, onSelect }) => {
 
         <div className="study-card-thumbnail">
           {/* thumbnailUrl이 있을 경우 이미지 표시, 없을 경우 플레이스홀더 표시 */}
-          <img
+          {/* <img
             src={
               studyGroup.thumbnailUrl ||
               "https://placehold.co/150x120/E0E0E0/FFFFFF?text=No+Img"
             }
             alt={`${studyGroup.groupName} 썸네일`}
+          /> */}
+          <img
+            src={getThumbnailUrl(studyGroup)}
+            alt={`${studyGroup.groupName} 썸네일`}
+            onError={(e) => {
+              e.target.src = '/images/default-thumbnail.png';
+            }}
           />
         </div>
       </div>

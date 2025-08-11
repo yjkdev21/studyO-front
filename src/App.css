@@ -3,8 +3,8 @@
   --footer-height: 60px;
   --main-height: calc(100vh - var(--header-height) - var(--footer-height));
 
-  --main-color: #FDB515;
-  --sub-color: #FFCC5B;
+  --main-color: #fdb515;
+  --sub-color: #ffcc5b;
 }
 
 /* ========================================
@@ -28,7 +28,7 @@
 }
 
 .shadow-btn span {
-  transition: all .3s;
+  transition: all 0.3s;
 }
 
 .shadow-btn:hover span {
@@ -165,7 +165,7 @@ header {
   border: 1px solid var(--main-color);
   border-radius: 5px;
   color: var(--main-color);
-  transition: background-color .2s, color .2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #header .header-study-btn:hover {
@@ -175,14 +175,14 @@ header {
 
 #header .header-profile-btn {
   border: 1px solid transparent;
-  transition: border-color .1s;
+  transition: border-color 0.1s;
 }
 
 #header .header-profile-btn:focus {
   border-color: var(--main-color);
 }
 
-#header .header-dropmenu li>* {
+#header .header-dropmenu li > * {
   display: block;
   width: 100%;
   text-align: left;
@@ -219,7 +219,7 @@ header {
     align-items: center;
     overflow: hidden;
     max-height: 400px;
-    transition: all .4s;
+    transition: all 0.4s;
     background-color: #eee;
   }
 
@@ -255,7 +255,12 @@ header {
     justify-content: center;
   }
 
-  #footer .footer-content>*:not(h2) {
+  #footer .footer-content > *:not(h2) {
     display: none;
   }
+}
+
+.header-category a.active {
+  font-weight: bold;
+  color: orange;
 }
