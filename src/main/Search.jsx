@@ -293,6 +293,8 @@ function Search() {
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = mergedPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(mergedPosts.length / postsPerPage);
+  const S3_BASE_URL =
+    "https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/POST/";
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -423,7 +425,11 @@ function Search() {
                     <span className="g-tag">모집인원 {post.maxMembers}</span>
                   </div>
                   <img
-                    src={post.thumbnail || DEFAULT_THUMBNAIL_URL}
+                    src={
+                      post.thumbnail
+                        ? `${S3_BASE_URL}${post.thumbnail}`
+                        : DEFAULT_THUMBNAIL_URL
+                    }
                     alt={`${post.title} 썸네일`}
                     className="g-post-thumbnail"
                   />
@@ -452,12 +458,11 @@ function Search() {
                         <svg
                           className="g-bookmark-svg g-not-bookmarked"
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
+                          width="20"
                           height="24"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth={1}
                         >
                           <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
                         </svg>
@@ -471,18 +476,64 @@ function Search() {
                         작성자:{" "}
                         <strong>{post.authorName ?? "알 수 없음"}</strong>
                       </span>
-                      <span className="g-meta-item">
-                        조회수: <strong>{post.viewCount ?? 0}</strong>
-                      </span>
-                      <span className="g-meta-item">
-                        북마크: <strong>{post.bookmarkCount ?? 0}</strong>
-                      </span>
+                      <div className="g-meta-vb">
+                        {" "}
+                        {/* g-meta-vb를 <div>로 사용 */}
+                        <div className="g-meta-item g-views">
+                          {/* 조회수 아이콘 */}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#666"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="feather feather-eye"
+                            style={{
+                              position: "relative",
+                              top: "1px",
+                              right: "1px",
+                            }}
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          <span>
+                            <strong>{post.viewCount ?? 0}</strong>
+                          </span>
+                        </div>
+                        <div className="g-meta-item g-bookmarks">
+                          {/* 북마크 아이콘 */}
+                          <svg
+                            className="g-bookmark-svg1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="#666"
+                            style={{
+                              position: "relative",
+                              top: "1px",
+                              left: "3px",
+                            }}
+                          >
+                            <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+                          </svg>
+                          <span>
+                            <strong>{post.bookmarkCount ?? 0}</strong>
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Link>
               ))}
             </>
           )}
+
           {mergedPosts.length === 0 ? (
             ""
           ) : (
