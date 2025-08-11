@@ -1,63 +1,327 @@
-.category-tabs {
+/* src/main/Search.css */
+
+.g-search-filter {
+  padding-top: 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* 글 작성하기 버튼 상단 레이아웃 */
+.g-top-buttons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
 }
 
-.category-tabs button {
-  background: none;
-  border: none;
-  font-weight: normal;
-  color: #888;
-  cursor: pointer;
+.g-write-button-wrapper {
+  margin-left: auto;
 }
 
-.category-tabs button.active {
+.g-btn-write {
+  text-decoration: none;
+  color: #333;
+  padding: 8px 15px;
   font-weight: bold;
-  color: #000;
-  border-bottom: 2px solid orange;
 }
 
-.dropdown-filters {
+/* 필터 및 검색창 레이아웃 */
+.g-filter-and-search {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.gselect {
-  padding: 6px 12px;
+.g-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ✨ 새로운 드롭다운 컨테이너 스타일 */
+.g-dropdown-container {
+  position: relative;
+  display: inline-block;
+  font-family: inherit;
   font-size: 16px;
 }
 
-.btn-write-g {
-  float: right; /* 오른쪽 배치 */
-  font-weight: bold; /* 글씨 굵게 */
-  margin-right: 20px; /* 오른쪽에서 살짝 떨어지게 */
-  display: flex; /* float 적용 보장 */
+/* ✨ 드롭다운 버튼 (선택된 값을 보여주는 부분) */
+.g-dropdown-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 15px;
+  min-width: 100px;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.g-dropdown-button:focus {
+  outline: none;
+  border-color: orange;
 }
 
-html,
-body {
-  height: auto;
-  overflow-y: auto;
-  margin: 0 !important;
-  padding: 0 !important;
+/* ✨ 드롭다운 메뉴 (주르륵 내려오는 부분) */
+.g-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  min-width: 100%;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 200px; /* 스크롤 높이 제한 */
+  overflow-y: auto; /* 스크롤바 추가 */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  list-style: none;
+  margin: 0;
 }
-.search-filter {
-  padding-bottom: 80px; /* 푸터 높이만큼 */
+/* 스크롤바 스타일링 (선택 사항) */
+.g-dropdown-menu::-webkit-scrollbar {
+  width: 8px;
 }
-.gtruncated-text {
+.g-dropdown-menu::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 4px;
+}
+.g-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background-color: #ccc;
+}
+/* 드롭다운 메뉴가 보일 때의 상태 */
+.g-dropdown-menu.g-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 드롭다운 메뉴 아이템 (각 옵션) */
+.g-dropdown-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #333;
+}
+.g-dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+.g-dropdown-item.g-selected {
+  font-weight: bold;
+  color: orange;
+  background-color: #fff7e6;
+}
+
+/* 커스텀 화살표 아이콘 */
+.g-dropdown-arrow {
+  margin-left: 10px;
+  transition: transform 0.2s;
+}
+.g-dropdown-button.g-active .g-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.g-recruiting-btn {
+  padding: 5px 15px;
+  border: 2px solid #ccc;
+  border-radius: 50px;
+  background-color: transparent;
+  color: #666;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.g-recruiting-btn.g-active {
+  border-color: orange;
+  background-color: #fff7e6;
+  color: orange;
+}
+
+.g-search-input-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.g-search-input {
+  max-width: 300px;
+  padding: 8px 80px 8px 20px;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  box-sizing: border-box;
+}
+
+/* 검색 결과 목록 스타일 */
+.g-main-content {
+  margin-top: 30px;
+  padding-bottom: 70px;
+  min-height: 800px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.g-loading {
+  text-align: center;
+  padding: 200px;
+  min-height: 800px;
+}
+.g-no-results,
+.g-loading,
+.g-error-message,
+.g-login-required {
+  text-align: center;
+  padding: 200px;
+  grid-column: 1 / -1;
+}
+
+.g-error-message {
+  color: red;
+}
+
+.g-post-item {
+  display: block;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s ease-in-out;
+  position: relative;
+  background-color: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.g-post-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.g-post-thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+.g-post-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 5px;
+  height: 100px;
+}
+.g-post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.g-post-tags {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.g-tag {
+  background-color: #f0f0f0;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.g-post-info h3 {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+  margin: 10px 0 5px;
+}
+
+.g-bookmark-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  z-index: 10;
+  background-color: white;
+  border-radius: 50%;
+  padding: 5px;
+}
+
+.g-bookmark-svg {
+  width: 24px;
+  height: 24px;
+  fill: none; /* 채우기 없앰 */
+  stroke: #a0a0a0;
+  transition: all 0.2s;
+}
+.g-bookmark-svg:hover {
+  stroke: #666;
+}
+
+.g-bookmark-svg.g-bookmarked {
+  fill: #ffcc00;
+  stroke: #ffcc00;
+}
+
+.g-truncated-text {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
+  margin-bottom: 5px;
+  height: 100px;
 }
 
-.filters-wrapper {
+.g-post-meta {
+  margin-top: auto;
+  font-size: 0.9em;
+  color: #555;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* 줄 바꿈 허용 */
+  gap: 10px;
+}
+
+.g-meta-item strong {
+  font-weight: 500;
+  color: #333;
+}
+
+/* 페이지네이션 스타일 */
+.g-pagination-controls {
+  margin-top: 20px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.g-pagination-btn {
+  margin: 0 3px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+}
+
+.g-pagination-btn.g-active {
+  border-color: orange;
+  background-color: orange;
+  color: white;
 }
