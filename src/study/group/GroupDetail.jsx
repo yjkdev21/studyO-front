@@ -26,8 +26,32 @@ export default function GroupDetail() {
 
             try {
                 const response = await axios.get(`${host}/api/study/${groupId}`, { withCredentials: true });
+                
+                console.log('=== 그룹 상세 조회 응답 ===');
+                console.log('전체 응답:', response.data);
+                console.log('성공 여부:', response.data.success);
+                
                 if (response.data && response.data.data) {
-                    setGroup(response.data.data);
+                    const groupData = response.data.data;
+                    console.log('그룹 데이터:', groupData);
+                    console.log('썸네일 파일명 (DB):', groupData.thumbnail);
+                    console.log('썸네일 전체 URL:', groupData.thumbnailFullPath);
+                    
+                    setGroup(groupData);
+                    
+                    // S3 썸네일 URL 검증
+                    if (groupData.thumbnailFullPath && !groupData.thumbnailFullPath.includes('default')) {
+                        console.log('🖼️ S3 썸네일 URL 확인:', groupData.thumbnailFullPath);
+                        
+                        // URL 접근 가능성 테스트
+                        const img = new Image();
+                        img.onload = () => console.log('✅ 썸네일 이미지 로드 성공!');
+                        img.onerror = () => console.log('❌ 썸네일 이미지 로드 실패!');
+                        img.src = groupData.thumbnailFullPath;
+                    } else {
+                        console.log('📷 기본 썸네일 이미지 사용');
+                    }
+                    console.log('===========================');
                 } else {
                     setGroup(null);
                 }
@@ -92,11 +116,27 @@ export default function GroupDetail() {
         return isOwner() && memberCount <= 1;
     };
 
+    // S3 썸네일 URL 처리 함수 (기존 로직과 통합)
     const getThumbnailUrl = (group) => {
-        if (!group || !group.thumbnail) {
+        if (!group) {
             return '/images/default-thumbnail.png';
         }
-        return group.thumbnail;
+        
+        // thumbnailFullPath가 있으면 S3 URL 사용
+        if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
+            console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
+            return group.thumbnailFullPath;
+        }
+        
+        // thumbnail 필드만 있는 경우 (기존 호환성)
+        if (group.thumbnail && !group.thumbnail.includes('default')) {
+            console.log('썸네일 필드 사용:', group.thumbnail);
+            return group.thumbnail;
+        }
+        
+        // 기본 이미지
+        console.log('기본 썸네일 이미지 사용');
+        return '/images/default-thumbnail.png';
     };
 
     const handleDelete = async () => {
@@ -134,8 +174,19 @@ export default function GroupDetail() {
                     src={getThumbnailUrl(group)}
                     alt="썸네일"
                     width="200"
-                    onError={(e) => { e.target.src = '/images/default-thumbnail.png'; }}
+                    onError={(e) => { 
+                        console.log('이미지 로딩 실패, 기본 이미지로 변경');
+                        e.target.src = '/images/default-thumbnail.png'; 
+                    }}
                 />
+                {/* 개발용 - 썸네일 URL 정보 표시 */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                        <p>DB 파일명: {group.thumbnail || '없음'}</p>
+                        <p>S3 URL: {group.thumbnailFullPath || '없음'}</p>
+                        <p>사용 URL: {getThumbnailUrl(group)}</p>
+                    </div>
+                )}
             </div>
 
             <div className="mt-3">
@@ -164,16 +215,7 @@ export default function GroupDetail() {
                         </button>
                     </>
                 )}
-                {/* 권한 정보 디버깅 (개발 중에만 표시) */}
-            <div style={{ fontSize: '12px', color: '#999', marginTop: '20px', padding: '10px', backgroundColor: '#f8f9fa' }}>
-                <strong>권한 디버깅:</strong><br />
-                로그인 여부: {isAuthenticated ? 'O' : 'X'}<br />
-                현재 사용자 ID: {user?.id || user?.userId || 'N/A'}<br />
-                그룹 소유자 ID: {group.groupOwnerId}<br />
-                소유자 여부: {isOwner() ? 'O' : 'X'}<br />
-                삭제 가능 여부: {canDelete() ? 'O' : 'X'}<br />
-                멤버 수: {memberCount}명
-            </div>
+                
             </div>
         </div>
     );
