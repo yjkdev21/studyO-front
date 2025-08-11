@@ -21,9 +21,9 @@ const formatToLocalDateTimeString = (dateString) => {
 
 const StudyPostInput = ({ groupId, onPostCreated }) => {
   const { user } = useAuth();
-  const userId = user?.id; // user?.id; // 실제 사용자 ID를 사용해야 합니다. 10은 테스트용입니다.
+  const userId = user?.id;
 
-  console.log("user.id: " + userId);
+  //console.log("StudyPostInput user.id: " + userId);
 
   const host = import.meta.env.VITE_AWS_API_HOST;
   const navigate = useNavigate();
@@ -124,7 +124,7 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     formData.append("recruitStartDate", formatToLocalDateTimeString(startDate));
     formData.append("recruitEndDate", formatToLocalDateTimeString(endDate));
 
-    console.log("formData: ", formData); // 디버깅용
+    // console.log("formData: ", formData); // 디버깅용
 
     if (attachments?.length > 0) {
       attachments.forEach((file) => {

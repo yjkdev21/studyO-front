@@ -11,6 +11,7 @@ const StudyCard = ({
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
@@ -19,10 +20,10 @@ const StudyCard = ({
   isSelected,
   onSelect,
 }) => {
+  const navigate = useNavigate();
+  
   const handleClick = () => {
-    if (onSelect) {
-      onSelect(groupId);
-    }
+    navigate(`/study/${groupId}/dashboard`);
   };
 
   const formatDate = (dateString) => {
@@ -56,7 +57,9 @@ const StudyCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
@@ -84,6 +87,7 @@ const BookmarkCard = ({
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
@@ -92,10 +96,10 @@ const BookmarkCard = ({
   isSelected,
   onSelect,
 }) => {
+  const navigate = useNavigate();
+  
   const handleClick = () => {
-    if (onSelect) {
-      onSelect(bookmarkId);
-    }
+    navigate(`/study/${groupId}/dashboard`);
   };
 
   const formatDate = (dateString) => {
@@ -129,7 +133,9 @@ const BookmarkCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
@@ -184,6 +190,15 @@ function MyPage() {
     { key: 'participating', label: '참여중인' },
     { key: 'completed', label: '참여했던' }
   ];
+
+  // 스터디 대시보드로 이동하는 핸들러
+  const handleNavigateToStudy = (groupId) => {
+    if (!groupId) {
+      console.error('그룹 ID가 없습니다.');
+      return;
+    }
+    navigate(`/study/${groupId}/dashboard`);
+  };
 
   const filterStudies = (filterType) => {
     let filtered = [];
@@ -473,6 +488,10 @@ function MyPage() {
             </h1>
             <button className="mypage-edit-profile-btn" onClick={handleEditProfile}>
               프로필 수정
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -586,6 +605,7 @@ function MyPage() {
                       groupName={study.groupName}
                       groupIntroduction={study.groupIntroduction}
                       groupOwnerId={study.groupOwnerId}
+                      ownerNickname={study.ownerNickname}
                       createdAt={study.createdAt}
                       maxMembers={study.maxMembers}
                       studyMode={study.studyMode}
@@ -660,6 +680,7 @@ function MyPage() {
                       groupName={bookmark.groupName}
                       groupIntroduction={bookmark.groupIntroduction}
                       groupOwnerId={bookmark.groupOwnerId}
+                      ownerNickname={bookmark.ownerNickname}
                       createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
                       maxMembers={bookmark.maxMembers}
                       studyMode={bookmark.studyMode}

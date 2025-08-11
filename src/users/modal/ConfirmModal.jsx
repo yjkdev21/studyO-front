@@ -62,7 +62,11 @@ function ConfirmModal({
             actionText: '수정',
         },
         editProfileSimple: {
-            title: '프로필을 수정하시겠습니까?',
+            title: (
+                <>
+                    프로필을 <span className="highlight">수정</span>하시겠습니까?
+                </>
+            ),
             subtitle: '',
             description: '',
             actionText: '수정',
