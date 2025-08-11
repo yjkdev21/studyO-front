@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import './group.css';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -162,61 +163,97 @@ export default function GroupDetail() {
         }
     };
 
-    return (
-        <div className="container mt-4">
-            <h2>{group.groupName}</h2>
-            <p className="text-muted">
-                카테고리: {group.category} | 모드: {group.studyMode} | 지역: {group.region}
-            </p>
-
-            <div className="mb-3">
+return (
+    <div id="groupdetail" className="container mt-4">
+        <div className="view-header-section">
+            <h2 className="form-title">
+            <span className="form-badge">✔</span>
+            스터디 그룹글
+            </h2>
+            <h1 className="view-title">{group.groupName}</h1>
+            <div className="view-author-info">
                 <img
-                    src={getThumbnailUrl(group)}
-                    alt="썸네일"
-                    width="200"
-                    onError={(e) => { 
-                        console.log('이미지 로딩 실패, 기본 이미지로 변경');
-                        e.target.src = '/images/default-thumbnail.png'; 
-                    }}
+                    src="/default-profile.png"
+                    alt="프로필 이미지"
+                    className="view-profile-image"
                 />
-                {/* 개발용 - 썸네일 URL 정보 표시 */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                        <p>DB 파일명: {group.thumbnail || '없음'}</p>
-                        <p>S3 URL: {group.thumbnailFullPath || '없음'}</p>
-                        <p>사용 URL: {getThumbnailUrl(group)}</p>
-                    </div>
-                )}
+                {/* <img
+                src={post.profileImage || "/default-profile.png"}
+                alt="프로필 이미지"
+                className="view-profile-image"
+                /> */}
+
+                <span className="view-author">{group.nickname}</span>
+                <span className="view-date"> | 스터디 그룹</span>
             </div>
-
-            <div className="mt-3">
-                <strong>닉네임:</strong> {group.nickname}<br />
-                <strong>최대 인원:</strong> {group.maxMembers}명<br />
-                <strong>현재 멤버:</strong> {memberCount}명<br />
-                <strong>연락 방법:</strong> {group.contact}<br />
-                <strong>소개:</strong> <p>{group.groupIntroduction}</p>
+            <div className="thumbnail-section">
+            <img
+                src={getThumbnailUrl(group)}
+                alt="썸네일"
+                width="200"
+                onError={(e) => { 
+                    console.log('이미지 로딩 실패, 기본 이미지로 변경');
+                    e.target.src = '/images/default-thumbnail.png'; 
+                }}
+            />
             </div>
-
-            <div className="mt-4">
-                <Link to="/groupList" className="btn btn-secondary">목록</Link>
-
-                {isOwner() && (
-                    <>
-                        <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary mx-2">
-                            수정
-                        </Link>
-                        <button
-                            onClick={handleDelete}
-                            className="btn btn-danger"
-                            disabled={!canDelete()}
-                            title={!canDelete() ? "다른 멤버가 있어 삭제할 수 없습니다" : ""}
-                        >
-                            삭제 {memberCount > 1 && `(멤버 ${memberCount}명)`}
-                        </button>
-                    </>
-                )}
-                
+            <div className="view-meta-info-flex">
+                <div className="meta-item">
+                    <span className="meta-label">카테고리</span>
+                    <span className="meta-value">{group.category}</span>
+                </div>
+                <div className="meta-item">
+                    <span className="meta-label">최대 인원</span>
+                    <span className="meta-value">{group.maxMembers}명</span>
+                </div>
+                <div className="meta-item">
+                    <span className="meta-label">진행방식</span>
+                    <span className="meta-value">{group.studyMode}</span>
+                </div>
+                <div className="meta-item">
+                    <span className="meta-label">지역</span>
+                    <span className="meta-value">{group.region}</span>
+                </div>
+                <div className="meta-item">
+                    <span className="meta-label">연락방법</span>
+                    <span className="meta-value">{group.contact}</span>
+                </div>
+                <div className="meta-item">
+                    <span className="meta-label">현재 멤버</span>
+                    <span className="meta-value">{memberCount}명</span>
+                </div>
             </div>
         </div>
-    );
+
+        <div className="view-body-section">
+            <h3 className="section-title">스터디 소개</h3>
+            <div className="intro-content">
+                {group.groupIntroduction}
+            </div>
+        </div>
+
+        <div className="button-container">
+        <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
+            대시보드
+        </Link>
+
+    {isOwner() && (
+        <>
+            <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
+                수정
+            </Link>
+            <button
+                onClick={handleDelete}
+                className="btn btn-danger"
+                disabled={!canDelete()}
+                title={!canDelete() ? "다른 멤버가 있어 삭제할 수 없습니다" : ""}
+            >
+                삭제 {memberCount > 1 && `(멤버 ${memberCount}명)`}
+            </button>
+        </>
+    )}
+</div>
+
+    </div>
+);
 }
