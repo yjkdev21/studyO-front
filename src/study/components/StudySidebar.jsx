@@ -5,7 +5,7 @@ import { studySidebarApi } from './StudySidebarApi';
 
 export default function StudySidebar({
   groupId,
-  initialTab = 'main', //기본 활성화 탭
+  initialTab = '', //기본 활성화 탭
   onMenuClick
 }) {
 
@@ -20,7 +20,8 @@ export default function StudySidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 현재 활성 탭 상태를 컴포넌트 내부에서 관리
-  const [currentTab, setCurrentTab] = useState(initialTab);
+  const [currentTab, setCurrentTab] = useState(initialTab || 'dashboard');
+
 
   // API 로딩 상태 관리
   const [loading, setLoading] = useState(true);
@@ -105,7 +106,7 @@ export default function StudySidebar({
         {/* 대시보드 메뉴 */}
         <ul className='sidebar-study-menu'>
           <li className={`menu-tab dashboard-tab ${currentTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('')}>
+  onClick={() => handleMenuClick('dashboard')}>
             대시보드
           </li>
           <li className={`menu-tab member-tab ${currentTab === 'member' ? 'active' : ''}`}
