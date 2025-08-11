@@ -103,9 +103,32 @@ function Search() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const DEFAULT_THUMBNAIL_URL = "https://placehold.co/150x100?text=No+Image";
+  const DEFAULT_THUMBNAIL_URL = "/images/default-thumbnail.png";
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 9;
+
+  // S3 썸네일 URL 처리 함수 (첫 번째 코드와 동일한 로직)
+  const getThumbnailUrl = (post) => {
+    if (!post) {
+      return "/images/default-thumbnail.png";
+    }
+    // thumbnailFullPath가 있으면 S3 URL 사용
+    if (post.thumbnailFullPath && !post.thumbnailFullPath.includes("default")) {
+      console.log("S3 썸네일 URL 사용:", post.thumbnailFullPath);
+      return post.thumbnailFullPath;
+    }
+
+    // thumbnail 필드만 있는 경우 S3 URL 직접 구성
+    if (post.thumbnail && !post.thumbnail.includes("default")) {
+      const s3Url = `https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/studygroupimg/${post.thumbnail}`;
+      console.log("S3 URL 직접 구성:", s3Url);
+      return s3Url;
+    }
+
+    // 기본 이미지
+    console.log("기본 썸네일 이미지 사용");
+    return "/images/default-thumbnail.png";
+  };
 
   useEffect(() => {
     const newCategory = location.state?.category;
@@ -293,8 +316,6 @@ function Search() {
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = mergedPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(mergedPosts.length / postsPerPage);
-  const S3_BASE_URL =
-    "https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/POST/";
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -425,14 +446,15 @@ function Search() {
                     <span className="g-tag">모집인원 {post.maxMembers}</span>
                   </div>
                   <img
-                    src={
-                      post.thumbnail
-                        ? `${S3_BASE_URL}${post.thumbnail}`
-                        : DEFAULT_THUMBNAIL_URL
-                    }
+                    src={getThumbnailUrl(post)}
                     alt={`${post.title} 썸네일`}
                     className="g-post-thumbnail"
+                    onError={(e) => {
+                      console.log("이미지 로딩 실패, 기본 이미지로 변경");
+                      e.target.src = DEFAULT_THUMBNAIL_URL;
+                    }}
                   />
+
                   <div className="g-post-info">
                     <div
                       className="g-bookmark-toggle"
