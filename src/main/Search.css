@@ -202,6 +202,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
+  height: 500px;
 }
 
 .g-post-item:hover {
@@ -217,7 +218,7 @@
 }
 
 .g-post-info {
-  padding: 15px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -289,15 +290,6 @@
   height: 100px;
 }
 
-.g-post-meta {
-  margin-top: auto;
-  font-size: 0.9em;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .g-meta-item strong {
   font-weight: 500;
   color: #333;
@@ -324,4 +316,31 @@
   border-color: orange;
   background-color: orange;
   color: white;
+}
+/* 조회수와 북마크 그룹 */
+.g-views,
+.g-bookmarks {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* 아이콘과 숫자 간 간격 */
+  margin-left: 5px;
+}
+
+.g-bookmark-svg1 {
+  fill: #888; /* 북마크 아이콘 색상 조정 */
+}
+
+.g-post-meta {
+  display: flex;
+  align-items: center; /* 자식 요소들을 세로 중앙에 정렬 */
+  justify-content: space-between; /* 첫 번째 요소와 마지막 요소를 양쪽 끝에 배치 */
+  font-size: 12px;
+  color: #999;
+  margin-top: auto;
+}
+
+.g-meta-vb {
+  display: flex; /* 내부 요소(조회수, 북마크)를 가로로 정렬 */
+  align-items: center;
+  gap: 0px; /* 조회수와 북마크 아이콘 사이의 간격 */
 }
