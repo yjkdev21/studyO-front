@@ -1,3 +1,7 @@
+.tudy-main-container {
+  background-color: #d9d9d9;
+}
+
 /********** 스터디 정보 **********/
 .post-item {
   border-bottom: 1px solid #ddd;
@@ -166,4 +170,106 @@
   background-color: #FFCC5B;
   color: #666;
   border: 1px solid #FFCC5B;
+}
+
+/********** 전체 게시글 목록 **********/
+.all-post-list {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.post-item {
+  padding: 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  list-style: none;
+}
+
+.post-layout {
+  display: flex;
+  gap: 15px;
+}
+
+.post-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.nickname {
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.post-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-content-area {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.post-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.post-content {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.post-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.post-date {
+  font-size: 14px;
+  color: #666;
+  right: 0;
+}
+
+.post-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.post-actions button {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.badge {
+  background-color: #FDB515;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
 }

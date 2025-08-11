@@ -19,7 +19,7 @@ export default function StudyMainPageWrapper() {
   else if (currentPath.includes('/project')) currentTab = 'project';
 
   const handleMenuClick = (tabId) => {
-    if (tabId === 'dachboard') {
+    if (tabId === 'dashboard') {
       navigate(`/study/${groupId}/dashboard`);
     } else {
       navigate(`/study/${groupId}/dashboard/${tabId}`);
