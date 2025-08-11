@@ -11,6 +11,7 @@ const StudyCard = ({
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
@@ -19,10 +20,10 @@ const StudyCard = ({
   isSelected,
   onSelect,
 }) => {
+  const navigate = useNavigate();
+  
   const handleClick = () => {
-    if (onSelect) {
-      onSelect(groupId);
-    }
+    navigate(`/study/${groupId}/dashboard`);
   };
 
   const formatDate = (dateString) => {
@@ -56,7 +57,9 @@ const StudyCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
@@ -84,6 +87,7 @@ const BookmarkCard = ({
   groupName,
   groupIntroduction,
   groupOwnerId,
+  ownerNickname,
   createdAt,
   maxMembers,
   studyMode,
@@ -92,10 +96,10 @@ const BookmarkCard = ({
   isSelected,
   onSelect,
 }) => {
+  const navigate = useNavigate();
+  
   const handleClick = () => {
-    if (onSelect) {
-      onSelect(bookmarkId);
-    }
+    navigate(`/study/${groupId}/dashboard`);
   };
 
   const formatDate = (dateString) => {
@@ -129,7 +133,9 @@ const BookmarkCard = ({
             <h3 className="mypage-study-card-title">{groupName || '스터디명 없음'}</h3>
           </div>
           <p className="mypage-study-card-description">{groupIntroduction || '소개글이 없습니다.'}</p>
-          <p className="mypage-study-card-owner">그룹장: {groupOwnerId || '그룹장 정보 없음'}</p>
+          <p className="mypage-study-card-owner">
+            그룹장: {ownerNickname || '그룹장 정보 없음'}
+          </p>
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
@@ -184,6 +190,15 @@ function MyPage() {
     { key: 'participating', label: '참여중인' },
     { key: 'completed', label: '참여했던' }
   ];
+
+  // 스터디 대시보드로 이동하는 핸들러
+  const handleNavigateToStudy = (groupId) => {
+    if (!groupId) {
+      console.error('그룹 ID가 없습니다.');
+      return;
+    }
+    navigate(`/study/${groupId}/dashboard`);
+  };
 
   const filterStudies = (filterType) => {
     let filtered = [];
@@ -590,6 +605,7 @@ function MyPage() {
                       groupName={study.groupName}
                       groupIntroduction={study.groupIntroduction}
                       groupOwnerId={study.groupOwnerId}
+                      ownerNickname={study.ownerNickname}
                       createdAt={study.createdAt}
                       maxMembers={study.maxMembers}
                       studyMode={study.studyMode}
@@ -664,6 +680,7 @@ function MyPage() {
                       groupName={bookmark.groupName}
                       groupIntroduction={bookmark.groupIntroduction}
                       groupOwnerId={bookmark.groupOwnerId}
+                      ownerNickname={bookmark.ownerNickname}
                       createdAt={bookmark.studyCreatedAt || bookmark.createdAt}
                       maxMembers={bookmark.maxMembers}
                       studyMode={bookmark.studyMode}
