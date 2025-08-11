@@ -6,6 +6,7 @@ import PasswordModal from './modal/PasswordModal';
 import SimpleCalendar from './components/MyPageCalendar'; 
 import './MyPage.css';
 
+// StudyCard와 BookmarkCard 컴포넌트
 const StudyCard = ({
   groupId,
   category,
@@ -18,11 +19,31 @@ const StudyCard = ({
   studyMode,
   region,
   thumbnail,
+  thumbnailFullPath,
   isSelected,
   onSelect,
 }) => {
   const navigate = useNavigate();
   
+  // GroupDetail과 동일한 썸네일 URL 처리 함수
+  const getThumbnailUrl = () => {
+    // 1순위: S3 전체 URL 사용 (thumbnailFullPath)
+    if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
+      console.log('S3 썸네일 URL 사용:', thumbnailFullPath);
+      return thumbnailFullPath;
+    }
+    
+    // 2순위: 기존 썸네일 필드 사용 (thumbnail)
+    if (thumbnail && !thumbnail.includes('default')) {
+      console.log('썸네일 필드 사용:', thumbnail);
+      return thumbnail;
+    }
+    
+    // 3순위: 기본 이미지
+    console.log('기본 썸네일 이미지 사용');
+    return '/images/default-thumbnail.png';
+  };
+
   const handleClick = () => {
     navigate(`/group/${groupId}`);
   };
@@ -64,19 +85,19 @@ const StudyCard = ({
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
-      {thumbnail && (
-        <div className="mypage-study-thumbnail-wrapper">
-          <div className="mypage-study-thumbnail-image">
-            <img
-              src={thumbnail}
-              alt={`${groupName} 썸네일`}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
+      <div className="mypage-study-thumbnail-wrapper">
+        <div className="mypage-study-thumbnail-image">
+          <img
+            src={getThumbnailUrl()}
+            alt={`${groupName} 썸네일`}
+            width="200"
+            onError={(e) => { 
+              console.log('이미지 로딩 실패, 기본 이미지로 변경');
+              e.target.src = '/images/default-thumbnail.png'; 
+            }}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -94,11 +115,25 @@ const BookmarkCard = ({
   studyMode,
   region,
   thumbnail,
+  thumbnailFullPath,
   isSelected,
   onSelect,
 }) => {
   const navigate = useNavigate();
   
+  // 동일한 썸네일 URL 처리 함수
+  const getThumbnailUrl = () => {
+    if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
+      return thumbnailFullPath;
+    }
+    
+    if (thumbnail && !thumbnail.includes('default')) {
+      return thumbnail;
+    }
+    
+    return '/images/default-thumbnail.png';
+  };
+
   const handleClick = () => {
     navigate(`/group/${groupId}`);
   };
@@ -140,19 +175,19 @@ const BookmarkCard = ({
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
-      {thumbnail && (
-        <div className="mypage-study-thumbnail-wrapper">
-          <div className="mypage-study-thumbnail-image">
-            <img
-              src={thumbnail}
-              alt={`${groupName} 썸네일`}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
+      <div className="mypage-study-thumbnail-wrapper">
+        <div className="mypage-study-thumbnail-image">
+          <img
+            src={getThumbnailUrl()}
+            alt={`${groupName} 썸네일`}
+            width="200"
+            onError={(e) => { 
+              console.log('이미지 로딩 실패, 기본 이미지로 변경');
+              e.target.src = '/images/default-thumbnail.png'; 
+            }}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -192,12 +227,13 @@ function MyPage() {
     { key: 'completed', label: '참여했던' }
   ];
 
+  // 스터디 상세 페이지로 이동하는 핸들러
   const handleNavigateToStudy = (groupId) => {
     if (!groupId) {
       console.error('그룹 ID가 없습니다.');
       return;
     }
-    navigate(`/groupdetail/${groupId}`);
+    navigate(`/group/${groupId}`);
   };
 
   const filterStudies = (filterType) => {
@@ -496,6 +532,7 @@ function MyPage() {
           </div>
         </div>
 
+        {/* 캘린더 섹션 - 프로필 바로 아래로 이동 */}
         <div className="mypage-section-card">
           <div className="mypage-calendar-wrapper">
             <SimpleCalendar />
@@ -617,6 +654,7 @@ function MyPage() {
                       studyMode={study.studyMode}
                       region={study.region}
                       thumbnail={study.thumbnail}
+                      thumbnailFullPath={study.thumbnailFullPath}
                       isSelected={selectedCard === study.groupId}
                       onSelect={handleCardSelect}
                     />
@@ -692,6 +730,7 @@ function MyPage() {
                       studyMode={bookmark.studyMode}
                       region={bookmark.region}
                       thumbnail={bookmark.thumbnail}
+                      thumbnailFullPath={bookmark.thumbnailFullPath}
                       isSelected={selectedBookmarkCard === bookmark.id}
                       onSelect={handleBookmarkCardSelect}
                     />
