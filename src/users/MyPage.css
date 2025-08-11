@@ -459,4 +459,17 @@
   .header-arrow-icon {
     font-size: 32px;
   }
+
+.mypage-calendar-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.mypage-calendar-wrapper .simple-calendar {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
 }
