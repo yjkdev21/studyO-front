@@ -1,3 +1,8 @@
+.tudy-main-container {
+  background-color: #d9d9d9;
+}
+
+/********** 스터디 정보 **********/
 .post-item {
   border-bottom: 1px solid #ddd;
   padding: 1rem 0;
@@ -20,4 +25,251 @@
 }
 .post-content {
   margin-top: 0.5rem;
+}
+
+/********** 스터디 정보 + 글목록(최신 공지1 + 일반글3) **********/
+.study-main-container .dashboard-top {
+  display: flex;
+}
+
+.study-main-container .dashboard-top .study-info-box {
+  width: 50%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.study-info-box p {
+  width: 50%;
+  margin-bottom: 15px;
+}
+.dashboard-latest{
+  width: 521px;
+  font-size: 14px;
+  position: relative;
+
+}
+
+.dashboard-latest .latest-notice {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.dashboard-latest .latest-notice .badge{
+  color: #fff;
+  background-color: #FDB515;
+  padding: 4px 12px;
+  margin-right: 10px;
+}
+
+.dashboard-latest .latest-posts{
+  margin-left: 58px;
+}
+
+.dashboard-latest .latest-posts li {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.latest-notice span.date, 
+.latest-posts span.date {
+  position: absolute;
+  right: 0;
+  color: #999;
+}
+
+.title-ellipsis {
+  display: inline-block;
+  max-width: 360px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.latest-notice .no-content {
+  margin-left: 58px !important;
+  position: static !important;
+}
+
+
+/********** 주간 캘린더 **********/
+.week-calendar {
+  margin: 100px auto;
+}
+
+/********** 글 작성 폼 **********/
+.post-form {
+  max-width: 720px;
+  margin: 20px 0;
+}
+
+
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.post-form label {
+  font-weight: 500;
+  color: #333;
+  margin-right: 10px;
+}
+
+.post-form input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #999;
+  font-size: 14px;
+}
+
+.post-form textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #999;
+  font-size: 14px;
+  min-height: 216px;
+}
+
+/* 공지 체크박스 + 등록 버튼 */
+.form-bottom {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal !important;
+  /* width: auto !important; */
+  /* padding: 0 !important; */
+  /* margin: 0 !important; */
+}
+
+.post-form input[type="checkbox"] {
+  /* width: auto; */
+  /* margin: 0; */
+}
+
+.post-form button[type="submit"] {
+  background-color: #FDB515;
+  color: #fff;
+  padding: 10px 30px;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.submit-message {
+  margin: 10px 0;
+  padding: 8px;
+  font-size: 14px;
+  background-color: #FFCC5B;
+  color: #666;
+  border: 1px solid #FFCC5B;
+}
+
+/********** 전체 게시글 목록 **********/
+.all-post-list {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.post-item {
+  padding: 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  list-style: none;
+}
+
+.post-layout {
+  display: flex;
+  gap: 15px;
+}
+
+.post-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.nickname {
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.post-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-content-area {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.post-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.post-content {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.post-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.post-date {
+  font-size: 14px;
+  color: #666;
+  right: 0;
+}
+
+.post-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.post-actions button {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.badge {
+  background-color: #FDB515;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
 }
