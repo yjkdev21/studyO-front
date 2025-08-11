@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from "./modal/ConfirmModal";
 import PasswordModal from './modal/PasswordModal';
+import SimpleCalendar from './components/MyPageCalendar'; 
 import './MyPage.css';
 
 const StudyCard = ({
@@ -23,7 +24,7 @@ const StudyCard = ({
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate(`/study/${groupId}/dashboard`);
+    navigate(`/group/${groupId}`);
   };
 
   const formatDate = (dateString) => {
@@ -99,7 +100,7 @@ const BookmarkCard = ({
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate(`/study/${groupId}/dashboard`);
+    navigate(`/group/${groupId}`);
   };
 
   const formatDate = (dateString) => {
@@ -191,13 +192,12 @@ function MyPage() {
     { key: 'completed', label: '참여했던' }
   ];
 
-  // 스터디 대시보드로 이동하는 핸들러
   const handleNavigateToStudy = (groupId) => {
     if (!groupId) {
       console.error('그룹 ID가 없습니다.');
       return;
     }
-    navigate(`/study/${groupId}/dashboard`);
+    navigate(`/groupdetail/${groupId}`);
   };
 
   const filterStudies = (filterType) => {
@@ -493,6 +493,12 @@ function MyPage() {
                 <circle cx="12" cy="12" r="3"/>
               </svg>
             </button>
+          </div>
+        </div>
+
+        <div className="mypage-section-card">
+          <div className="mypage-calendar-wrapper">
+            <SimpleCalendar />
           </div>
         </div>
 
