@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
-import StudySidebar from '../components/StudySidebar';
+import { useStudy } from '../../contexts/StudyContext';
 import './StudyMain.css';
 
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
   const { user } = useAuth(); // 현재 로그인한 사용자 정보
 
-  const [studyInfo, setStudyInfo] = useState(null); // 스터디 정보
+  const { studyInfo, isLoading: studyLoading, error } = useStudy(); // 스터디 정보 context 사용
 
   const [isNotice, setIsNotice] = useState(false); // 공지 여부 체크박스 상태
   const [allNotices, setAllNotices] = useState([]); // 공지 목록
@@ -31,16 +31,6 @@ export default function StudyMain() {
 
   const host = import.meta.env.VITE_AWS_API_HOST;
 
-  // 스터디 정보 가져오기
-  const fetchStudyInfo = async () => {
-    try {
-      const response = await axios.get(`${host}/api/study/${groupId}`);
-      setStudyInfo(response.data.data);
-    } catch (error) {
-      console.log('스터디 정보 가져오기 실패', error);
-    }
-  };
-
   // 공지 및 일반글 가져오기
   const fetchPosts = async () => {
     try {
@@ -56,7 +46,6 @@ export default function StudyMain() {
   };
 
   useEffect(() => {
-    fetchStudyInfo();
     fetchPosts();
   }, [groupId]);
 
@@ -139,8 +128,8 @@ export default function StudyMain() {
           : post
       ));
 
-      // 편집 상태 해제 - handleCancelEdit() 호출
-      handleCancelEdit(); // ← 이게 맞습니다!
+      // 편집 상태 해제 handleCancelEdit() 호출
+      handleCancelEdit();
 
     } catch (error) {
       console.log('수정 오류', error)
@@ -172,7 +161,11 @@ export default function StudyMain() {
       <div className='dashboard-top'>
         {/* 스터디 정보 */}
         <div className='study-info-box'>
-          {studyInfo ? (
+          {studyLoading ? (
+            <p>로딩 중...</p>
+          ) : error ? (
+            <p>스터디 정보 로딩 실패</p>
+          ) : studyInfo ? (
             <>
               <p>카테고리: {studyInfo.category}</p>
               <p>인원: {studyInfo.maxMembers}</p>
@@ -181,7 +174,7 @@ export default function StudyMain() {
               <p>연락방법: {studyInfo.contact}</p>
             </>
           ) : (
-            <p>로딩 중...</p>
+            <p>스터디 정보를 불러올 수 없습니다.</p>
           )}
         </div>
         {/* 최신 공지 1 + 일반글 3 */}
@@ -284,7 +277,7 @@ export default function StudyMain() {
                 </div>
               </div>
 
-              {/* 오른쪽: 글 제목 + 내용 + 하단(날짜, 수정삭제) */}
+              {/* 오른쪽: 글 제목 + 내용 + 하단(날짜 + 수정삭제) */}
               <div className='post-right'>
                 <div className='post-content-area'>
                   {editingPostId === post.id ? (
@@ -309,7 +302,7 @@ export default function StudyMain() {
                   )}
                 </div>
 
-                {/* 하단: 날짜 + 수정삭제 버튼 */}
+                {/* 하단 */}
                 <div className='post-bottom'>
                   {(user?.id === post.writerId || user?.id === post.userId) && (
                     <div className='post-actions'>

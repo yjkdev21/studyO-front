@@ -21,7 +21,9 @@ export default function Home() {
             </div>
             {/* 배너 버튼 */}
             <div className="main-banner-btn">
-              <Link to="/groupCreate" className="shadow-btn">스터디 시작하기 <span>→</span></Link>
+              <Link to="/groupCreate" className="shadow-btn">
+                스터디 시작하기 <span>→</span>
+              </Link>
             </div>
           </div>
         </div>

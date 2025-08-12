@@ -10,6 +10,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useStudy } from '../../contexts/StudyContext';
 
 export default function StudyCalendar() {
   const [events, setEvents] = useState([]);
@@ -17,7 +18,8 @@ export default function StudyCalendar() {
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [studyInfo, setStudyInfo] = useState(null);
+
+  const { studyInfo, isLoading: studyLoading, error } = useStudy();
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
 
   const { user } = useAuth();
@@ -25,18 +27,9 @@ export default function StudyCalendar() {
   const { groupId: groupIdParam } = useParams();
   const groupId = Number(groupIdParam);
 
-
-  // 스터디 정보 조회
-  useEffect(() => {
-    axios.get(`${host}/api/study/${groupId}`).then((res) => {
-      setStudyInfo(res.data.data);
-    });
-  }, [groupId]);
-
   const isHost = useMemo(() => {
     return !!(user?.id && studyInfo?.groupOwnerId && user.id === studyInfo.groupOwnerId);
   }, [user?.id, studyInfo?.groupOwnerId]);
-
 
 
   // 일정 목록 조회

@@ -16,8 +16,6 @@ import FindId from "./users/FindId";
 import FindPw from "./users/FindPw";
 import MyHistory from "./users/MyHistory";
 
-import StudyList from "./study/StudyList";
-
 import GroupDetail from "./study/group/GroupDetail";
 import GroupCreate from "./study/group/GroupCreate";
 import GroupUpdate from "./study/group/GroupUpdate";
@@ -38,11 +36,6 @@ import ProjectMember from "./project/dashboard/ProjectMember";
 import ProjectCalendar from "./project/dashboard/ProjectCalendar";
 
 import NotFoundPage from "./common/NotFoundPage";
-import PromotionView from "./study/promotion/PromotionView";
-import PromotionList from "./study/promotion/PromotionList";
-import PromotionPost from "./study/promotion/PromotionPost";
-import PromotionEdit from "./study/promotion/PromotionEdit";
-// import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import StudySidebar from "./study/components/StudySidebar";
 import StudyPostMain from "./study/post/StudyPostMain";
@@ -92,7 +85,7 @@ function App() {
 
             <Route path="/groupCreate" element={<GroupCreate />} />
             <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
-            <Route path="/study/postMain/:userId" element={<StudyPostMain />} />
+            <Route path="/study/postMain" element={<StudyPostMain />} />
             <Route
               path="/study/postView/:groupId"
               element={<StudyPromotion />}
