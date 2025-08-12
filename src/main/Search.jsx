@@ -242,11 +242,9 @@ function Search() {
         await axios.delete(
           `http://localhost:8081/api/bookmark/${user.id}/${groupId}`
         );
-        alert("북마크가 삭제되었습니다.");
       } else {
         const payload = { userId: user.id, groupId };
         await axios.post(`http://localhost:8081/api/bookmark`, payload);
-        alert("북마크가 추가되었습니다.");
       }
       await Promise.all([fetchUserBookmarks(), fetchBookmarkViewCounts()]);
     } catch (error) {
@@ -275,7 +273,7 @@ function Search() {
         ]);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
-        console.error("데이터 불러오기 실패:", err);
+        console.error("데이터 불러오기 실패: ", err);
       } finally {
         setIsLoading(false);
       }
@@ -409,12 +407,13 @@ function Search() {
           />
         </div>
       </div>
-
       {isLoading ? (
-        <div className="g-loading">데이터를 불러오는 중입니다...</div>
+        <div className="g-loading-container">
+                <div className="g-loading-spinner"></div>   {" "}
+        </div>
       ) : error ? (
         <div className="g-error-message">
-          <p>{error}</p>
+                <p>{error}</p>   {" "}
         </div>
       ) : !isAuthenticated ? (
         <div className="g-login-required">

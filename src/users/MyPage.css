@@ -6,7 +6,7 @@
 
 .mypage-top-background {
   height: 150px;
-  background-color: #e5e7eb;
+  background-color: #d9d9d9;
   width: 100vw;
   position: relative;
   left: 50%;
@@ -69,14 +69,14 @@
   font-size: 1.25rem;
   line-height: 1.75rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #000000;
   margin-bottom: 0.75rem;
 }
 
 .mypage-edit-profile-btn {
   padding: 0.25rem 0.75rem;
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: #ffffff;
+  color: #666666;
   border-radius: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
@@ -89,13 +89,70 @@
 }
 
 .mypage-edit-profile-btn:hover {
-  background-color: #f3f4f6;
+  background-color: #ffffff;
 }
 
 .mypage-edit-profile-btn svg {
   width: 12px;
   height: 12px;
   flex-shrink: 0; 
+}
+
+/* 통계와 캘린더 나란히 배치 */
+.mypage-analytics-calendar-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.mypage-analytics-section {
+  flex: 1;
+  height: 400px;
+  min-height: 400px;
+  max-height: 400px;
+  background-color: #ffffff;
+  border: 1px solid #EEEEEE;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.mypage-analytics-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mypage-analytics-placeholder {
+  color: #666666;
+  font-size: 16px;
+  text-align: center;
+}
+
+.mypage-calendar-section {
+  flex: 1;
+  height: 400px;
+}
+
+.mypage-calendar-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+}
+
+.mypage-calendar-wrapper .calendar-container {
+  width: 100%;
+  max-width: none;
+  background-color: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  border-radius: 8px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .mypage-categories-grid {
@@ -130,7 +187,7 @@
 
 .mypage-category-item {
   font-size: 0.75rem;
-  color: #4b5563;
+  color: #666666;
 }
 
 .mypage-section-card {
@@ -202,7 +259,7 @@
 
 .mypage-filter-tab {
   padding: 8px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #eeeeee;
   background-color: #ffffff;
   border-radius: 4px;
   cursor: pointer;
@@ -214,7 +271,7 @@
 }
 
 .mypage-filter-tab:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   border-color: #FDB515;
 }
 
@@ -241,7 +298,7 @@
   justify-content: center;
   margin-top: 20px;
   font-size: 16px;
-  color: #666;
+  color: #666666;
   font-weight: 600;
 }
 
@@ -249,9 +306,9 @@
   width: 100%;
   background-color: #ffffff;
   border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #eeeeee;
   overflow: hidden;
-  color: #333;
+  color: #333333;
   padding: 1rem;
   box-sizing: border-box;
   cursor: pointer;
@@ -267,12 +324,6 @@
   background-color: #ffffff;
   box-shadow: 0 2px 8px rgba(253, 181, 21, 0.15);
 }
-
-/* 선택된 상태 스타일 제거 */
-/* .mypage-study-card-item.mypage-card-selected {
-  border-color: #FDB515;
-  outline: 1px solid #FDB515;
-} */
 
 .mypage-study-card-item:focus,
 .mypage-study-card-item:focus-visible,
@@ -299,9 +350,9 @@
   font-size: 0.75rem;
   font-weight: 400;
   white-space: nowrap;
-  border: 1px solid #d1d5db;
-  background-color: #f9fafb;
-  color: #6b7280;
+  border: 1px solid #eeeeee;
+  background-color: #ffffff;
+  color: #666666;
 }
 
 .mypage-study-thumbnail-wrapper {
@@ -310,7 +361,7 @@
   flex-shrink: 0;
   border-radius: 0.25rem;
   overflow: hidden;
-  background-color: #f3f4f6;
+  background-color: #ffffff;
   align-self: flex-start;
 }
 
@@ -355,7 +406,7 @@
 .mypage-study-card-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #111827;
+  color: #000000;
   margin: 0;
   line-height: 1.3;
   flex: 1;
@@ -364,7 +415,7 @@
 
 .mypage-study-card-description {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #666666;
   line-height: 1.4;
   margin: 0;
   overflow: hidden;
@@ -374,7 +425,7 @@
 
 .mypage-study-card-owner {
   font-size: 0.75rem;
-  color: #374151;
+  color: #333333;
   font-weight: 500;
   margin: 0;
 }
@@ -383,13 +434,13 @@
 .mypage-study-card-date,
 .mypage-study-card-contact {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #999999;
   margin: 0;
 }
 
 .mypage-chevron-down {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: #666666;
   margin-right: 0.5rem;
 }
 
@@ -401,8 +452,10 @@
   text-align: center;
   padding: 40px;
   font-size: 16px;
-  color: #666;
+  color: #666666;
 }
+
+
 
 @media (max-width: 1024px) {
   .mypage-studies-cards-container {
@@ -411,6 +464,17 @@
   
   .header-arrow-icon {
     font-size: 36px;
+  }
+  
+  .mypage-analytics-calendar-wrapper {
+    flex-direction: column;
+  }
+  
+  .mypage-analytics-section,
+  .mypage-calendar-section {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
   }
 }
 
@@ -432,14 +496,14 @@
   }
 
   .mypage-study-card-item {
-    border-color: #e5e7eb;
+    border-color: #eeeeee;
   }
 
   .mypage-chevron-right {
     width: 8px;
     height: 8px;
-    border-right: 2px solid #666;
-    border-bottom: 2px solid #666;
+    border-right: 2px solid #666666;
+    border-bottom: 2px solid #666666;
     transform: rotate(-45deg);
     display: inline-block;
   }
@@ -460,16 +524,27 @@
     font-size: 32px;
   }
 
-.mypage-calendar-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 0;
-}
+  .mypage-analytics-calendar-wrapper {
+    flex-direction: column;
+  }
+  
+  .mypage-analytics-section,
+  .mypage-calendar-section {
+    height: 250px;
+    min-height: 250px;
+    max-height: 250px;
+  }
 
-.mypage-calendar-wrapper .simple-calendar {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
+  .mypage-calendar-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  .mypage-calendar-wrapper .simple-calendar {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
 }
