@@ -46,8 +46,8 @@ export default function GroupDetail() {
                         
                         // URL 접근 가능성 테스트
                         const img = new Image();
-                        img.onload = () => console.log('✅ 썸네일 이미지 로드 성공!');
-                        img.onerror = () => console.log('❌ 썸네일 이미지 로드 실패!');
+                        img.onload = () => console.log('썸네일 이미지 로드 성공!');
+                        img.onerror = () => console.log('썸네일 이미지 로드 실패!');
                         img.src = groupData.thumbnailFullPath;
                     } else {
                         console.log('📷 기본 썸네일 이미지 사용');
@@ -64,7 +64,7 @@ export default function GroupDetail() {
                     setMemberCount(0);
                 }
             } catch (err) {
-                setErrorMessage("❌ 그룹 정보를 불러오는 데 실패했습니다.");
+                setErrorMessage("그룹 정보를 불러오는 데 실패했습니다.");
                 setGroup(null);
             } finally {
                 setLoading(false);
@@ -143,9 +143,9 @@ export default function GroupDetail() {
     const handleDelete = async () => {
         if (!canDelete()) {
             if (!isOwner()) {
-                alert("❌ 삭제 권한이 없습니다. 그룹 소유자만 삭제할 수 있습니다.");
+                alert("삭제 권한이 없습니다. 그룹 소유자만 삭제할 수 있습니다.");
             } else if (memberCount > 1) {
-                alert("❌ 다른 멤버가 있어 삭제할 수 없습니다. 모든 멤버가 나간 후 삭제해주세요.");
+                alert("다른 멤버가 있어 삭제할 수 없습니다. 모든 멤버가 나간 후 삭제해주세요.");
             }
             return;
         }
@@ -186,11 +186,10 @@ return (
                 <span className="view-author">{group.nickname}</span>
                 <span className="view-date"> | 스터디 그룹</span>
             </div>
-            <div className="thumbnail-section">
+            <div id="groupdetail" className="thumbnail-section">
             <img
                 src={getThumbnailUrl(group)}
                 alt="썸네일"
-                width="200"
                 onError={(e) => { 
                     console.log('이미지 로딩 실패, 기본 이미지로 변경');
                     e.target.src = '/images/default-thumbnail.png'; 
@@ -227,12 +226,12 @@ return (
 
         <div className="view-body-section">
             <h3 className="section-title">스터디 소개</h3>
-            <div className="intro-content">
+            <div id="groupdetail" className="intro-content">
                 {group.groupIntroduction}
             </div>
         </div>
 
-        <div className="button-container">
+        <div id="groupdetail" className="button-container">
         <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
             대시보드
         </Link>
