@@ -97,6 +97,8 @@ function Search() {
   });
 
   const [posts, setPosts] = useState([]);
+  const [popularStudies, setPopularStudies] = useState([]);
+  const [urgentStudies, setUrgentStudies] = useState([]);
   const [countsData, setCountsData] = useState({});
   const [userBookmarks, setUserBookmarks] = useState([]);
 
@@ -106,6 +108,9 @@ function Search() {
   const DEFAULT_THUMBNAIL_URL = "/images/default-thumbnail.png";
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 9;
+
+  // 헤더에서 "전체"를 선택했는지 확인
+  const isShowingAll = initialCategoryFromHeader === "전체";
 
   // S3 썸네일 URL 처리 함수 (첫 번째 코드와 동일한 로직)
   const getThumbnailUrl = (post) => {
@@ -179,6 +184,48 @@ function Search() {
     } catch (error) {
       console.error("포스트 조회 실패", error);
       throw new Error("포스트를 불러오는 데 실패했습니다.");
+    }
+  };
+
+  // 인기 스터디 가져오기 (북마크 많은 순)
+  const fetchPopularStudies = async () => {
+    try {
+      const res = await axios.get("http://localhost:8081/api/popularStudies");
+      console.log("인기 스터디 API 응답:", res.data);
+      if (Array.isArray(res.data)) {
+        setPopularStudies(res.data.slice(0, 3)); // 상위 3개만
+      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
+        setPopularStudies(res.data.studies.slice(0, 3));
+      } else {
+        setPopularStudies([]);
+      }
+    } catch (error) {
+      console.warn(
+        "인기 스터디 API가 아직 구현되지 않았습니다:",
+        error.message
+      );
+      setPopularStudies([]); // 에러 시 빈 배열로 설정
+    }
+  };
+
+  // 마감임박 스터디 가져오기 (마감일 기준 3일 전)
+  const fetchUrgentStudies = async () => {
+    try {
+      const res = await axios.get("http://localhost:8081/api/urgentStudies");
+      console.log("마감임박 스터디 API 응답:", res.data);
+      if (Array.isArray(res.data)) {
+        setUrgentStudies(res.data.slice(0, 3)); // 상위 3개만
+      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
+        setUrgentStudies(res.data.studies.slice(0, 3));
+      } else {
+        setUrgentStudies([]);
+      }
+    } catch (error) {
+      console.warn(
+        "마감임박 스터디 API가 아직 구현되지 않았습니다:",
+        error.message
+      );
+      setUrgentStudies([]); // 에러 시 빈 배열로 설정
     }
   };
 
@@ -264,16 +311,36 @@ function Search() {
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        await Promise.all([
+        const promises = [
           fetchPosts(filters),
           fetchBookmarkViewCounts(),
           isAuthenticated && user?.id
             ? fetchUserBookmarks()
             : Promise.resolve(),
-        ]);
+        ];
+
+        // "전체" 카테고리일 때만 인기 스터디와 마감임박 스터디 가져오기
+        if (isShowingAll) {
+          // Promise.allSettled를 사용해서 일부 API가 실패해도 다른 API는 계속 진행
+          const specialPromises = await Promise.allSettled([
+            fetchPopularStudies(),
+            fetchUrgentStudies(),
+          ]);
+
+          // 성공한 것만 로그 출력
+          specialPromises.forEach((result, index) => {
+            if (result.status === "fulfilled") {
+              console.log(`특별 섹션 ${index} 로드 성공`);
+            } else {
+              console.warn(`특별 섹션 ${index} 로드 실패:`, result.reason);
+            }
+          });
+        }
+
+        await Promise.all(promises);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
-        console.error("데이터 불러오기 실패: ", err);
+        console.error("데이터 불러오기 실패:", err);
       } finally {
         setIsLoading(false);
       }
@@ -283,7 +350,7 @@ function Search() {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
-  }, [filters, isAuthenticated, user?.id]);
+  }, [filters, isAuthenticated, user?.id, isShowingAll]);
 
   useEffect(() => {
     const newCategory = location.state?.category;
@@ -310,6 +377,37 @@ function Search() {
     };
   });
 
+  // 인기 스터디와 마감임박 스터디도 북마크 정보 병합
+  const mergedPopularStudies = popularStudies.map((post) => {
+    const counts = countsData[post.groupId] || {
+      viewCount: 0,
+      bookmarkCount: 0,
+    };
+    const isBookmarked = userBookmarks.includes(post.groupId);
+
+    return {
+      ...post,
+      viewCount: counts.viewCount,
+      bookmarkCount: counts.bookmarkCount,
+      isBookmarked: isBookmarked,
+    };
+  });
+
+  const mergedUrgentStudies = urgentStudies.map((post) => {
+    const counts = countsData[post.groupId] || {
+      viewCount: 0,
+      bookmarkCount: 0,
+    };
+    const isBookmarked = userBookmarks.includes(post.groupId);
+
+    return {
+      ...post,
+      viewCount: counts.viewCount,
+      bookmarkCount: counts.bookmarkCount,
+      isBookmarked: isBookmarked,
+    };
+  });
+
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = mergedPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -319,6 +417,229 @@ function Search() {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // 스터디 카드 렌더링 함수
+  const renderStudyCard = (post) => (
+    <Link
+      to={`/study/postView/${post.groupId}`}
+      key={post.groupId}
+      className="g-post-item"
+    >
+      <div className="g-post-tags">
+        <span className="g-tag">{post.studyMode}</span>
+        <span className="g-tag">{post.region || "지역 미정 (온라인)"}</span>
+        <span className="g-tag">모집인원 &nbsp; {post.maxMembers}</span>
+      </div>
+      <img
+        src={getThumbnailUrl(post)}
+        alt={`${post.title} 썸네일`}
+        className="g-post-thumbnail"
+        onError={(e) => {
+          console.log("이미지 로딩 실패, 기본 이미지로 변경");
+          e.target.src = DEFAULT_THUMBNAIL_URL;
+        }}
+      />
+
+      <div className="g-post-info">
+        <div
+          className="g-bookmark-toggle"
+          onClick={(e) => {
+            e.preventDefault();
+            handleBookmarkToggle(post.groupId);
+          }}
+        >
+          {post.isBookmarked ? (
+            <svg
+              className="g-bookmark-svg g-bookmarked"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+            </svg>
+          ) : (
+            <svg
+              className="g-bookmark-svg g-not-bookmarked"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+            </svg>
+          )}
+        </div>
+
+        <h3>{post.title}</h3>
+        <p className="g-truncated-text">{post.content}</p>
+        <div className="g-post-meta">
+          {/* 1줄 - 작성자 이름 */}
+          <span className="g-meta-item g-author-name">
+            <strong className="strong-1">
+              {post.authorName ?? "알 수 없음"}
+            </strong>
+          </span>
+
+          {/* 2줄 - 모집 마감일(왼쪽) + 조회수+북마크(오른쪽) */}
+          <div className="g-meta-row">
+            <div className="g-meta-item g-recruit-end-date">
+              모집 마감일:{" "}
+              {post.recruitEndDate
+                ? new Date(post.recruitEndDate).toLocaleDateString()
+                : "마감일 없음"}
+            </div>
+
+            <div className="g-meta-vb">
+              {/* 조회수 */}
+              <div
+                className="g-meta-item g-views"
+                style={{ display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#666"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="feather-eye"
+                  style={{
+                    position: "relative",
+                    top: "1px",
+                    right: "1px",
+                  }}
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>
+                  <strong>{post.viewCount ?? 0}</strong>
+                </span>
+              </div>
+
+              {/* 북마크 */}
+              <div
+                className="g-meta-item g-bookmarks"
+                style={{ display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <svg
+                  className="g-bookmark-svg1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+                </svg>
+                <span>
+                  <strong>{post.bookmarkCount ?? 0}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+  // 스터디 카드 렌더링 함수
+  const renderStudyCardOne = (post) => (
+    <Link
+      to={`/study/postView/${post.groupId}`}
+      key={post.groupId}
+      className="g-post-itemone"
+    >
+      <div className="g-post-tags">
+        <span className="g-tag">{post.studyMode}</span>
+        <span className="g-tag">{post.region || "지역 미정 (온라인)"}</span>
+        <span className="g-tag">모집인원 &nbsp; {post.maxMembers}</span>
+      </div>
+
+      <div className="g-post-infoone">
+        <div
+          className="g-bookmark-toggle"
+          onClick={(e) => {
+            e.preventDefault();
+            handleBookmarkToggle(post.groupId);
+          }}
+        >
+          {post.isBookmarked ? (
+            <svg
+              className="g-bookmark-svg g-bookmarked"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+            </svg>
+          ) : (
+            <svg
+              className="g-bookmark-svg g-not-bookmarked"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+            </svg>
+          )}
+        </div>
+
+        <h3>{post.title}</h3>
+
+        <div className="g-post-metaone">
+          {/* 작성자 한 줄 */}
+          <span className="g-meta-authorone">
+            <strong>{post.authorName ?? "알 수 없음"}</strong>
+          </span>
+
+          {/* 모집 마감일과 조회수+북마크 한 줄 */}
+          <div className="g-meta-bottom-rowone">
+            <div className="g-meta-recruit-end-dateone">
+              모집 마감일:{" "}
+              {post.recruitEndDate
+                ? new Date(post.recruitEndDate).toLocaleDateString()
+                : "마감일 없음"}
+            </div>
+
+            <div className="g-meta-vbone">
+              <div className="g-meta-itemone g-viewson">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#666"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="feather-eye"
+                  style={{
+                    position: "relative",
+                    top: "1px",
+                    right: "1px",
+                  }}
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>
+                  <strong>{post.viewCount ?? 0}</strong>
+                </span>
+              </div>
+              <div className="g-meta-itemone g-bookmarkson">
+                <svg
+                  className="g-bookmark-svg1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
+                </svg>
+                <span>
+                  <strong>{post.bookmarkCount ?? 0}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
 
   // 드롭다운에 사용할 옵션 데이터
   const studyModeOptions = [
@@ -361,9 +682,42 @@ function Search() {
         </div>
       </div>
 
+      {/* "전체" 카테고리일 때만 인기 스터디와 마감임박 섹션 표시 */}
+      {isShowingAll && isAuthenticated && (
+        <>
+          {/* 인기 스터디 섹션 */}
+          <div className="g-special-section">
+            <h2 className="g-section-title">인기 스터디</h2>
+            {mergedPopularStudies.length > 0 ? (
+              <div className="g-special-studies">
+                {mergedPopularStudies.map(renderStudyCardOne)}
+              </div>
+            ) : (
+              <div className="g-no-special-studies">
+                <p>현재 인기 스터디가 없습니다.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 마감임박 스터디 섹션 */}
+          <div className="g-special-section">
+            <h2 className="g-section-title">마감임박 스터디</h2>
+            {mergedUrgentStudies.length > 0 ? (
+              <div className="g-special-studies">
+                {mergedUrgentStudies.map(renderStudyCardOne)}
+              </div>
+            ) : (
+              <div className="g-no-special-studies">
+                <p>현재 마감임박 스터디가 없습니다.</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+      <h2 className="g-section-title">스터디</h2>
+
       <div className="g-filter-and-search">
         <div className="g-filter-controls">
-          {/* ✨ Dropdown 컴포넌트로 교체 */}
           <Dropdown
             options={studyModeOptions}
             value={filters.studyMode}
@@ -407,13 +761,14 @@ function Search() {
           />
         </div>
       </div>
+
       {isLoading ? (
         <div className="g-loading-container">
-                <div className="g-loading-spinner"></div>   {" "}
+          <div className="g-loading-spinner"></div>
         </div>
       ) : error ? (
         <div className="g-error-message">
-                <p>{error}</p>   {" "}
+          <p>{error}</p>
         </div>
       ) : !isAuthenticated ? (
         <div className="g-login-required">
@@ -430,119 +785,7 @@ function Search() {
           {mergedPosts.length === 0 ? (
             <p className="g-no-results">검색 결과가 없습니다.</p>
           ) : (
-            <>
-              {currentPosts.map((post) => (
-                <Link
-                  to={`/study/postView/${post.groupId}`}
-                  key={post.groupId}
-                  className="g-post-item"
-                >
-                  <div className="g-post-tags">
-                    <span className="g-tag">{post.studyMode}</span>
-                    <span className="g-tag">
-                      {post.region || "지역 미정 (온라인)"}
-                    </span>
-                    <span className="g-tag">
-                      모집인원 &nbsp; {post.maxMembers}
-                    </span>
-                  </div>
-                  <img
-                    src={getThumbnailUrl(post)}
-                    alt={`${post.title} 썸네일`}
-                    className="g-post-thumbnail"
-                    onError={(e) => {
-                      console.log("이미지 로딩 실패, 기본 이미지로 변경");
-                      e.target.src = DEFAULT_THUMBNAIL_URL;
-                    }}
-                  />
-
-                  <div className="g-post-info">
-                    <div
-                      className="g-bookmark-toggle"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleBookmarkToggle(post.groupId);
-                      }}
-                    >
-                      {post.isBookmarked ? (
-                        <svg
-                          className="g-bookmark-svg g-bookmarked"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="g-bookmark-svg g-not-bookmarked"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
-                        </svg>
-                      )}
-                    </div>
-
-                    <h3>{post.title}</h3>
-                    <p className="g-truncated-text">{post.content}</p>
-                    <div className="g-post-meta">
-                      <span className="g-meta-item">
-                        작성자:{" "}
-                        <strong>{post.authorName ?? "알 수 없음"}</strong>
-                      </span>
-                      <div className="g-meta-vb">
-                        {" "}
-                        {/* g-meta-vb를 <div>로 사용 */}
-                        <div className="g-meta-item g-views">
-                          {/* 조회수 아이콘 */}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#666"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="feather-eye"
-                            style={{
-                              position: "relative",
-                              top: "1px",
-                              right: "1px",
-                            }}
-                          >
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          <span>
-                            <strong>{post.viewCount ?? 0}</strong>
-                          </span>
-                        </div>
-                        <div className="g-meta-item g-bookmarks">
-                          {/* 북마크 아이콘 */}
-                          <svg
-                            className="g-bookmark-svg1"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            style={{
-                              position: "relative",
-                              top: "1px",
-                              left: "3px",
-                            }}
-                          >
-                            <path d="M5 21V5C5 4.45 5.196 3.97933 5.588 3.588C5.98 3.19667 6.45067 3.00067 7 3H17C17.55 3 18.021 3.196 18.413 3.588C18.805 3.98 19.0007 4.45067 19 5V21L12 18L5 21ZM7 17.95L12 15.8L17 17.95V5H7V17.95Z" />
-                          </svg>
-                          <span>
-                            <strong>{post.bookmarkCount ?? 0}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </>
+            <>{currentPosts.map(renderStudyCard)}</>
           )}
 
           {mergedPosts.length === 0 ? (

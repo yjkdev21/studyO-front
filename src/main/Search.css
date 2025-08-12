@@ -20,7 +20,7 @@
 .g-btn-write {
   text-decoration: none;
   color: #333;
-  padding: 8px 15px;
+  padding: 0px 15px;
   font-weight: bold;
 }
 
@@ -207,7 +207,22 @@
   height: 500px;
   width: 380px;
 }
-
+.g-post-itemone {
+  display: block;
+  border: 1px solid orange;
+  border-radius: 30px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.1s ease-in-out;
+  position: relative;
+  background-color: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+  width: 380px;
+}
 .g-post-item:hover {
   transform: translateY(-7px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -222,11 +237,20 @@
 
 .g-post-info {
   padding: 10px;
+
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   gap: 5px;
   height: 100px;
+}
+.g-post-infoone {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 5px;
+  height: 50px;
 }
 .g-post-header {
   display: flex;
@@ -295,8 +319,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
-  margin-bottom: 5px;
-  height: 100px;
+  margin-bottom: 17px;
+  height: 110px;
 }
 
 .g-meta-item strong {
@@ -326,33 +350,41 @@
   background-color: orange;
   color: white;
 }
-/* 조회수와 북마크 그룹 */
-.g-views,
-.g-bookmarks {
-  display: flex;
-  align-items: center;
-  gap: 4px; /* 아이콘과 숫자 간 간격 */
-  margin-left: 5px;
-}
 
 .g-bookmark-svg1 {
   fill: #b8b6b6; /* 북마크 아이콘 색상 조정 */
+  position: relative;
+  top: 1px; /* 원하는 만큼 픽셀 값 조정 */
+  left: 4px;
 }
 
 .g-post-meta {
   display: flex;
-  align-items: center; /* 자식 요소들을 세로 중앙에 정렬 */
-  justify-content: space-between; /* 첫 번째 요소와 마지막 요소를 양쪽 끝에 배치 */
+  flex-direction: column;
+  gap: 6px;
   font-size: 12px;
   color: #999;
-  margin-top: auto;
 }
-
+/* 2줄짜리 행: 좌우 끝 정렬 */
+.g-meta-row {
+  display: flex;
+  justify-content: space-between; /* 좌우 끝 정렬 */
+  align-items: center;
+  flex-wrap: nowrap;
+}
 .g-meta-vb {
   display: flex; /* 내부 요소(조회수, 북마크)를 가로로 정렬 */
   align-items: center;
   gap: 0px; /* 조회수와 북마크 아이콘 사이의 간격 */
 }
+.g-meta-vbone {
+  display: flex; /* 내부 요소(조회수, 북마크)를 가로로 정렬 */
+  align-items: center;
+  gap: 0px; /* 조회수와 북마크 아이콘 사이의 간격 */
+  justify-content: flex-end; /* 내부 아이템들을 오른쪽 끝으로 */
+  width: 100%; /* 부모 너비 꽉 채우기 */
+}
+
 /* 로딩 컨테이너 스타일 */
 .g-loading-container {
   display: flex;
@@ -385,4 +417,83 @@
   100% {
     transform: rotate(360deg);
   }
+}
+/* 특별 섹션 스타일 */
+.g-special-section {
+  margin-bottom: 40px;
+}
+
+.g-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+  padding-left: 10px;
+  border-left: 4px solid orange;
+  padding-bottom: 10px;
+}
+
+.g-special-studies {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 0 15px; /* 좌우 여백 추가 */
+}
+
+/* 데이터 없을 때 스타일 */
+.g-no-special-studies {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.g-no-special-studies p {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 0;
+  font-style: italic;
+}
+
+/* 모집 마감일 왼쪽 정렬 */
+.g-recruit-end-date {
+  font-weight: 500;
+  font-size: 13px;
+  color: #999;
+}
+.g-post-metaone {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #999;
+  margin-top: auto;
+}
+
+.g-meta-authorone {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #444;
+}
+
+.g-meta-bottom-rowone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.g-meta-recruit-end-dateone {
+  flex-shrink: 0;
+  color: #999;
+}
+
+.g-meta-itemone.g-viewson,
+.g-meta-itemone.g-bookmarkson {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #999;
 }
