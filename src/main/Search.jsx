@@ -693,8 +693,8 @@ function Search() {
                 {mergedPopularStudies.map(renderStudyCardOne)}
               </div>
             ) : (
-              <div className="g-no-special-studies">
-                <p>현재 인기 스터디가 없습니다.</p>
+              <div className="g-loading-container">
+                <div className="g-loading-spinner"></div>
               </div>
             )}
           </div>
@@ -707,8 +707,8 @@ function Search() {
                 {mergedUrgentStudies.map(renderStudyCardOne)}
               </div>
             ) : (
-              <div className="g-no-special-studies">
-                <p>현재 마감임박 스터디가 없습니다.</p>
+              <div className="g-loading-container">
+                <div className="g-loading-spinner"></div>
               </div>
             )}
           </div>
