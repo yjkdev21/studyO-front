@@ -62,8 +62,6 @@ export default function PromotionView() {
     setErrorMessage(""); // 메시지 초기화
     setSuccessMessage(""); // 메시지 초기화
 
-    // window.confirm 대신 커스텀 모달 또는 console.log로 대체
-    // 실제 앱에서는 사용자에게 확인을 받는 UI를 구현해야 합니다.
     const confirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?"); // 임시로 window.confirm 유지, 실제 서비스에서는 커스텀 모달 사용 권장
     if (!confirmed) return;
 
@@ -161,7 +159,7 @@ export default function PromotionView() {
         </Link>
 
         <Link
-          to={`/study/promotion/edit/${post.id}`}
+          to={`/study/postMain/${post.id}`}
           className="btn-base btn-primary margin-left-1"
         >
           수정

@@ -4,7 +4,7 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 import { useAuth } from '../../contexts/AuthContext';
-import ConfirmModal from '../../users/modal/ConfirmModal'; // ConfirmModal import 추가
+import ConfirmModal from '../../users/modal/ConfirmModal';
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -282,7 +282,7 @@ function GroupUpdate() {
             await axios.delete(`${host}/api/study/${groupId}`, {
                 withCredentials: true,
             });
-            navigate('/myPage'); // 삭제 후 마이페이지로 이동
+            navigate('/myPage');
         } catch (error) {
             console.error('삭제 실패:', error);
             alert('삭제에 실패했습니다.');
@@ -294,7 +294,6 @@ function GroupUpdate() {
         navigate(`/group/${groupId}`);
     };
 
-    // 모달 닫기 핸들러
     const handleModalCancel = () => {
         setIsEditModalOpen(false);
         setIsDeleteModalOpen(false);

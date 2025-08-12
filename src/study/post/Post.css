@@ -1,3 +1,13 @@
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-center img {
+  display: block; /* 이미지를 블록 레벨 요소로 변경 */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .promotion-container {
   max-width: 1200px;
   padding: 20px;
@@ -34,6 +44,7 @@
 
 /* 버튼 컨테이너 */
 .button-container {
+  width: 100%;
   display: flex;
   justify-content: right;
   align-items: right;
@@ -44,7 +55,7 @@
 .btn-base {
   display: inline-block;
   font-weight: 700;
-  padding: 0.3rem 1.5rem;
+  padding: 0.6rem 2rem;
   border-radius: 5px;
   outline: none;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -54,7 +65,7 @@
   text-decoration: none; /* <a> 태그의 밑줄 제거 */
   text-align: center; /* 텍스트 중앙 정렬 */
   border: none;
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 /* 작성하기 버튼 스타일 (이미지 색상에 맞게 오렌지 계열로 변경) */
@@ -76,6 +87,26 @@
   background-color: #b43f1b; /* Tailwind CSS amber-600과 유사 */
 }
 
+.btn-small-orange {
+  font-size: 0.8rem;
+  background-color: #f59e0b; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-small-orange:hover {
+  background-color: #d97706; /* Tailwind CSS amber-600과 유사 */
+}
+
+.btn-small-dark-orange {
+  font-size: 0.8rem;
+  background-color: #e46002; /* Tailwind CSS amber-500과 유사 */
+  color: #ffffff; /* text-white */
+}
+
+.btn-small-dark-orange:hover {
+  background-color: #b43f1b; /* Tailwind CSS amber-600과 유사 */
+}
+
 .btn-gray {
   background-color: #d1d5db; /* gray-300 */
   color: #1f2937; /* gray-800 */
@@ -93,11 +124,11 @@
   padding: 0.3rem;
 }
 
-.attachment-section {
+.attachment-section-container {
   width: 100%;
   margin-bottom: 1.5rem; /* mb-6 */
   padding: 1rem; /* p-4 */
-  background-color: #f9fafb; /* bg-gray-50 */
+  background-color: #fbfaf9; /* bg-gray-50 */
   border-radius: 0.5rem; /* rounded-lg */
   border: 1px solid #e5e7eb; /* border border-gray-200 */
 }
@@ -204,12 +235,6 @@
 
 .view-body-section {
   margin-bottom: 20px;
-}
-
-.attachment-section {
-  margin-top: 20px;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 20px;
 }
 
 /* --------------------
