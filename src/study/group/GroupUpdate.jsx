@@ -357,16 +357,14 @@ function GroupUpdate() {
                 isOpen={isDeleteModalOpen}
                 onCancel={handleModalCancel}
                 onConfirm={handleDelete}
-                type="editProfileSimple"
+                type="kick"  // or 'leave' (원하는 텍스트에 맞춰 조절)
                 userName={formData.groupName}
                 customText={{
                     title: (
-                        <>
-                            스터디 그룹을 <span className="highlight">삭제</span>하시겠습니까?
-                        </>
+                        ""
                     ),
                     actionText: '삭제',
-                    description: '삭제된 그룹은 복구할 수 없습니다.\n정말로 삭제하시겠습니까?'
+                    description: '삭제된 그룹은 복구할 수 없습니다.'
                 }}
             />
         </div>
