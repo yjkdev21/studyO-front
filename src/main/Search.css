@@ -170,11 +170,11 @@
   min-height: 800px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 60px;
 }
 .g-loading {
   text-align: center;
-  padding: 200px;
+  padding: 300px;
   min-height: 800px;
 }
 .g-no-results,
@@ -198,13 +198,14 @@
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: box-shadow 0.2s ease-in-out;
+  transition: box-shadow 0.1s ease-in-out;
   position: relative;
   background-color: #fff;
   padding: 16px;
   display: flex;
   flex-direction: column;
   height: 500px;
+  width: 380px;
 }
 
 .g-post-item:hover {
@@ -351,4 +352,37 @@
   display: flex; /* 내부 요소(조회수, 북마크)를 가로로 정렬 */
   align-items: center;
   gap: 0px; /* 조회수와 북마크 아이콘 사이의 간격 */
+}
+/* 로딩 컨테이너 스타일 */
+.g-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 900px;
+  /* position: relative; 이 속성을 추가하면 스피너의 절대 위치 기준이 됩니다. */
+  position: relative;
+}
+
+/* 로딩 스피너 스타일 */
+.g-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #f3f3f3; /* 연한 회색 테두리 */
+  border-top: 5px solid #999; /* 파란색 상단 테두리 */
+  border-radius: 50%; /* 원 모양 */
+  animation: spin 1s linear infinite; /* 'spin' 애니메이션을 1초마다 무한 반복 */
+  /* 💡 추가된 코드: 절대 위치 지정 */
+  position: absolute;
+  top: 200px; /* 원하는 위치로 조절 */
+}
+
+/* 애니메이션 정의 */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
