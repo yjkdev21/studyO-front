@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Post.css";
 import AttachmentManager from "./components/AttachmentManager";
@@ -14,13 +13,11 @@ export default function StudyPostView({
   const { user } = useAuth();
   const userId = user?.id;
   const host = import.meta.env.VITE_AWS_API_HOST;
-  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [hasApplied, setHasApplied] = useState(false); // 기존가입여부
+  const [hasApplied, setHasApplied] = useState(false); // 스터디 가입여부
 
   useEffect(() => {
     const fetchPostAndGroup = async () => {
@@ -41,7 +38,6 @@ export default function StudyPostView({
           setGroup(groupDto);
         }
         if (postDto) {
-          //console.log("AAAAA postId", postDto.studyPostId);
           setPost(postDto);
           setError(null);
 
@@ -62,34 +58,20 @@ export default function StudyPostView({
       }
     };
 
-    fetchPostAndGroup();
-
-    // 가입신청 또는 가입한 이력이 있는 지 확인...
     const checkApplicationStatus = async (postId) => {
-      // console.log(
-      //   `checkApplicationStatus = ${host}/api/userRequest/exist/${groupId}/${userId}/${postId}`
-      // );
-
       try {
         const response = await axios.get(
           `${host}/api/userRequest/exist/${groupId}/${userId}/${postId}`
         );
-
-        // console.log(
-        //   "exists: ",
-        //   response.data.exists,
-        //   "g: ",
-        //   groupId,
-        //   "u:",
-        //   userId
-        // );
         setHasApplied(response.data.exists);
       } catch (error) {
         console.error("가입 신청 여부 확인 실패:", error?.message || error);
         setHasApplied(false);
       }
     };
-  }, [groupId, host]);
+
+    fetchPostAndGroup();
+  }, [groupId, userId, host]);
 
   const handleDownLoadFile = async (storedFileName, originalFileName) => {
     try {
@@ -140,6 +122,10 @@ export default function StudyPostView({
     }
   };
 
+  const handleJoin = () => {
+    alert("가입신청 모달 팝업 떠야 되여~~");
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -149,7 +135,6 @@ export default function StudyPostView({
     return `${year}.${month}.${day}`;
   };
 
-  // 날짜 포맷팅
   const recruitStartDate = post?.recruitStartDate
     ? formatDate(post.recruitStartDate)
     : "날짜 미정";
@@ -227,12 +212,15 @@ export default function StudyPostView({
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>
+
+          {/* 첨부한 파일 목록 */}
           <AttachmentManager
             files={post.attachFile || []}
             mode="view"
             onDownload={handleDownLoadFile}
           />
 
+          {/* 하단 버튼 목록 - 핸들러가 props로 주입된 경우만 노출되도록 구현하였다 */}
           <div className="button-container">
             {onStudyJoin != null && hasApplied == false && post != null && (
               <button
@@ -245,19 +233,21 @@ export default function StudyPostView({
               </button>
             )}
 
-            {onPostEdit != null && (
-              <Link
-                to={`/study-groups/post/edit/${post.studyPostId}`}
+            {onPostEdit && (
+              <button
                 className="btn-base btn-primary margin-left-1"
+                onClick={() => {
+                  onPostEdit(groupId);
+                }} // 클릭 시 부모 컴포넌트의 콜백 함수를 호출합니다.
               >
                 수정
-              </Link>
+              </button>
             )}
 
-            {onPostDeleted != null && (
+            {onPostDeleted && (
               <button
                 className="btn-base btn-dark-orange margin-left-1"
-                onClick={handleDelete}
+                onClick={handleDelete} // 삭제 로직을 호출합니다.
               >
                 삭제
               </button>
