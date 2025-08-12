@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from "./modal/ConfirmModal";
 import PasswordModal from './modal/PasswordModal';
-import SimpleCalendar from './components/MyPageCalendar'; 
+import MyPageCalendar from './components/MyPageCalendar';
+import ProjectAnalytics from '../project/analytics/ProjectAnalytics';
 import './MyPage.css';
 
 // StudyCard와 BookmarkCard 컴포넌트
@@ -532,10 +533,22 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 캘린더 섹션 - 프로필 바로 아래로 이동 */}
+        {/* 통계와 캘린더를 나란히 배치 */}
         <div className="mypage-section-card">
-          <div className="mypage-calendar-wrapper">
-            <SimpleCalendar />
+          <div className="mypage-analytics-calendar-wrapper">
+            <div className="mypage-analytics-section">
+              <div className="mypage-analytics-content">
+                {/* 통계 컨텐츠는 추후 개발 예정 */}
+                <div className="mypage-analytics-placeholder">
+                  통계 데이터가 여기에 표시됩니다.
+                </div>
+              </div>
+            </div>
+            <div className="mypage-calendar-section">
+              <div className="mypage-calendar-wrapper">
+                <MyPageCalendar myStudies={myStudies} userId={user?.id} />
+              </div>
+            </div>
           </div>
         </div>
 
