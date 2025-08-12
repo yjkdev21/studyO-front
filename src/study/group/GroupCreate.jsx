@@ -37,7 +37,6 @@ function GroupCreate() {
 
     // 모달 관련 상태
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     if (!isAuthenticated) {
         return (
@@ -67,14 +66,15 @@ function GroupCreate() {
         );
     }
 
-    const handleGoToPostMain = () => {
-        setIsSuccessModalOpen(false);
-        navigate(`/study/postMain/${user?.id || user?.userId}`);
+    // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
+    const handleModalConfirm = async () => {
+        await handleFormSubmit();
     };
 
-    const handleGoHome = () => {
-        setIsSuccessModalOpen(false);
-        navigate('/');
+    // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
+    const handleModalCancel = () => {
+        setIsCreateModalOpen(false);
+        // 폼 데이터는 그대로 유지
     };
 
     const checkGroupNameDuplicate = async (groupName) => {
@@ -162,7 +162,7 @@ function GroupCreate() {
         return fieldNames[field] || field;
     };
 
-    // 작성하기 버튼 클릭 → 모달 오픈
+    // 작성하기 버튼 클릭 → 확인 모달 띄우기
     const handleCreateClick = async (e) => {
         e.preventDefault();
         const validationError = validateRequiredFields();
@@ -175,6 +175,7 @@ function GroupCreate() {
             setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
             return;
         }
+        // 확인 모달 띄우기
         setIsCreateModalOpen(true);
     };
 
@@ -205,22 +206,18 @@ function GroupCreate() {
             });
             if (response.data.success) {
                 setIsCreateModalOpen(false);
-                setIsSuccessModalOpen(true);
+                navigate('/study/postMain'); // 성공 시 바로 이동
             } else {
                 setSubmitMessage(response.data.message || '등록에 실패했습니다.');
+                setIsCreateModalOpen(false);
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || '등록 중 오류가 발생했습니다.';
             setSubmitMessage(errorMessage);
+            setIsCreateModalOpen(false);
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    // 성공 모달 확인
-    const handleSuccessConfirm = () => {
-        setIsSuccessModalOpen(false);
-        navigate(`/group/${formData.groupName}`);
     };
 
     return (
@@ -244,28 +241,15 @@ function GroupCreate() {
             {/* 작성 확인 모달 */}
             <ConfirmModal
                 isOpen={isCreateModalOpen}
-                onCancel={() => setIsCreateModalOpen(false)}
-                onConfirm={handleFormSubmit}
+                onCancel={handleModalCancel}
+                onConfirm={handleModalConfirm}
                 type="editProfileSimple"
                 userName={formData.groupName}
                 customText={{
-                    title: <>스터디 그룹 <span className="highlight">작성</span>되었습니다.</>,
+                    title: <>스터디 그룹을 <span className="highlight">작성</span>하시겠습니까?</>,
                     actionText: '확인'
                 }}
             />
-            {/* 성공 모달 */}
-            <ConfirmModal
-                isOpen={isCreateModalOpen}
-                onCancel={() => setIsCreateModalOpen(false)}
-                onConfirm={handleFormSubmit}
-                type="editProfileSimple"
-                userName={formData.groupName}
-                customText={{
-                    title: <>스터디 그룹 <span className="highlight">작성</span>되었습니다.</>,
-                    actionText: '확인'
-                }}
-            />
-
         </main>
     );
 }
