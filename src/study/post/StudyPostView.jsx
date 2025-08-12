@@ -75,16 +75,18 @@ export default function StudyPostView({
 
   const handleDownLoadFile = async (storedFileName, originalFileName) => {
     try {
+      // originalFileName을 URL 쿼리 파라미터로 추가하여 서버로 전달
       const response = await axios.get(
         `${host}/api/file/download/${storedFileName}?originalFileName=${encodeURIComponent(
           originalFileName
         )}`,
         {
-          responseType: "blob",
-          withCredentials: true,
+          responseType: "blob", // 바이너리 데이터로 응답 받기
+          withCredentials: true, // 쿠키 등 인증 정보 포함
         }
       );
 
+      // 응답으로 받은 Blob 데이터를 사용하여 다운로드 링크 생성
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -118,6 +120,10 @@ export default function StudyPostView({
         alert("게시글 삭제에 실패했습니다.");
       }
     }
+  };
+
+  const handleJoin = () => {
+    alert("가입신청 모달 팝업 떠야 되여~~");
   };
 
   const formatDate = (dateString) => {

@@ -23,8 +23,6 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
   const { user } = useAuth();
   const userId = user?.id;
 
-  //console.log("StudyPostInput user.id: " + userId);
-
   const host = import.meta.env.VITE_AWS_API_HOST;
   const navigate = useNavigate();
 
@@ -110,11 +108,17 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     }
 
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
+    formData.append("title", title); // QuillFormFields에서 받은 최신 title
+    formData.append("content", content); // QuillFormFields에서 받은 최신 content
     formData.append("groupId", groupId);
     formData.append("authorId", userId);
     formData.append("hashTag", hashTag);
+
+    // 날짜를 LocalDateTime 호환 형식으로 변환하여 전송
+    formData.append("recruitStartDate", formatToLocalDateTimeString(startDate));
+    formData.append("recruitEndDate", formatToLocalDateTimeString(endDate));
+
+    //console.log("formData: ", formData); // 디버깅용
 
     formData.append("recruitStartDate", formatToLocalDateTimeString(startDate));
     formData.append("recruitEndDate", formatToLocalDateTimeString(endDate));

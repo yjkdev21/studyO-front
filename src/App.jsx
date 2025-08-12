@@ -16,8 +16,6 @@ import FindId from "./users/FindId";
 import FindPw from "./users/FindPw";
 import MyHistory from "./users/MyHistory";
 
-import StudyList from "./study/StudyList";
-
 import GroupDetail from "./study/group/GroupDetail";
 import GroupCreate from "./study/group/GroupCreate";
 import GroupUpdate from "./study/group/GroupUpdate";
