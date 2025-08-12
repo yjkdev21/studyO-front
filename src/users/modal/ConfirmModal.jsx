@@ -109,6 +109,9 @@ function ConfirmModal({
         ...customText
     };
 
+    // 위험한 액션 (추방, 탈퇴)인지 확인
+    const isDangerousAction = type === 'kick' || type === 'leave';
+
     return createPortal(
         <div className="confirm-modal-overlay">
             <div className="modal-content">
@@ -159,7 +162,7 @@ function ConfirmModal({
                     {isSuccess ? (
                         <button 
                             onClick={onSuccessConfirm || onCancel}
-                            className="modal-confirm-btn"
+                            className={`modal-confirm-btn ${isDangerousAction ? 'danger' : ''}`}
                         >
                             {actionText}
                         </button>
@@ -173,7 +176,7 @@ function ConfirmModal({
                             </button>
                             <button 
                                 onClick={onConfirm} 
-                                className="modal-confirm-btn"
+                                className={`modal-confirm-btn ${isDangerousAction ? 'danger' : ''}`}
                             >
                                 {actionText}
                             </button>

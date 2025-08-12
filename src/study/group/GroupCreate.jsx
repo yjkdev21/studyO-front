@@ -4,6 +4,7 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 import { useAuth } from '../../contexts/AuthContext';
+import ConfirmModal from '../../users/modal/ConfirmModal'; // 모달 import
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -19,7 +20,6 @@ const RESET_FORM = {
     nickname: ''
 };
 
-//필수 필드
 const REQUIRED_FIELDS = [
     'groupName', 'nickname', 'category', 'maxMembers',
     'studyMode', 'region', 'contact', 'groupIntroduction'
@@ -27,14 +27,18 @@ const REQUIRED_FIELDS = [
 
 function GroupCreate() {
     const navigate = useNavigate();
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const host = import.meta.env.VITE_AWS_API_HOST;
+    
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
 
-    // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
+    // 모달 관련 상태
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
     if (!isAuthenticated) {
         return (
             <div style={{ 
@@ -63,7 +67,16 @@ function GroupCreate() {
         );
     }
 
-    // 이름 중복 확인 함수
+    const handleGoToPostMain = () => {
+        setIsSuccessModalOpen(false);
+        navigate(`/study/postMain/${user?.id || user?.userId}`);
+    };
+
+    const handleGoHome = () => {
+        setIsSuccessModalOpen(false);
+        navigate('/');
+    };
+
     const checkGroupNameDuplicate = async (groupName) => {
         try {
             const res = await axios.get(`${host}/api/study/check-name/${encodeURIComponent(groupName)}`);
@@ -75,53 +88,42 @@ function GroupCreate() {
     };
 
     useEffect(() => {
-        // 로그인한 사용자가 있을 때만 닉네임을 가져옴
         if (isAuthenticated && user) {
             const fetchUserNickname = async () => {
                 try {
-                    // user 객체에서 userId 가져오기 (실제 user 객체 구조에 맞게 수정 필요)
                     const userId = user.id || user.userId || 1;
-                    
                     const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
                         withCredentials: true,
                     });
                     
                     if (res.data.success) {
                         const nickname = res.data.nickname;
-                        setUserNickname(nickname || ''); // 원본 닉네임 저장
+                        setUserNickname(nickname || '');
                         setFormData(prev => ({
                             ...prev,
-                            nickname: nickname || '', // 폼 데이터에도 설정
-                            groupOwnerId: userId // userId도 함께 설정
+                            nickname: nickname || '',
+                            groupOwnerId: userId
                         }));
-                    } else {
-                        console.error("닉네임 불러오기 실패:", res.data.message);
                     }
                 } catch (error) {
                     console.error("닉네임 불러오기 실패:", error);
                 }
             };
-
             fetchUserNickname();
         }
     }, [host, isAuthenticated, user]);
 
     const handleInputChange = (e) => {
-        const { name, value, type } = e.target;
-
+        const { name, value } = e.target;
         setFormData((prev) => {
             const newData = { ...prev, [name]: value };
-            
-            // 온라인 모드 선택 시 지역 필드 초기화
             if (name === 'studyMode' && value === '온라인') {
                 newData.region = '';
             }
-            
             return newData;
         });
     };
 
-    // 파일 입력 처리를 위한 별도 핸들러
     const handleFileInputChange = (file) => {
         setFormData((prev) => ({
             ...prev,
@@ -130,32 +132,19 @@ function GroupCreate() {
     };
 
     const validateRequiredFields = () => {
-        console.log('=== 필수 필드 검증 시작 ===');
-        console.log('전체 formData:', formData);
-
         for (const field of REQUIRED_FIELDS) {
-            // 온라인 모드일 때는 region 필드 검증 스킵
             if (field === 'region' && formData.studyMode === '온라인') {
                 continue;
             }
-
             const value = formData[field];
-            const isEmpty = !value || value.toString().trim() === '';
-
-            console.log(`필드: ${field}, 값: "${value}", 비어있음: ${isEmpty}`);
-
-            if (isEmpty) {
+            if (!value || value.toString().trim() === '') {
                 return `${getFieldDisplayName(field)} 필드를 입력해주세요.`;
             }
         }
-
-        // 오프라인/온오프 모드일 때 region 필수 검증
         if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') && 
             (!formData.region || formData.region.trim() === '')) {
             return '오프라인 또는 온오프 모드에서는 지역 정보가 필요합니다.';
         }
-
-        console.log('=== 모든 필수 필드 검증 통과 ===');
         return null;
     };
 
@@ -173,27 +162,27 @@ function GroupCreate() {
         return fieldNames[field] || field;
     };
 
-    const handleFormSubmit = async (e) => {
+    // 작성하기 버튼 클릭 → 모달 오픈
+    const handleCreateClick = async (e) => {
         e.preventDefault();
-
-        // 필수 필드 검사
         const validationError = validateRequiredFields();
         if (validationError) {
             setSubmitMessage(validationError);
             return;
         }
-
         const isDuplicate = await checkGroupNameDuplicate(formData.groupName);
-        if(isDuplicate) {
+        if (isDuplicate) {
             setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
             return;
         }
+        setIsCreateModalOpen(true);
+    };
 
+    // 실제 생성 처리
+    const handleFormSubmit = async () => {
         setIsSubmitting(true);
         setSubmitMessage('');
-
         try {
-            // groupDto 객체를 만듭니다.
             const groupDto = {
                 groupName: formData.groupName,
                 category: formData.category,
@@ -203,52 +192,35 @@ function GroupCreate() {
                 contact: formData.contact,
                 groupIntroduction: formData.groupIntroduction,
                 groupOwnerId: formData.groupOwnerId,
-                nickname: formData.nickname // 수정된 닉네임 포함
+                nickname: formData.nickname
             };
-
-            // FormData에 JSON Blob으로 추가
             const formPayload = new FormData();
             formPayload.append('groupDto', new Blob([JSON.stringify(groupDto)], { type: 'application/json' }));
-
-            // 썸네일 파일 추가
             if (formData.thumbnail && formData.thumbnail instanceof File) {
                 formPayload.append('thumbnail', formData.thumbnail);
             }
-
-            console.log('서버에 보낼 데이터:', {
-                groupDto: groupDto,
-                thumbnail: formData.thumbnail ? formData.thumbnail.name : 'none'
-            });
-
-            // 요청 보내기
             const response = await axios.post(`${host}/api/study`, formPayload, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true,
             });
-
             if (response.data.success) {
-                setSubmitMessage('스터디 그룹이 성공적으로 등록되었습니다.');
-                // 등록 성공 시 해당 그룹의 상세 페이지로 이동
-                const groupId = response.data.groupId || response.data.data?.groupId;
-                if (groupId) {
-                    setTimeout(() => navigate(`/group/${groupId}`), 1500);
-                } else {
-                    setTimeout(() => navigate('/'), 1500);
-                }
+                setIsCreateModalOpen(false);
+                setIsSuccessModalOpen(true);
             } else {
                 setSubmitMessage(response.data.message || '등록에 실패했습니다.');
             }
         } catch (error) {
-            console.error('등록 실패:', error);
-            if (error.response) {
-                console.error('응답 데이터:', error.response.data);
-                console.error('응답 상태:', error.response.status);
-            }
             const errorMessage = error.response?.data?.message || '등록 중 오류가 발생했습니다.';
             setSubmitMessage(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // 성공 모달 확인
+    const handleSuccessConfirm = () => {
+        setIsSuccessModalOpen(false);
+        navigate(`/group/${formData.groupName}`);
     };
 
     return (
@@ -258,18 +230,42 @@ function GroupCreate() {
                     {submitMessage}
                 </div>
             )}
-
             <StudyForm
                 mode="create"
                 formData={formData}
                 onChange={handleInputChange}
                 onFileChange={handleFileInputChange}
-                onSubmit={handleFormSubmit}
+                onSubmit={handleCreateClick}
                 isSubmitting={isSubmitting}
                 submitMessage={submitMessage}
                 submitLabel="작성하기"
                 userNickname={userNickname}
             />
+            {/* 작성 확인 모달 */}
+            <ConfirmModal
+                isOpen={isCreateModalOpen}
+                onCancel={() => setIsCreateModalOpen(false)}
+                onConfirm={handleFormSubmit}
+                type="editProfileSimple"
+                userName={formData.groupName}
+                customText={{
+                    title: <>스터디 그룹 <span className="highlight">작성</span>되었습니다.</>,
+                    actionText: '확인'
+                }}
+            />
+            {/* 성공 모달 */}
+            <ConfirmModal
+                isOpen={isCreateModalOpen}
+                onCancel={() => setIsCreateModalOpen(false)}
+                onConfirm={handleFormSubmit}
+                type="editProfileSimple"
+                userName={formData.groupName}
+                customText={{
+                    title: <>스터디 그룹 <span className="highlight">작성</span>되었습니다.</>,
+                    actionText: '확인'
+                }}
+            />
+
         </main>
     );
 }

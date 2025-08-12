@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams, useLocation, Outlet } from 'react-router-dom';
 import StudySidebar from '../components/StudySidebar';
-
+import { StudyProvider } from '../../contexts/StudyContext';
 
 import './StudyDashboardWrapper.css';
 
@@ -27,15 +27,17 @@ export default function StudyMainPageWrapper() {
   };
 
   return (
-    <div className="study-layout-wrapper">
-      <StudySidebar
-        groupId={groupId}
-        initialTab={currentTab}
-        onMenuClick={handleMenuClick}
-      />
-      <div className="main-scrollable-area">
-        <Outlet />
+    <StudyProvider groupId={groupId}>
+      <div className="study-layout-wrapper">
+        <StudySidebar
+          groupId={groupId}
+          initialTab={currentTab}
+          onMenuClick={handleMenuClick}
+        />
+        <div className="main-scrollable-area">
+          <Outlet />
+        </div>
       </div>
-    </div>
+    </StudyProvider>
   );
 }

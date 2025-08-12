@@ -241,14 +241,7 @@ return (
             <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
                 수정
             </Link>
-            <button
-                onClick={handleDelete}
-                className="btn btn-danger"
-                disabled={!canDelete()}
-                title={!canDelete() ? "다른 멤버가 있어 삭제할 수 없습니다" : ""}
-            >
-                삭제 {memberCount > 1 && `(멤버 ${memberCount}명)`}
-            </button>
+
         </>
     )}
 </div>

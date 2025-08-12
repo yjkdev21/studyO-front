@@ -4,6 +4,7 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 import { useAuth } from '../../contexts/AuthContext';
+import ConfirmModal from '../../users/modal/ConfirmModal'; // ConfirmModal import 추가
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -41,6 +42,12 @@ function GroupUpdate() {
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
 
+    // 모달 관련 상태 추가
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [successType, setSuccessType] = useState(''); // 'edit' 또는 'delete'
+    const [memberCount, setMemberCount] = useState(1); // 멤버 수 상태 추가
 
     // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
     if (!isAuthenticated) {
@@ -107,6 +114,9 @@ function GroupUpdate() {
                             nickname: data.nickname || ''
                         });
                         setUserNickname(data.nickname || ''); // 원본 닉네임도 저장
+                        
+                        // 멤버 수 설정 (예시: API에서 받아오거나 기본값 설정)
+                        setMemberCount(data.memberCount || 1);
                     } else {
                         setSubmitMessage('데이터를 불러올 수 없습니다.');
                     }
@@ -189,7 +199,8 @@ function GroupUpdate() {
         return fieldNames[field] || field;
     };
 
-    const handleFormSubmit = async (e) => {
+    // 수정 버튼 클릭 핸들러 (모달 열기)
+    const handleEditClick = (e) => {
         e.preventDefault();
         
         // 필수 필드 검증
@@ -199,75 +210,96 @@ function GroupUpdate() {
             return;
         }
 
-        // 수정 확인
-        const confirmed = window.confirm('스터디 그룹 정보를 수정하시겠습니까?');
-        if (!confirmed) return;
-
-        setIsSubmitting(true);
-        setSubmitMessage('');
-
-        try {
-            // JSON 형태로 데이터 전송 (닉네임 포함)
-            const submitData = {
-                groupName: formData.groupName,
-                category: formData.category,
-                maxMembers: formData.maxMembers,
-                studyMode: formData.studyMode,
-                region: formData.region,
-                contact: formData.contact,
-                groupIntroduction: formData.groupIntroduction,
-                thumbnail: '',
-                groupOwnerId: formData.groupOwnerId,
-                nickname: formData.nickname // 닉네임 추가
-            };
-
-            console.log('전송할 데이터:', submitData);
-
-            // 로컬 하고 서버 올라갔을때 host 주소가 변경
-            const response = await axios.put(`${host}/api/study/${groupId}`, submitData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true, // 자격 증명(쿠키 등)을 요청에 포함
-            });
-            
-            console.log('서버 응답:', response.data);
-
-            if (response.data.success) {
-                alert('스터디 그룹이 성공적으로 수정되었습니다!');
-                navigate(`/group/${groupId}`);
-            } else {
-                alert(response.data.message || '수정에 실패했습니다.');
-            }
-
-        } catch (error) {
-            console.error('스터디 그룹 수정 실패:', error);
-            const errorMessage = error.response?.data?.message || '알 수 없는 오류가 발생했습니다.';
-            alert(`수정 실패: ${errorMessage}`);
-        } finally {
-            setIsSubmitting(false);
-        }
+        setIsEditModalOpen(true);
     };
 
-    const handleDelete = async () => {
-        const confirmed = window.confirm('정말 삭제하시겠습니까?');
-        if (!confirmed) return;
+    // 실제 수정 처리 함수
+    const handleFormSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitMessage('');
 
+    try {
+        const groupDto = {
+            groupName: formData.groupName,
+            category: formData.category,
+            maxMembers: parseInt(formData.maxMembers),
+            studyMode: formData.studyMode,
+            region: formData.studyMode === '온라인' ? null : formData.region,
+            contact: formData.contact,
+            groupIntroduction: formData.groupIntroduction,
+            groupOwnerId: formData.groupOwnerId,
+            nickname: formData.nickname,
+            thumbnail: (!formData.thumbnail || formData.thumbnail === '') ? 'default' : null
+        };
+
+        const formPayload = new FormData();
+        formPayload.append('groupDto', new Blob([JSON.stringify(groupDto)], { type: 'application/json' }));
+
+        // 새 이미지가 File 객체면 추가
+        if (formData.thumbnail && formData.thumbnail instanceof File) {
+            formPayload.append('thumbnail', formData.thumbnail);
+        }
+
+        const response = await axios.put(`${host}/api/study/${groupId}`, formPayload, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true,
+        });
+
+        if (response.data.success) {
+            setIsEditModalOpen(false);
+            navigate(`/group/${groupId}`);
+        } else {
+            alert(response.data.message || '수정에 실패했습니다.');
+        }
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || '알 수 없는 오류가 발생했습니다.';
+        alert(`수정 실패: ${errorMessage}`);
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
+
+
+
+    // 삭제 가능 여부 확인 함수
+    const canDelete = () => {
+        return memberCount <= 1; // 방장만 있을 때만 삭제 가능
+    };
+
+    // 삭제 버튼 클릭 핸들러 (모달 열기)
+    const handleDeleteClick = () => {
+        if (!canDelete()) {
+            alert("현재 멤버가 있어서 삭제할 수 없습니다.");
+            return;
+        }
+        setIsDeleteModalOpen(true);
+    };
+
+    // 실제 삭제 처리 함수
+    const handleDelete = async () => {
         try {
             await axios.delete(`${host}/api/study/${groupId}`, {
                 withCredentials: true,
             });
-            alert('스터디 그룹이 삭제되었습니다.');
-            navigate(-1); // 이전 페이지로 돌아가기
+            navigate('/myPage'); // 삭제 후 마이페이지로 이동
         } catch (error) {
             console.error('삭제 실패:', error);
             alert('삭제에 실패했습니다.');
         }
     };
 
+
     const handleCancel = () => {
         navigate(`/group/${groupId}`);
     };
+
+    // 모달 닫기 핸들러
+    const handleModalCancel = () => {
+        setIsEditModalOpen(false);
+        setIsDeleteModalOpen(false);
+    };
+
 
     if (isLoading) {
         return (
@@ -293,15 +325,51 @@ function GroupUpdate() {
                     formData={formData}
                     onChange={handleInputChange}
                     onFileChange={handleFileInputChange}
-                    onSubmit={handleFormSubmit}
-                    onDelete={handleDelete}
+                    onSubmit={handleEditClick}
+                    onDelete={handleDeleteClick}
                     onCancel={handleCancel}
                     isSubmitting={isSubmitting}
                     disabledFields={DISABLED_FIELDS}
                     submitLabel="수정하기"
                     userNickname={userNickname}
+                    memberCount={memberCount}
                 />
             </div>
+
+            {/* 수정 확인 모달 */}
+            <ConfirmModal
+                isOpen={isEditModalOpen}
+                onCancel={() => setIsEditModalOpen(false)}
+                onConfirm={handleFormSubmit}
+                type="editProfileSimple"
+                userName={formData.groupName}
+                customText={{
+                    title: (
+                        <>
+                            스터디 그룹을 <span className="highlight">수정</span>하시겠습니까?
+                        </>
+                    ),
+                    actionText: '수정'
+                }}
+            />
+
+            {/* 삭제 확인 모달 */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onCancel={handleModalCancel}
+                onConfirm={handleDelete}
+                type="editProfileSimple"
+                userName={formData.groupName}
+                customText={{
+                    title: (
+                        <>
+                            스터디 그룹을 <span className="highlight">삭제</span>하시겠습니까?
+                        </>
+                    ),
+                    actionText: '삭제',
+                    description: '삭제된 그룹은 복구할 수 없습니다.\n정말로 삭제하시겠습니까?'
+                }}
+            />
         </div>
     );
 }

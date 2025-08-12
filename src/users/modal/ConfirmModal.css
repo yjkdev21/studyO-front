@@ -139,7 +139,6 @@
 
 .highlight {
     color: #FDB515;
-    font-weight: 600;
 }
 
 .modal-buttons {
@@ -193,6 +192,15 @@
 
 .modal-confirm-btn:hover {
     background-color: #FFCC5B !important;
+}
+
+/* 추방, 탈퇴 액션의 경우 빨간색 버튼 */
+.modal-confirm-btn.danger {
+    background-color: #FF2525 !important;
+}
+
+.modal-confirm-btn.danger:hover {
+    background-color: #FF2525 !important;
 }
 
 .modal-buttons .modal-confirm-btn:only-child {

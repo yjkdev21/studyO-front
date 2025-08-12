@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './StudySideBar.css';
-import { studySidebarApi } from './StudySidebarApi';
+import { useStudy } from '../../contexts/StudyContext';
+// import { studySidebarApi } from './StudySidebarApi';
 
 
 export default function StudySidebar({
@@ -8,23 +9,15 @@ export default function StudySidebar({
   initialTab = '', //기본 활성화 탭
   onMenuClick
 }) {
-
-  // 스터디 정보 저장
-  const [studyInfo, setStudyInfo] = useState({
-    category: '',
-    name: '',
-    contact: '' // 다 빈 문자열로 저장
-  })
-
+  
+  // useStudy 사용
+  const { studyInfo, isLoading: loading, error } = useStudy();
+  
   // 사이드 바 접기, 펼치기
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 현재 활성 탭 상태를 컴포넌트 내부에서 관리
   const [currentTab, setCurrentTab] = useState(initialTab || 'dashboard');
-
-
-  // API 로딩 상태 관리
-  const [loading, setLoading] = useState(true);
 
   // 사이드 바 메뉴
   const menuItems = [
@@ -33,40 +26,6 @@ export default function StudySidebar({
     { id: 'calendar', label: '캘린더' },
     { id: 'project', label: '프로젝트' }
   ];
-
-  // API 호출
-  useEffect(() => {
-    // 스터디 정보 가져오기
-    const fetchStudyInfo = async () => {
-      try {
-        setLoading(true);
-
-        // API 호출
-        const data = await studySidebarApi.getStudyInfo(groupId);
-
-        // 데이터 o 상태 업데이트
-        if (data) {
-          setStudyInfo({
-            category: data.category,
-            name: data.name,
-            contact: data.contact
-          });
-        }
-        setLoading(false);
-
-      } catch (error) {
-        console.error('스터디 정보 로딩 실패:', error);
-        setLoading(false);
-      }
-    };
-
-    // studyId가 존재할 때만 API 호출
-    if (groupId) {
-      fetchStudyInfo();
-    } else {
-      setLoading(false);
-    }
-  }, [groupId]);
 
   //메뉴 클릭 처리 함수
   const handleMenuClick = (tabId) => {
@@ -86,7 +45,6 @@ export default function StudySidebar({
     setIsCollapsed(!isCollapsed); // 현재 상태의 반대로 변경
   };
 
-
   return (
     <div id={'sidebar-wrap'} className={` ${isCollapsed ? 'collapsed' : ''}`}>
       {/* 메인 사이드바 */}
@@ -94,13 +52,13 @@ export default function StudySidebar({
         {/* 스터디 정보 */}
         <div className='study-info'>
           <p className='sidebar-category'>
-            {loading ? '로딩 중...' : (studyInfo.category || '카테고리')}
+            {loading ? '로딩 중...' : (studyInfo?.category || '카테고리')}
           </p>
           <p className='sidebar-group-name'>
-            {loading ? '로딩 중...' : (studyInfo.name || '스터디이름')}
+            {loading ? '로딩 중...' : (studyInfo?.groupName || studyInfo?.name || '스터디이름')}
           </p>
           <p className='sidebar-contact'>
-            {loading ? '로딩 중...' : (studyInfo.contact || '연락방법')}
+            {loading ? '로딩 중...' : (studyInfo?.contact || '연락방법')}
           </p>
         </div>
         {/* 대시보드 메뉴 */}
