@@ -14,7 +14,7 @@ const RESET_FORM = {
     region: '',
     contact: '',
     groupIntroduction: '',
-    thumbnail: null,
+    thumbnail: '/images/default-thumbnail.png',
     groupOwnerId: null,
     nickname: ''
 };
@@ -102,9 +102,9 @@ function GroupUpdate() {
                             region: data.region || '',
                             contact: data.contact || '',
                             groupIntroduction: data.groupIntroduction || '',
-                            thumbnail: data.thumbnail || '',
+                            thumbnail: data.thumbnailFullPath || '/images/default-thumbnail.png',
                             groupOwnerId: data.groupOwnerId || 1,
-                            nickname: data.nickname || '' // study_membership에서 가져온 닉네임
+                            nickname: data.nickname || ''
                         });
                         setUserNickname(data.nickname || ''); // 원본 닉네임도 저장
                     } else {
