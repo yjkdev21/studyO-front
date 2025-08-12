@@ -31,15 +31,6 @@ export default function StudyPromotion() {
   };
 
   const handleSubmit = async () => {
-    // console.log(
-    //   "DEBUG => userId:",
-    //   userId,
-    //   "postId:",
-    //   studyPostId,
-    //   "message:",
-    //   message
-    // );
-
     // 타입 방어
     if (typeof userId !== "string" && typeof userId !== "number") {
       alert("userId 값이 올바르지 않습니다.");

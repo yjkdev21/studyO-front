@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import QuillFormFields from "../components/QuillFormFields";
 import DatePicker from "../../common/form/DatePicker";
 import FormInput from "../../common/form/FormInput";
@@ -16,32 +16,66 @@ const formatDate = (date) => {
 
 const formatToLocalDateTimeString = (dateString) => {
   const formattedDate = dateString.replace(/\./g, "-"); // "YYYY-MM-DD"로 변경
-  return `${formattedDate}T00:00:00`;
+  return `${formattedDate}T00:00:00`; // 시간 정보 추가 (자정)
 };
 
-const StudyPostInput = ({ groupId, onPostCreated }) => {
+const StudyPostEdit = ({ groupId, onPostUpdated, onCancel }) => {
   const { user } = useAuth();
   const userId = user?.id;
-
-  //console.log("StudyPostInput user.id: " + userId);
-
   const host = import.meta.env.VITE_AWS_API_HOST;
   const navigate = useNavigate();
 
-  const today = new Date();
-  const oneWeekLater = new Date();
-  oneWeekLater.setDate(today.getDate() + 7);
-
-  const [startDate, setStartDate] = useState(formatDate(today));
-  const [endDate, setEndDate] = useState(formatDate(oneWeekLater));
-  const [hashTag, setHashTag] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [errorDateMessage, setErrorDateMessage] = useState("");
-  const [errorInputMessage, setErrorInputMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  // 폼 필드 상태
+  const [studyPostId, setStudyPostId] = useState(0);
   const [qtitle, setTitle] = useState("");
   const [qcontent, setContent] = useState("");
+  const [hashTag, setHashTag] = useState("");
+  const [startDate, setStartDate] = useState(formatDate(new Date()));
+  const [endDate, setEndDate] = useState(formatDate(new Date()));
+
+  // 기존에 첨부되어 있던 파일 목록 (서버에서 불러옴)
+  // QuillFormFields로 props 전달
+  const [initialAttachments, setInitialAttachments] = useState([]);
+
+  // 로딩 및 에러 상태
+  const [loading, setLoading] = useState(true); // 초기 데이터 로딩을 위해 true로 시작
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorDateMessage, setErrorDateMessage] = useState("");
+
+  // 컴포넌트 마운트 시 기존 게시글 데이터 로드
+  useEffect(() => {
+    const fetchPostData = async () => {
+      if (!groupId) {
+        setErrorMessage("게시글 ID가 유효하지 않습니다.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.get(
+          `${host}/api/study-groups/post/${groupId}`,
+          {
+            withCredentials: true,
+          }
+        );
+        const { postDto } = response.data;
+        setStudyPostId(postDto.studyPostId);
+        setTitle(postDto.title);
+        setContent(postDto.content);
+        setHashTag(postDto.hashTag);
+        setStartDate(formatDate(new Date(postDto.recruitStartDate)));
+        setEndDate(formatDate(new Date(postDto.recruitEndDate)));
+        // 첨부파일 정보도 로드하여 initialAttachments에 저장
+        setInitialAttachments(postDto.attachFile || []);
+      } catch (error) {
+        console.error("게시글 데이터 로드 실패:", error);
+        setErrorMessage("게시글 데이터를 불러오는 데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPostData();
+  }, [groupId, host]);
 
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
@@ -52,7 +86,6 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     }
     setErrorMessage("");
     setErrorDateMessage("");
-    setErrorInputMessage("");
   };
 
   const handleEndDateChange = (newDate) => {
@@ -66,38 +99,26 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     setEndDate(newDate);
     setErrorMessage("");
     setErrorDateMessage("");
-    setErrorInputMessage("");
   };
 
   const handleHashTagChange = (e) => {
     setHashTag(e.target.value);
   };
 
-  // 폼 제출 핸들러 (신규 작성)
-  const handleSubmitForm = async (title, content, newAttachments) => {
-    setLoading(true);
+  // QuillFormFields에서 전달받은 파일 목록 인자들을 추가
+  const handleSubmitForm = async (
+    title,
+    content,
+    newAttachments,
+    deletedStoredFileNames
+  ) => {
+    setIsSubmitting(true);
     setErrorMessage("");
     setErrorDateMessage("");
-    setSuccessMessage("");
-    setErrorInputMessage("");
 
     if (!title || !content || !hashTag) {
-      setErrorInputMessage("제목, 내용, 해시태그는 필수 입력입니다.");
-      setLoading(false);
-      return;
-    }
-
-    if (!groupId) {
-      setErrorMessage("스터디를 선택해주세요.");
-      setLoading(false);
-      return;
-    }
-
-    if (userId === null || userId === undefined) {
-      setErrorInputMessage(
-        "사용자 정보가 없어 게시글을 등록할 수 없습니다. 로그인 상태를 확인해주세요."
-      );
-      setLoading(false);
+      setErrorMessage("제목, 내용, 해시태그는 필수 입력입니다.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -105,69 +126,74 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     const endDateTime = new Date(endDate.replace(/\./g, "-"));
     if (endDateTime < startDateTime) {
       setErrorDateMessage("모집 마감일은 모집 시작일보다 빠를 수 없습니다.");
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
     const formData = new FormData();
+    formData.append("studyPostId", studyPostId);
     formData.append("title", title);
     formData.append("content", content);
-    formData.append("groupId", groupId);
-    formData.append("authorId", userId);
     formData.append("hashTag", hashTag);
-
+    formData.append("authorId", userId);
     formData.append("recruitStartDate", formatToLocalDateTimeString(startDate));
     formData.append("recruitEndDate", formatToLocalDateTimeString(endDate));
 
-    // 새로 추가된 파일만 FormData에 추가
+    // QuillFormFields에서 전달받은 새로운 파일들을 FormData에 추가
     if (newAttachments?.length > 0) {
       newAttachments.forEach((file) => {
-        formData.append("attachments", file);
+        formData.append("newAttachments", file);
+      });
+    }
+
+    // QuillFormFields에서 전달받은 삭제할 파일 목록을 FormData에 추가
+    if (deletedStoredFileNames?.length > 0) {
+      deletedStoredFileNames.forEach((fileName) => {
+        formData.append("deletedStoredFileNames", fileName);
       });
     }
 
     try {
-      await axios.post(`${host}/api/study-groups/post`, formData, {
+      await axios.post(`${host}/api/study-groups/post/edit`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
       });
 
-      setSuccessMessage("게시글이 성공적으로 등록되었습니다.");
-      setTitle("");
-      setContent("");
-      setHashTag("");
-
-      if (onPostCreated) {
-        onPostCreated();
+      if (onPostUpdated) {
+        onPostUpdated(); // 부모 컴포넌트에 게시글이 수정되었음을 알림
       }
+      navigate(`/study/postMain`); // 수정 후 게시글 포스트메인으로 이동
     } catch (error) {
-      console.error("게시글 등록 실패:", error);
+      console.error("게시글 수정 실패:", error);
       setErrorMessage(
-        "게시글 등록 실패: " + (error.response?.data?.error || error.message)
+        "게시글 수정 실패: " + (error.response?.data?.error || error.message)
       );
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleCancel = (e) => {
-    if (loading) {
+    if (isSubmitting) {
       e.preventDefault();
+      return;
     }
-    navigate(`/study/postMain`);
+    // 취소 시 게시글 상세 페이지로 돌아감
+    onCancel();
   };
+
+  if (loading) {
+    return <div>게시글 데이터를 불러오는 중...</div>;
+  }
 
   return (
     <div className="promotion-container">
-      {successMessage && (
-        <div className="alert-success-message">{successMessage}</div>
-      )}
-
       {errorMessage && (
         <div className="alert-error-message">{errorMessage}</div>
       )}
+      <h2> Edit 화면 </h2>
 
       <h2 className="form-title">
         <span className="form-badge">1</span>
@@ -200,7 +226,7 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
           onChange={handleHashTagChange}
           required={true}
           placeholder="#자격증#수능#영어"
-          disabled={loading}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -209,24 +235,19 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
         스터디 홍보글 작성
       </h2>
 
+      {/* QuillFormFields 제목,내용,첨부파일,기존첨부파일 을 관리 */}
       <QuillFormFields
         title={qtitle}
         content={qcontent}
         onTitleChange={setTitle}
         onContentChange={setContent}
-        initialAttachments={[]}
+        initialAttachments={initialAttachments}
         onSubmit={handleSubmitForm}
-        // onCancel={handleCancel}
-        isLoading={loading}
+        onCancel={handleCancel}
+        isLoading={isSubmitting}
       />
-
-      {errorInputMessage && (
-        <div className="alert-error-message-post-input">
-          {errorInputMessage}
-        </div>
-      )}
     </div>
   );
 };
 
-export default StudyPostInput;
+export default StudyPostEdit;

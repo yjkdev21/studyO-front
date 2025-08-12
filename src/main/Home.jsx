@@ -8,7 +8,7 @@ export default function Home() {
           <Link to="/sample/5" className="border bg-gray-300 block">
             Go to Sample 5
           </Link>
-          <Link to="/study/postMain/10" className="border bg-gray-300 block">
+          <Link to="/study/postMain" className="border bg-gray-300 block">
             Go Promotion List
           </Link>
           <Link to="/groupCreate" className="border bg-gray-300 block">
@@ -36,7 +36,9 @@ export default function Home() {
             </div>
             {/* 배너 버튼 */}
             <div className="main-banner-btn">
-              <Link to="/groupCreate" className="shadow-btn">스터디 시작하기 <span>→</span></Link>
+              <Link to="/groupCreate" className="shadow-btn">
+                스터디 시작하기 <span>→</span>
+              </Link>
             </div>
           </div>
         </div>
