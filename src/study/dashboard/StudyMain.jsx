@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import './StudyMain.css';
+import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
-
-import StudySidebar from '../components/StudySidebar';
+import { useStudy } from '../../contexts/StudyContext';
+import './StudyMain.css';
 
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
   const { user } = useAuth(); // 현재 로그인한 사용자 정보
 
-  const [studyInfo, setStudyInfo] = useState(null); // 스터디 정보
+  const { studyInfo, isLoading: studyLoading, error } = useStudy(); // 스터디 정보 context 사용
 
   const [isNotice, setIsNotice] = useState(false); // 공지 여부 체크박스 상태
   const [allNotices, setAllNotices] = useState([]); // 공지 목록
@@ -27,79 +27,25 @@ export default function StudyMain() {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
 
+  const [showAllNotices, setShowAllNotices] = useState(false); // 공지 더보기 상태
+
   const host = import.meta.env.VITE_AWS_API_HOST;
 
-  // 대시 보드 상단 (공지 1개, 일반글 3개)
-  // const topNotice = allNotices[0] || null;
-  // const topAllPosts = allPosts.slice(0, 3);
-
-  // const isAdmin = user?.id === studyInfo?.groupOwnerId; // 스터디장인지 확인
-
-
-  // 스터디 정보 가져오기
-  // useEffect(() => {
-  //   const host = import.meta.env.VITE_AWS_API_HOST;
-
-  //   const fetchStudyInfo = async () => {
-  //     try {
-  //       const res = await fetch(`${host}/api/study/${groupId}`);
-  //       const result = await res.json();
-  //       setStudyInfo(result.data);
-  //     } catch (error) {
-  //       console.log('스터디 정보 가져오기 실패', error);
-  //     }
-  //   };
-
-  //   fetchStudyInfo();
-  // }, [groupId]);
-
-  const fetchStudyInfo = async () => {
-    try {
-      const res = await fetch(`${host}/api/study/${groupId}`);
-      const result = await res.json();
-      setStudyInfo(result.data);
-    } catch (error) {
-      console.log('스터디 정보 가져오기 실패', error);
-    }
-  };
-
   // 공지 및 일반글 가져오기
-  // useEffect(() => {
-  //   const host = import.meta.env.VITE_AWS_API_HOST;
-
-  //   const fetchPosts = async () => {
-  //     try {
-  //       const [noticeRes, postRes] = await Promise.all([
-  //         fetch(`${host}/api/study/board/group/${groupId}/notice`),
-  //         fetch(`${host}/api/study/board/group/${groupId}/normal`)
-  //       ]);
-  //       const notices = await noticeRes.json();
-  //       const posts = await postRes.json();
-
-  //       setAllNotices(notices);
-  //       setAllPosts(posts);
-  //     } catch (error) {
-  //       console.error('게시글 불러오기 실패', error);
-  //     }
-  //   };
-  //   fetchPosts();
-  // }, [groupId]);
-
   const fetchPosts = async () => {
     try {
       const [noticeRes, postRes] = await Promise.all([
-        fetch(`${host}/api/study/board/group/${groupId}/notice`),
-        fetch(`${host}/api/study/board/group/${groupId}/normal`)
+        axios.get(`${host}/api/study/board/group/${groupId}/notice`),
+        axios.get(`${host}/api/study/board/group/${groupId}/normal`)
       ]);
-      setAllNotices(await noticeRes.json());
-      setAllPosts(await postRes.json());
+      setAllNotices(noticeRes.data);
+      setAllPosts(postRes.data);
     } catch (error) {
       console.error('게시글 불러오기 실패', error);
     }
   };
 
   useEffect(() => {
-    fetchStudyInfo();
     fetchPosts();
   }, [groupId]);
 
@@ -112,22 +58,17 @@ export default function StudyMain() {
     }
 
     try {
-      const res = await fetch(`${host}/api/study/board`, {
-        method: 'POST',
+      await axios.post(`${host}/api/study/board`, {
+        userId: user.id,
+        groupId: groupId,
+        dashboardPostTitle: postTitle,
+        dashboardPostText: postContent,
+        isNotice: isNotice ? 'Y' : 'N'
+      }, {
         headers: {
-          'Content-Type': 'application/json',
-          'X-USER-ID': user.id // 사용자 ID 헤더로 전달
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          groupId: groupId,
-          dashboardPostTitle: postTitle,
-          dashboardPostText: postContent,
-          isNotice: isNotice ? 'Y' : 'N'
-        })
+          'X-USER-ID': user.id
+        }
       });
-
-      if (!res.ok) throw new Error('등록 실패');
 
       await fetchPosts(); // 작성한 글 화면에 바로 반영됨
 
@@ -155,87 +96,61 @@ export default function StudyMain() {
     setEditedContent('');
   };
 
-  // const handleConfirmEdit = async () => {
-  //   try {
-  //     const res = await fetch(`${host}/api/study/board`, {
-  //       method: 'PUT',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'X-USER-ID': user.id
-  //       },
-  //       body: JSON.stringify({
-  //         id: editingPostId,
-  //         userId: user.id,
-  //         groupId: groupId,
-  //         dashboardPostTitle: editedTitle,
-  //         dashboardPostText: editedContent
-  //       })
-  //     });
-
-  //     if (!res.ok) throw new Error('수정 실패');
-
-  //     await fetchPosts();
-  //     handleCancelEdit(); // 편집상태 종료
-  //   } catch (error) {
-  //     console.error('수정 오류', error);
-  //   }
-  // };
-
+  // 글 수정
   const handleConfirmEdit = async () => {
-  try {
-    const res = await fetch(`${host}/api/study/board`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-USER-ID': user.id
-      },
-      body: JSON.stringify({
+    try {
+      // 현재 수정 중인 게시글 찾기
+      const currentPost = [...allNotices, ...allPosts].find(post => post.id === editingPostId);
+
+      await axios.put(`${host}/api/study/board`, {
         id: editingPostId,
         userId: user.id,
         groupId: groupId,
         dashboardPostTitle: editedTitle,
-        dashboardPostText: editedContent
-      })
-    });
+        dashboardPostText: editedContent,
+        isNotice: currentPost.isNotice // 원래 isNotice 값 유지
+      }, {
+        headers: {
+          'X-USER-ID': user.id
+        }
+      });
 
-    if (!res.ok) throw new Error('수정 실패');
+      // 상태 직접 업데이트
+      setAllNotices(prev => prev.map(post =>
+        post.id === editingPostId
+          ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+          : post
+      ));
 
-    // 상태 직접 업데이트 (fetchPosts 없이)
-    setAllNotices(prev => prev.map(post => 
-      post.id === editingPostId 
-        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
-        : post
-    ));
-    
-    setAllPosts(prev => prev.map(post => 
-      post.id === editingPostId 
-        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
-        : post
-    ));
+      setAllPosts(prev => prev.map(post =>
+        post.id === editingPostId
+          ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+          : post
+      ));
 
-    // 편집 상태 해제
-    handleCancelEdit();
-    
-  } catch (error) {
-    console.error('수정 오류', error);
-  }
-};
+      // 편집 상태 해제 handleCancelEdit() 호출
+      handleCancelEdit();
 
+    } catch (error) {
+      console.log('수정 오류', error)
+    }
+  };
+
+  // 글 삭제
   const handleDelete = async (postId) => {
     if (!window.confirm('정말 삭제하시겠습니까?'))
       return;
 
     try {
-      const res = await fetch(`${host}/api/study/board/${postId}`, {
-        method: 'DELETE',
+      await axios.delete(`${host}/api/study/board/${postId}`, {
         headers: {
           'X-USER-ID': user.id
         }
       });
-      if (!res.ok) throw new Error('삭제 실패');
 
       await fetchPosts();
-    } catch (err) {
+    } catch (error) {
+      console.error('삭제 실패', error);
       alert('삭제 중 오류가 발생했습니다.');
     }
   };
@@ -246,7 +161,11 @@ export default function StudyMain() {
       <div className='dashboard-top'>
         {/* 스터디 정보 */}
         <div className='study-info-box'>
-          {studyInfo ? (
+          {studyLoading ? (
+            <p>로딩 중...</p>
+          ) : error ? (
+            <p>스터디 정보 로딩 실패</p>
+          ) : studyInfo ? (
             <>
               <p>카테고리: {studyInfo.category}</p>
               <p>인원: {studyInfo.maxMembers}</p>
@@ -255,7 +174,7 @@ export default function StudyMain() {
               <p>연락방법: {studyInfo.contact}</p>
             </>
           ) : (
-            <p>로딩 중...</p>
+            <p>스터디 정보를 불러올 수 없습니다.</p>
           )}
         </div>
         {/* 최신 공지 1 + 일반글 3 */}
@@ -340,8 +259,8 @@ export default function StudyMain() {
 
       {/* 전체 게시글 목록(공지 + 일반글) */}
       <ul className='all-post-list'>
-        {/* 공지글 먼저 출력 */}
-        {allNotices.map((post) => (
+        {/* 공지글 출력 */}
+        {(showAllNotices ? allNotices : allNotices.slice(0, 1)).map((post) => (
           <li key={post.id} className='post-item notice'>
             <div className='post-layout'>
               {/* 왼쪽: 프로필 이미지 + 닉네임 */}
@@ -358,7 +277,7 @@ export default function StudyMain() {
                 </div>
               </div>
 
-              {/* 오른쪽: 글 제목 + 내용 + 하단(날짜, 수정삭제) */}
+              {/* 오른쪽: 글 제목 + 내용 + 하단(날짜 + 수정삭제) */}
               <div className='post-right'>
                 <div className='post-content-area'>
                   {editingPostId === post.id ? (
@@ -383,9 +302,8 @@ export default function StudyMain() {
                   )}
                 </div>
 
-                {/* 하단: 날짜 + 수정삭제 버튼 */}
+                {/* 하단 */}
                 <div className='post-bottom'>
-                  
                   {(user?.id === post.writerId || user?.id === post.userId) && (
                     <div className='post-actions'>
                       {editingPostId === post.id ? (
@@ -407,6 +325,18 @@ export default function StudyMain() {
             </div>
           </li>
         ))}
+
+        {/* 공지 더보기/접기 버튼 - 공지가 2개 이상일 때만 표시 */}
+        {allNotices.length > 1 && (
+          <li className='notice-toggle-button'>
+            <button
+              onClick={() => setShowAllNotices(!showAllNotices)}
+              className='toggle-btn'
+            >
+              {showAllNotices ? '공지 접기 ∧' : `공지 더보기 (${allNotices.length - 1}개 더) ∨`}
+            </button>
+          </li>
+        )}
 
         {/* 일반글은 그대로 */}
         {allPosts.map((post) => (
@@ -447,7 +377,6 @@ export default function StudyMain() {
                 </div>
 
                 <div className='post-bottom'>
-                  
                   {(user?.id === post.writerId || user?.id === post.userId) && (
                     <div className='post-actions'>
                       {editingPostId === post.id ? (

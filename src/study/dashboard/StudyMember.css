@@ -102,6 +102,7 @@
     border: 1px solid #ddd;
     border-radius: 15px;
     background-color: #fff;
+    position: relative;
 }
 
 #study-member .dashboard-member-list .profile-image {
@@ -110,7 +111,19 @@
 }
 
 #study-member .dashboard-member-list .member-info {
+    width: calc(100% - 140px);
+}
+#study-member .dashboard-member-list .member-info.request {
     width: calc(100% - 194px);
+}
+#study-member .dashboard-member-list .member-info .leader-tag {
+    padding: 1px 10px;
+    border: 1px solid #5AA1F9;
+    border-radius: 100px;
+    margin-right: 10px;
+    color: #5AA1F9;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 #study-member .dashboard-member-list .member-btn {
