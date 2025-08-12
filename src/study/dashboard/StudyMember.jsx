@@ -1,29 +1,35 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useParams } from "react-router-dom";
 import ConfirmModal from '../../users/modal/ConfirmModal';
 
-import { getUserRequests, approveUserRequest, rejectUserRequest } from "./studyMemberApi";
+import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname } from "./studyMemberApi";
 
 import "./StudyMember.css";
 
 export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
+  
 
-
-  // 상태 관리
-  const [nickname, setNickname] = useState("멤버십닉네임");
-  const [tempNickname, setTempNickname] = useState("멤버십닉네임");
+  /* ========== 상태 관리 ========== */
+  // 닉네임 관련 상태
+  const [nickname, setNickname] = useState("");
+  const [tempNickname, setTempNickname] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [memberId, setMemberId] = useState(null);
 
+  // 데이터 관련 상태
   const [userRequests, setUserRequests] = useState([]);
+  const [groupMembers, setGroupMembers] = useState([]);
+
+  // UI 상태
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // ref
   const inputRef = useRef(null);
-  // 프로필 이미지 (없으면 기본 이미지)
   const imageSrc = user?.profileImage ?? "/images/default-profile.png";
 
   // 모달 관련 상태
@@ -31,7 +37,14 @@ export default function StudyMember() {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  /** 데이터 가져오기 */
+  // 현재 사용자 멤버십 정보
+  const myMembership = useMemo(() => {
+    return groupMembers.find(member => member?.userId === user?.id);
+  }, [groupMembers, user?.id]);
+
+
+  /* ========== API 호출 함수 ========== */
+  // 회원 신청 목록
   const fetchUserRequests = async () => {
     if (!groupId) return;
     setLoading(true);
@@ -41,31 +54,46 @@ export default function StudyMember() {
       const data = await getUserRequests(groupId);
       setUserRequests(data.list || []);
       setMessage(data.message || "");
-    } catch (err) {
-      if (err.response) {
-        const status = err.response.status;
-        setError(
-          status === 401
-            ? "로그인이 필요합니다."
-            : status === 403
-              ? "접근 권한이 없습니다."
-              : status === 404
-                ? "요청한 리소스를 찾을 수 없습니다."
-                : "서버 오류가 발생했습니다."
-        );
-      } else if (err.request) {
-        setError("서버에 연결할 수 없습니다.");
-      }
+    } catch (error) {
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
   };
 
-  /** 선택 해제 */
-  const clearSelection = () => {
-    const selection = window.getSelection();
-    if (selection?.rangeCount > 0) selection.removeAllRanges();
+  // 그룹 멤버 목록
+  const loadGroupMembers = async () => {
+    if (!groupId) return;
+
+    try {
+      const data = await fetchGroupMembers(groupId);
+      setGroupMembers(data || []);
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // API 에러 처리
+  const handleApiError = (error) => {
+    if (error.response) {
+      const status = error.response.status;
+      setError(
+        status === 401
+          ? "로그인이 필요합니다."
+          : status === 403
+            ? "접근 권한이 없습니다."
+            : status === 404
+              ? "요청한 리소스를 찾을 수 없습니다."
+              : "서버 오류가 발생했습니다."
+      );
+    } else if (error.request) {
+      setError("서버에 연결할 수 없습니다.");
+    }
   };
+
+  /* ========== 닉네임 수정 관련 ========== */
 
   /** 닉네임 수정 모드 */
   const handleEditClick = () => {
@@ -74,11 +102,36 @@ export default function StudyMember() {
   };
 
   /** 닉네임 저장 */
-  const handleSaveClick = () => {
-    setNickname(tempNickname);
-    setIsEditing(false);
-    clearSelection();
-    alert("대시보드 닉네임이 수정되었습니다.(미완성)");
+  const handleSaveClick = async () => {
+    try {
+      setLoading(true);
+
+      const result = await updateNickname(groupId, tempNickname);
+
+      // 성공 시 UI 업데이트
+      setNickname(tempNickname);
+      setIsEditing(false);
+      clearSelection();
+
+      alert(result.message || "닉네임이 성공적으로 수정되었습니다.");
+
+      // 멤버 목록 새로고침 
+      await loadGroupMembers();
+    } catch (error) {
+      console.error("닉네임 수정 실패:", error);
+
+      // 에러 메시지 표시
+      if (error.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("닉네임 수정에 실패했습니다.");
+      }
+
+      // 실패 시 원래 닉네임으로 되돌리기
+      setTempNickname(nickname);
+    } finally {
+      setLoading(false);
+    }
   };
 
   /** 닉네임 수정 취소 */
@@ -88,10 +141,27 @@ export default function StudyMember() {
     clearSelection();
   };
 
+  // 선택 해제
+  const clearSelection = () => {
+    const selection = window.getSelection();
+    if (selection?.rangeCount > 0) selection.removeAllRanges();
+  };
+
   /** 마운트/GroupId 변경 시 신청 목록 불러오기 */
   useEffect(() => {
     fetchUserRequests();
+    loadGroupMembers();
   }, [groupId]);
+
+  // 닉네임 로드
+  useEffect(() => {
+    if (myMembership?.nickname) {
+      setNickname(myMembership.nickname);
+      setTempNickname(myMembership.nickname);
+      setMemberId(myMembership.id);
+    }
+  }, [myMembership]);
+
 
   /** 편집 모드 진입 시 포커스 */
   useEffect(() => {
@@ -118,13 +188,11 @@ export default function StudyMember() {
       setLoading(true);
 
       if (isAcceptModalOpen) {
-        // 수락 처리 로직 (API 호출 등)
-        console.log('수락:', selectedRequest);
+        // 수락 처리 로직
         const result = await approveUserRequest(selectedRequest.id);
         alert(result.message || `${selectedRequest?.nickname}님의 신청을 수락했습니다.`);
       } else if (isRejectModalOpen) {
-        // 거절 처리 로직 (API 호출 등)
-        console.log('거절:', selectedRequest);
+        // 거절 처리 로직 
         const result = await rejectUserRequest(selectedRequest.id);
         alert(result.message || `${selectedRequest?.nickname}님의 신청을 거절했습니다.`);
       }
@@ -136,6 +204,7 @@ export default function StudyMember() {
 
       // 목록 새로고침
       fetchUserRequests();
+      loadGroupMembers();
     } catch (error) {
       console.error('처리 중 오류:', error);
       alert('처리 중 오류가 발생했습니다.');
@@ -229,7 +298,7 @@ export default function StudyMember() {
                 <div className="profile-image rounded-full overflow-hidden">
                   <img className="w-full block" src={req.profileImage ?? imageSrc} alt="프로필" />
                 </div>
-                <div className="member-info">
+                <div className="member-info request">
                   <p className="font-bold text-[#333]">{req.nickname}</p>
                   <p className="text-sm text-[#666] truncate">{req.applicationMessage}</p>
                 </div>
@@ -258,17 +327,27 @@ export default function StudyMember() {
       <div className="member-container">
         <h3 className="text-3xl !mb-8">
           멤버목록
-          <span className="text-sm text-[#666] font-normal !ml-2">23</span>
+          <span className="text-sm text-[#666] font-normal !ml-2">{groupMembers?.length || 0}</span>
         </h3>
         <ul className="dashboard-member-wrap">
-          <li className="dashboard-member-list justify-start">
-            <div className="profile-image rounded-full overflow-hidden">
-              <img className="w-full block" src={imageSrc} alt="프로필" />
-            </div>
-            <div className="member-info">
-              <p className="font-bold text-[#333]">이름</p>
-            </div>
-          </li>
+          {groupMembers.length > 0 ? (
+            groupMembers.map((member, idx) => (
+              <li key={member?.id || idx} className="dashboard-member-list justify-start">
+                <div className="profile-image rounded-full overflow-hidden">
+                  <img className="w-full block" src={imageSrc} alt="프로필" />
+                </div>
+                <div className="member-info">
+                  <p className="font-bold text-[#333]">
+                    {member?.memberRole === "ADMIN" ? (<span className="leader-tag">방장</span>) : ""}
+                    {member?.nickname}
+                  </p>
+                  <span className="text-xs text-[#999] absolute bottom-4 right-4">{member?.joinedAt.substring(0, 10)}</span>
+                </div>
+              </li>
+            ))
+          ) :
+            (<li className="text-[#666]">멤버가 없습니다.</li>)
+          }
         </ul>
       </div>
 
