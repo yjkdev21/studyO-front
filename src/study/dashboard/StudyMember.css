@@ -64,18 +64,43 @@
     color: #666;
 }
 
+/* 모바일 - 화면 767px 이하 */
+@media (max-width: 767px) {
+
+    #study-member .dashboard-my-info,
+    .dashboard-my-info .edit-nickname-wrap {
+        flex-direction: column;
+    }
+
+    .dashboard-my-info .nickname-input {
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    .dashboard-my-info .profile-image {
+        margin-right: 0;
+    }
+
+    .dashboard-my-info .profile-text {
+        align-items: center;
+    }
+}
+
 /* ========== 멤버 대시보드 - 멤버 ========== */
 
 #study-member .dashboard-member-wrap {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
 
 #study-member .dashboard-member-list {
     display: flex;
     align-items: center;
+    gap: 20px;
     padding: 20px;
     border: 1px solid #ddd;
+    border-radius: 15px;
     background-color: #fff;
 }
 
@@ -84,8 +109,20 @@
     height: 50px;
 }
 
+#study-member .dashboard-member-list .member-info {
+    width: calc(100% - 194px);
+}
+
 #study-member .dashboard-member-list .member-btn {
+    width: 48px;
+    padding: 5px 10px;
     border: 1px solid;
     border-radius: 5px;
-    padding: 5px 15px;
+    transition: all .2s;
+    font-size: 14px;
+}
+
+#study-member .dashboard-member-list .member-btn:hover {
+    color: #fff;
+    background-color: var(--main-color);
 }
