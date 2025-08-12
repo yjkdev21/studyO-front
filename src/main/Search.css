@@ -269,7 +269,7 @@
 .g-bookmark-svg {
   width: 24px;
   height: 24px;
-  fill: #a0a0a0; /* 채우기 없앰 */
+  fill: #a0a0a0;
   stroke: #a0a0a0;
   transition: all 0.2s;
   stroke-width: 0px;

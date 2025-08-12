@@ -273,7 +273,7 @@ function Search() {
         ]);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
-        console.error("데이터 불러오기 실패:", err);
+        console.error("데이터 불러오기 실패: ", err);
       } finally {
         setIsLoading(false);
       }
