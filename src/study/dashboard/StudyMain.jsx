@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import './StudyMain.css';
+import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
-
 import StudySidebar from '../components/StudySidebar';
+import './StudyMain.css';
 
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
@@ -155,69 +155,82 @@ export default function StudyMain() {
     setEditedContent('');
   };
 
-  // const handleConfirmEdit = async () => {
-  //   try {
-  //     const res = await fetch(`${host}/api/study/board`, {
-  //       method: 'PUT',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'X-USER-ID': user.id
-  //       },
-  //       body: JSON.stringify({
-  //         id: editingPostId,
-  //         userId: user.id,
-  //         groupId: groupId,
-  //         dashboardPostTitle: editedTitle,
-  //         dashboardPostText: editedContent
-  //       })
-  //     });
+//   const handleConfirmEdit = async () => {
+//   try {
+//     const res = await fetch(`${host}/api/study/board`, {
+//       method: 'PUT',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-USER-ID': user.id
+//       },
+//       body: JSON.stringify({
+//         id: editingPostId,
+//         userId: user.id,
+//         groupId: groupId,
+//         dashboardPostTitle: editedTitle,
+//         dashboardPostText: editedContent
+//       })
+//     });
 
-  //     if (!res.ok) throw new Error('수정 실패');
+//     if (!res.ok) throw new Error('수정 실패');
 
-  //     await fetchPosts();
-  //     handleCancelEdit(); // 편집상태 종료
-  //   } catch (error) {
-  //     console.error('수정 오류', error);
-  //   }
-  // };
+//     // 상태 직접 업데이트 (fetchPosts 없이)
+//     setAllNotices(prev => prev.map(post => 
+//       post.id === editingPostId 
+//         ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+//         : post
+//     ));
+    
+//     setAllPosts(prev => prev.map(post => 
+//       post.id === editingPostId 
+//         ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+//         : post
+//     ));
+
+//     // 편집 상태 해제
+//     handleCancelEdit();
+    
+//   } catch (error) {
+//     console.error('수정 오류', error);
+//   }
+// };
 
   const handleConfirmEdit = async () => {
   try {
-    const res = await fetch(`${host}/api/study/board`, {
-      method: 'PUT',
+    // 현재 수정 중인 게시글 찾기
+    const currentPost = [...allNotices, ...allPosts].find(post => post.id === editingPostId);
+
+    await axios.put(`${host}/api/study/board`, {
+      id: editingPostId,
+      userId: user.id,
+      groupId: groupId,
+      dashboardPostTitle: editedTitle,
+      dashboardPostText: editedContent,
+      isNotice: currentPost.isNotice // 원래 isNotice 값 유지
+    }, {
       headers: {
-        'Content-Type': 'application/json',
         'X-USER-ID': user.id
-      },
-      body: JSON.stringify({
-        id: editingPostId,
-        userId: user.id,
-        groupId: groupId,
-        dashboardPostTitle: editedTitle,
-        dashboardPostText: editedContent
-      })
+      }
     });
 
-    if (!res.ok) throw new Error('수정 실패');
-
-    // 상태 직접 업데이트 (fetchPosts 없이)
-    setAllNotices(prev => prev.map(post => 
-      post.id === editingPostId 
-        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
-        : post
-    ));
-    
-    setAllPosts(prev => prev.map(post => 
-      post.id === editingPostId 
-        ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
-        : post
+    // 상태 직접 업데이트
+    setAllNotices(prev => prev.map(post =>
+      post.id === editingPostId
+      ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+      : post
     ));
 
-    // 편집 상태 해제
-    handleCancelEdit();
+    setAllPosts(prev => prev.map(post =>
+      post.id === editingPostId
+      ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
+      : post
+    ));
+
+    // 편집 상태 해제 - handleCancelEdit() 호출
+    handleCancelEdit(); // ← 이게 맞습니다!
     
   } catch (error) {
-    console.error('수정 오류', error);
+    console.log('수정 오류', error)
   }
 };
 

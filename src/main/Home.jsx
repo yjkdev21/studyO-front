@@ -3,21 +3,6 @@ export default function Home() {
   return (
     <main id="home-page">
       <div className="main-center">
-        {/* 추후 삭제 -- 시작 */}
-        <div className="absolute top-1 left-1 z-10">
-          <Link to="/sample/5" className="border bg-gray-300 block">
-            Go to Sample 5
-          </Link>
-          <Link to="/study/postMain/10" className="border bg-gray-300 block">
-            Go Promotion List
-          </Link>
-          <Link to="/groupCreate" className="border bg-gray-300 block">
-            스터디그룹생성
-          </Link>
-          <br />
-          <br />
-        </div>
-        {/* 추후 삭제 -- 끝 */}
         {/* 메인 배너 */}
         <div className="main-banner relative">
           {/* 배너 컨텐츠 */}
