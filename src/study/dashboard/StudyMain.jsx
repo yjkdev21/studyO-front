@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStudy } from '../../contexts/StudyContext';
 import './StudyMain.css';
+import WeeklyCalendar from './WeeklyCalendar';
 
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
@@ -211,7 +212,7 @@ export default function StudyMain() {
       </div>
       {/* 주간 캘린더 자리 */}
       <div className='week-calendar'>
-        <h1>주간 캘린더 자리임</h1>
+        <WeeklyCalendar />
       </div>
 
       {/* 글 작성 영역 */}
