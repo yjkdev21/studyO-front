@@ -4,7 +4,7 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 import { useAuth } from '../../contexts/AuthContext';
-import ConfirmModal from '../../users/modal/ConfirmModal'; // ConfirmModal import 추가
+import ConfirmModal from '../../users/modal/ConfirmModal';
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -42,12 +42,11 @@ function GroupUpdate() {
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
 
-    // 모달 관련 상태 추가
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [successType, setSuccessType] = useState(''); // 'edit' 또는 'delete'
-    const [memberCount, setMemberCount] = useState(1); // 멤버 수 상태 추가
+    const [successType, setSuccessType] = useState('');
+    const [memberCount, setMemberCount] = useState(1);
 
     // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
     if (!isAuthenticated) {
@@ -282,7 +281,7 @@ function GroupUpdate() {
             await axios.delete(`${host}/api/study/${groupId}`, {
                 withCredentials: true,
             });
-            navigate('/myPage'); // 삭제 후 마이페이지로 이동
+            navigate('/myPage');
         } catch (error) {
             console.error('삭제 실패:', error);
             alert('삭제에 실패했습니다.');
@@ -294,7 +293,6 @@ function GroupUpdate() {
         navigate(`/group/${groupId}`);
     };
 
-    // 모달 닫기 핸들러
     const handleModalCancel = () => {
         setIsEditModalOpen(false);
         setIsDeleteModalOpen(false);
@@ -358,16 +356,14 @@ function GroupUpdate() {
                 isOpen={isDeleteModalOpen}
                 onCancel={handleModalCancel}
                 onConfirm={handleDelete}
-                type="editProfileSimple"
+                type="kick"
                 userName={formData.groupName}
                 customText={{
                     title: (
-                        <>
-                            스터디 그룹을 <span className="highlight">삭제</span>하시겠습니까?
-                        </>
+                        ""
                     ),
                     actionText: '삭제',
-                    description: '삭제된 그룹은 복구할 수 없습니다.\n정말로 삭제하시겠습니까?'
+                    description: '삭제된 그룹은 복구할 수 없습니다.'
                 }}
             />
         </div>
