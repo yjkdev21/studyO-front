@@ -44,6 +44,7 @@ import ProtectedRoute from "./common/auth/ProtectedRoute";
 import StudyPromotion from "./study/post/StudyPromotion";
 
 import AdminSidebar from "./admin/component/AdminSidebar";
+import AdminBoard from "./admin/admindashboard/AdminBoard";
 import AdminUsers from "./admin/admindashboard/AdminUsers";
 import AdminPost from "./admin/admindashboard/AdminPost";
 import AdminGroups from "./admin/admindashboard/AdminGroups";
@@ -153,10 +154,13 @@ function App() {
             path="/admin/component/adminSidebar"
             element={<AdminSidebar />}
           />
+          <Route
+            path="/admin/admindashboard/adminboard"
+            element={<AdminBoard />}
+          />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/post" element={<AdminPost />} />
           <Route path="/admin/groups" element={<AdminGroups />} />
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {!shouldHideFooter && <Footer />}

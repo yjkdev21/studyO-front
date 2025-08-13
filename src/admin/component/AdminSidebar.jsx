@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './AdminSidebar.css';
+import { Link } from 'react-router-dom';
 
 export default function AdminSidebar({
     initialTab = 'member',
@@ -55,9 +56,9 @@ export default function AdminSidebar({
             </nav>
 
             <div className="sidebar-footer">
-                <button className="home-link">
+                <Link to="/" className="home-link">
                     스튜디오 홈페이지
-                </button>
+                </Link>
             </div>
         </div>
     );
