@@ -69,6 +69,7 @@ function App() {
     "/promotion/create",
     "/study/dashboard/dashboardList",
     "/admin/component/adminSidebar",
+    "/admin/admindashboard/adminboard",
   ];
 
   // Footer를 숨길 경로 설정
