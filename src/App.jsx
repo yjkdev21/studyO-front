@@ -44,11 +44,11 @@ import ProtectedRoute from "./common/auth/ProtectedRoute";
 import StudyPromotion from "./study/post/StudyPromotion";
 
 import AdminSidebar from "./admin/component/AdminSidebar";
+import AdminBoard from "./admin/admindashboard/AdminBoard";
 import AdminUsers from "./admin/admindashboard/AdminUsers";
 import AdminPost from "./admin/admindashboard/AdminPost";
 import AdminGroups from "./admin/admindashboard/AdminGroups";
 import AdminUserDetails from "./admin/admindashboard/AdminUserDetails";
-
 function App() {
   const [count, setCount] = useState(0);
   const location = useLocation();
@@ -85,8 +85,10 @@ function App() {
         {!shouldHideHeader && <Header />}
         <Routes>
           <Route path="/" element={<Home />} />
+
           <Route path="/join" element={<Join />} />
           <Route path="/login" element={<Login />} />
+
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
             <Route path="/findId" element={<FindId />} />
@@ -137,22 +139,32 @@ function App() {
               element={<ProjectCalendar />}
             />
           </Route>
+
           <Route path="/search" element={<Search />} />
+
           <Route path="/group/:groupId" element={<GroupDetail />} />
+
           <Route
             path="/study/components/studySidebar"
             element={<StudySidebar />}
           />
+
           {/* amdin */}
           <Route
             path="/admin/component/adminSidebar"
             element={<AdminSidebar />}
           />
+          <Route
+            path="/admin/admindashboard/adminboard"
+            element={<AdminBoard />}
+          />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/post" element={<AdminPost />} />
           <Route path="/admin/groups" element={<AdminGroups />} />
-          <Route path="users/details/:userId" element={<AdminUserDetails />} />
-
+          <Route
+            path="admin/users/details/:userId"
+            element={<AdminUserDetails />}
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {!shouldHideFooter && <Footer />}

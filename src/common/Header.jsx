@@ -27,6 +27,19 @@ export default function Header() {
   const isSearchPage = location.pathname === "/search";
   const selectedCategory = isSearchPage ? location.state?.category : null;
 
+  // 관리자 권한 체크 함수
+  const isAdmin = () => {
+    if (!user) return false;
+    
+    // GLOBAL_ROLE 필드로 관리자 권한 확인
+    return user.globalRole === 'ADMIN' || 
+          user.global_role === 'ADMIN' ||
+          user.GLOBAL_ROLE === 'ADMIN' ||
+          displayUser?.globalRole === 'ADMIN' ||
+          displayUser?.global_role === 'ADMIN' ||
+          displayUser?.GLOBAL_ROLE === 'ADMIN';
+  };
+
   // 서버에서 사용자 프로필 정보 로딩
   const loadUserProfileFromServer = async () => {
     if (!user?.id) return;
@@ -169,6 +182,16 @@ export default function Header() {
                       스터디 생성
                     </Link>
                   </li>
+                    {isAdmin() && (
+                      <li>
+                        <Link
+                          to="/admin/admindashboard/adminboard"
+                          className="header-study-btn text-sm"
+                        >
+                            관리자
+                        </Link>
+                      </li>
+                    )}
                   <li>
                     <button
                       type="button"

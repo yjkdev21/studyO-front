@@ -11,8 +11,33 @@ export default function GroupDetail() {
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [memberCount, setMemberCount] = useState(0);
+    const [profileImage, setProfileImage] = useState(null); // 프로필 이미지 상태 추가
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading } = useAuth();
+    const defaultProfileImageSrc = "/images/default-profile.png";
+
+    // 프로필 이미지를 서버에서 가져오는 함수
+    const loadUserProfileImage = async (userId) => {
+        if (!userId) return defaultProfileImageSrc;
+
+        try {
+            const apiUrl = host || 'http://localhost:8081';
+            const response = await axios.get(`${apiUrl}/api/user/${userId}`, {
+                withCredentials: true,
+                timeout: 10000
+            });
+
+            if (response.status === 200 && response.data.success) {
+                const serverUser = response.data.data;
+                return serverUser.profileImageFullPath || defaultProfileImageSrc;
+            } else {
+                return defaultProfileImageSrc;
+            }
+        } catch (error) {
+            console.error('프로필 이미지 로딩 실패:', error);
+            return defaultProfileImageSrc;
+        }
+    };
 
     useEffect(() => {
         if (!groupId || !isAuthenticated) {
@@ -27,23 +52,30 @@ export default function GroupDetail() {
 
             try {
                 const response = await axios.get(`${host}/api/study/${groupId}`, { withCredentials: true });
-                
+
                 console.log('=== 그룹 상세 조회 응답 ===');
                 console.log('전체 응답:', response.data);
                 console.log('성공 여부:', response.data.success);
-                
+
                 if (response.data && response.data.data) {
                     const groupData = response.data.data;
                     console.log('그룹 데이터:', groupData);
                     console.log('썸네일 파일명 (DB):', groupData.thumbnail);
                     console.log('썸네일 전체 URL:', groupData.thumbnailFullPath);
-                    
+
                     setGroup(groupData);
-                    
+
+                    // 프로필 이미지 로딩 (그룹 소유자의 프로필 이미지)
+                    if (groupData.groupOwnerId) {
+                        const profileImageUrl = await loadUserProfileImage(groupData.groupOwnerId);
+                        setProfileImage(profileImageUrl);
+                        console.log('프로필 이미지 URL:', profileImageUrl);
+                    }
+
                     // S3 썸네일 URL 검증
                     if (groupData.thumbnailFullPath && !groupData.thumbnailFullPath.includes('default')) {
                         console.log('🖼️ S3 썸네일 URL 확인:', groupData.thumbnailFullPath);
-                        
+
                         // URL 접근 가능성 테스트
                         const img = new Image();
                         img.onload = () => console.log('썸네일 이미지 로드 성공!');
@@ -122,22 +154,28 @@ export default function GroupDetail() {
         if (!group) {
             return '/images/default-thumbnail.png';
         }
-        
+
         // thumbnailFullPath가 있으면 S3 URL 사용
         if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
             console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
             return group.thumbnailFullPath;
         }
-        
+
         // thumbnail 필드만 있는 경우 (기존 호환성)
         if (group.thumbnail && !group.thumbnail.includes('default')) {
             console.log('썸네일 필드 사용:', group.thumbnail);
             return group.thumbnail;
         }
-        
+
         // 기본 이미지
         console.log('기본 썸네일 이미지 사용');
         return '/images/default-thumbnail.png';
+    };
+
+    // 프로필 이미지 에러 핸들링
+    const handleProfileImageError = (e) => {
+        console.log('프로필 이미지 로딩 실패, 기본 이미지로 변경');
+        e.target.src = defaultProfileImageSrc;
     };
 
     const handleDelete = async () => {
@@ -163,89 +201,85 @@ export default function GroupDetail() {
         }
     };
 
-return (
-    <div id="groupdetail" className="container mt-4">
-        <div className="view-header-section">
-            <h2 className="form-title">
-            <span className="form-badge">✔</span>
-            스터디 그룹글
-            </h2>
-            <h1 className="view-title">{group.groupName}</h1>
-            <div className="view-author-info">
-                <img
-                    src="/default-profile.png"
-                    alt="프로필 이미지"
-                    className="view-profile-image"
-                />
-                {/* <img
-                src={post.profileImage || "/default-profile.png"}
-                alt="프로필 이미지"
-                className="view-profile-image"
-                /> */}
+    return (
+        <div id="groupdetail" className="container mt-4">
+            <div className="view-header-section">
+                <h2 className="form-title">
+                    <span className="form-badge">✔</span>
+                    스터디 그룹글
+                </h2>
+                <h1 className="view-title">{group.groupName}</h1>
+                <div className="view-author-info">
+                    <img
+                        src={profileImage || defaultProfileImageSrc}
+                        alt="프로필 이미지"
+                        className="view-profile-image"
+                        onError={handleProfileImageError}
+                    />
 
-                <span className="view-author">{group.nickname}</span>
-                <span className="view-date"> | 스터디 그룹</span>
+                    <span className="view-author">{group.nickname}</span>
+                    <span className="view-date"> | 스터디 그룹</span>
+                </div>
+                <div id="groupdetail" className="thumbnail-section">
+                    <img
+                        src={getThumbnailUrl(group)}
+                        alt="썸네일"
+                        onError={(e) => {
+                            console.log('이미지 로딩 실패, 기본 이미지로 변경');
+                            e.target.src = '/images/default-thumbnail.png';
+                        }}
+                    />
+                </div>
+                <div className="view-meta-info-flex">
+                    <div className="meta-item">
+                        <span className="meta-label">카테고리</span>
+                        <span className="meta-value">{group.category}</span>
+                    </div>
+                    <div className="meta-item">
+                        <span className="meta-label">최대 인원</span>
+                        <span className="meta-value">{group.maxMembers}명</span>
+                    </div>
+                    <div className="meta-item">
+                        <span className="meta-label">진행방식</span>
+                        <span className="meta-value">{group.studyMode}</span>
+                    </div>
+                    <div className="meta-item">
+                        <span className="meta-label">지역</span>
+                        <span className="meta-value">{group.region}</span>
+                    </div>
+                    <div className="meta-item">
+                        <span className="meta-label">연락방법</span>
+                        <span className="meta-value">{group.contact}</span>
+                    </div>
+                    <div className="meta-item">
+                        <span className="meta-label">현재 멤버</span>
+                        <span className="meta-value">{memberCount}명</span>
+                    </div>
+                </div>
             </div>
-            <div id="groupdetail" className="thumbnail-section">
-            <img
-                src={getThumbnailUrl(group)}
-                alt="썸네일"
-                onError={(e) => { 
-                    console.log('이미지 로딩 실패, 기본 이미지로 변경');
-                    e.target.src = '/images/default-thumbnail.png'; 
-                }}
-            />
-            </div>
-            <div className="view-meta-info-flex">
-                <div className="meta-item">
-                    <span className="meta-label">카테고리</span>
-                    <span className="meta-value">{group.category}</span>
-                </div>
-                <div className="meta-item">
-                    <span className="meta-label">최대 인원</span>
-                    <span className="meta-value">{group.maxMembers}명</span>
-                </div>
-                <div className="meta-item">
-                    <span className="meta-label">진행방식</span>
-                    <span className="meta-value">{group.studyMode}</span>
-                </div>
-                <div className="meta-item">
-                    <span className="meta-label">지역</span>
-                    <span className="meta-value">{group.region}</span>
-                </div>
-                <div className="meta-item">
-                    <span className="meta-label">연락방법</span>
-                    <span className="meta-value">{group.contact}</span>
-                </div>
-                <div className="meta-item">
-                    <span className="meta-label">현재 멤버</span>
-                    <span className="meta-value">{memberCount}명</span>
+
+            <div className="view-body-section">
+                <h3 className="section-title">스터디 소개</h3>
+                <div id="groupdetail" className="intro-content">
+                    {group.groupIntroduction}
                 </div>
             </div>
+
+            <div id="groupdetail" className="button-container">
+                <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
+                    대시보드
+                </Link>
+
+                {isOwner() && (
+                    <>
+                        <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
+                            수정
+                        </Link>
+
+                    </>
+                )}
+            </div>
+
         </div>
-
-        <div className="view-body-section">
-            <h3 className="section-title">스터디 소개</h3>
-            <div id="groupdetail" className="intro-content">
-                {group.groupIntroduction}
-            </div>
-        </div>
-
-        <div id="groupdetail" className="button-container">
-        <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
-            대시보드
-        </Link>
-
-    {isOwner() && (
-        <>
-            <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
-                수정
-            </Link>
-
-        </>
-    )}
-</div>
-
-    </div>
-);
+    );
 }
