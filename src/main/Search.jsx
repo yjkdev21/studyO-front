@@ -176,7 +176,8 @@ function Search() {
     return { minMembers: null, maxMembers: null };
   };
 
-  const fetchPosts = async (filterParams) => {
+  // 모든 API 호출을 한 곳에서 관리하는 함수
+  const fetchAllData = async (filterParams) => {
     const { minMembers, maxMembers } = getMinMaxMembers(
       filterParams.recruitmentCount
     );
@@ -191,100 +192,81 @@ function Search() {
       search: filterParams.search || "",
     };
 
-    try {
-      const res = await axios.get("http://localhost:8081/api/searchPosts", {
-        params,
-      });
-      if (Array.isArray(res.data)) {
-        setPosts(res.data);
-      } else if (res.data?.posts && Array.isArray(res.data.posts)) {
-        setPosts(res.data.posts);
-      } else {
-        setPosts([]);
-      }
-    } catch (error) {
-      console.error("포스트 조회 실패", error);
-      throw new Error("포스트를 불러오는 데 실패했습니다.");
-    }
-  };
+    const mainPostsPromise = axios.get(
+      "http://localhost:8081/api/searchPosts",
+      { params }
+    );
+    const bookmarkCountsPromise = axios.get(
+      "http://localhost:8081/api/bookmark/counts"
+    );
+    const userBookmarksPromise =
+      isAuthenticated && user?.id
+        ? axios.get(`http://localhost:8081/api/bookmark/user/${user.id}`)
+        : Promise.resolve({ data: { success: true, data: [] } });
 
-  const fetchPopularStudies = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/popularStudies");
-      if (Array.isArray(res.data)) {
-        setPopularStudies(res.data);
-      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
-        setPopularStudies(res.data.studies);
-      } else {
-        setPopularStudies([]);
-      }
-    } catch (error) {
-      console.warn("인기 스터디 API 호출 실패", error);
-      setPopularStudies([]);
-    }
-  };
+    const specialPromises = isShowingAll
+      ? [
+          axios.get("http://localhost:8081/api/popularStudies"),
+          axios.get("http://localhost:8081/api/urgentStudies"),
+        ]
+      : [
+          Promise.resolve({ data: { studies: [] } }),
+          Promise.resolve({ data: { studies: [] } }),
+        ];
 
-  const fetchUrgentStudies = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/urgentStudies");
-      if (Array.isArray(res.data)) {
-        setUrgentStudies(res.data);
-      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
-        setUrgentStudies(res.data.studies);
-      } else {
-        setUrgentStudies([]);
-      }
-    } catch (error) {
-      console.warn("마감임박 스터디 API 호출 실패", error);
-      setUrgentStudies([]);
-    }
-  };
+    const [
+      mainPostsRes,
+      bookmarkCountsRes,
+      userBookmarksRes,
+      popularStudiesRes,
+      urgentStudiesRes,
+    ] = await Promise.all([
+      mainPostsPromise,
+      bookmarkCountsPromise,
+      userBookmarksPromise,
+      ...specialPromises,
+    ]);
 
-  const fetchUserBookmarks = async () => {
-    if (!isAuthenticated || !user?.id) {
-      setUserBookmarks([]);
-      return;
+    // 모든 데이터를 한 번에 업데이트
+    setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
+
+    if (
+      bookmarkCountsRes.data.success &&
+      Array.isArray(bookmarkCountsRes.data.data)
+    ) {
+      const newCountsData = bookmarkCountsRes.data.data.reduce((acc, item) => {
+        const groupId = item.GROUPID;
+        if (groupId !== undefined && groupId !== null) {
+          acc[groupId] = {
+            viewCount: 0,
+            bookmarkCount: item.BOOKMARKCOUNT,
+          };
+        }
+        return acc;
+      }, {});
+      setCountsData(newCountsData);
+    } else {
+      setCountsData({});
     }
-    try {
-      const res = await axios.get(
-        `http://localhost:8081/api/bookmark/user/${user.id}`
+
+    if (
+      userBookmarksRes.data.success &&
+      Array.isArray(userBookmarksRes.data.data)
+    ) {
+      const bookmarkGroupIds = userBookmarksRes.data.data.map(
+        (bookmark) => bookmark.groupId
       );
-      if (res.data.success && Array.isArray(res.data.data)) {
-        const bookmarkGroupIds = res.data.data.map(
-          (bookmark) => bookmark.groupId
-        );
-        setUserBookmarks(bookmarkGroupIds);
-      } else {
-        setUserBookmarks([]);
-      }
-    } catch (error) {
-      console.error("사용자 북마크 조회 실패", error);
-      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
+      setUserBookmarks(bookmarkGroupIds);
+    } else {
+      setUserBookmarks([]);
     }
-  };
 
-  const fetchBookmarkViewCounts = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/bookmark/counts");
-      if (res.data.success && Array.isArray(res.data.data)) {
-        const newCountsData = res.data.data.reduce((acc, item) => {
-          const groupId = item.GROUPID;
-          if (groupId !== undefined && groupId !== null) {
-            acc[groupId] = {
-              viewCount: 0,
-              bookmarkCount: item.BOOKMARKCOUNT,
-            };
-          }
-          return acc;
-        }, {});
-        setCountsData(newCountsData);
-      } else {
-        setCountsData({});
-      }
-    } catch (error) {
-      console.error("북마크 수 조회 실패", error);
-      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
-    }
+    setPopularStudies(
+      popularStudiesRes.data?.studies || popularStudiesRes.data || []
+    );
+    setUrgentStudies(
+      urgentStudiesRes.data?.studies || urgentStudiesRes.data || []
+    );
   };
 
   const handleBookmarkToggle = async (groupId) => {
@@ -301,7 +283,8 @@ function Search() {
         const payload = { userId: user.id, groupId };
         await axios.post(`http://localhost:8081/api/bookmark`, payload);
       }
-      await Promise.all([fetchUserBookmarks(), fetchBookmarkViewCounts()]);
+      // 북마크 토글 후, 최신 데이터를 다시 불러와 상태를 업데이트합니다.
+      await fetchAllData(filters);
     } catch (error) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
@@ -319,34 +302,13 @@ function Search() {
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        const promises = [
-          fetchPosts(filters),
-          fetchBookmarkViewCounts(),
-          isAuthenticated && user?.id
-            ? fetchUserBookmarks()
-            : Promise.resolve(),
-        ];
-
-        if (isShowingAll) {
-          const specialPromises = await Promise.allSettled([
-            fetchPopularStudies(),
-            fetchUrgentStudies(),
-          ]);
-
-          specialPromises.forEach((result, index) => {
-            if (result.status === "fulfilled") {
-              console.log(`특별 섹션 ${index} 로드 성공`);
-            } else {
-              console.warn(`특별 섹션 ${index} 로드 실패:`, result.reason);
-            }
-          });
-        }
-        await Promise.all(promises);
+        // 모든 데이터 로딩을 fetchAllData 함수 하나로 통합
+        await fetchAllData(filters);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
         console.error("데이터 불러오기 실패:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // 모든 로딩이 끝난 후에만 상태 변경
       }
       setCurrentPage(1);
     }, 300);
@@ -690,7 +652,7 @@ function Search() {
         </div>
       </div>
 
-      {isShowingAll && isAuthenticated && (
+      {isShowingAll && !isLoading && (
         <>
           {/* 인기 스터디 섹션 */}
           {mergedPopularStudies.length > 0 && (
