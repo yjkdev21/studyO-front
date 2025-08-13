@@ -42,12 +42,11 @@ function GroupUpdate() {
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
 
-    // 모달 관련 상태 추가
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [successType, setSuccessType] = useState(''); // 'edit' 또는 'delete'
-    const [memberCount, setMemberCount] = useState(1); // 멤버 수 상태 추가
+    const [successType, setSuccessType] = useState('');
+    const [memberCount, setMemberCount] = useState(1);
 
     // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
     if (!isAuthenticated) {
@@ -357,7 +356,7 @@ function GroupUpdate() {
                 isOpen={isDeleteModalOpen}
                 onCancel={handleModalCancel}
                 onConfirm={handleDelete}
-                type="kick"  // or 'leave' (원하는 텍스트에 맞춰 조절)
+                type="kick"
                 userName={formData.groupName}
                 customText={{
                     title: (
