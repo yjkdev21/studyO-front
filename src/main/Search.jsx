@@ -114,7 +114,7 @@ function Search() {
 
   const popularRef = useRef(null);
   const urgentRef = useRef(null);
-
+  const host = import.meta.env.VITE_AWS_API_HOST;
   const [showPopularLeft, setShowPopularLeft] = useState(false);
   const [showPopularRight, setShowPopularRight] = useState(false);
   const [showUrgentLeft, setShowUrgentLeft] = useState(false);
@@ -192,24 +192,19 @@ function Search() {
       search: filterParams.search || "",
     };
 
-    const mainPostsPromise = axios.get(
-      "http://localhost:8081/api/searchPosts",
-      { params }
-    );
+    const mainPostsPromise = axios.get(`${host}/api/searchPosts`);
 
-    // 이 부분을 수정해야 합니다: 올바른 API 엔드포인트로 변경
-    // 기존: const bookmarkCountsPromise = axios.get("http://localhost:8081/api/bookmark/counts");
-    const countsPromise = axios.get("http://localhost:8081/api/bookmarks"); // 백엔드 컨트롤러에 정의된 URL
+    const countsPromise = axios.get(`${host}/api/bookmarks`); // 백엔드 컨트롤러에 정의된 URL
 
     const userBookmarksPromise =
       isAuthenticated && user?.id
-        ? axios.get(`http://localhost:8081/api/bookmark/user/${user.id}`)
+        ? axios.get(`${host}/api/bookmark/user/${user.id}`)
         : Promise.resolve({ data: { success: true, data: [] } });
 
     const specialPromises = isShowingAll
       ? [
-          axios.get("http://localhost:8081/api/popularStudies"),
-          axios.get("http://localhost:8081/api/urgentStudies"),
+          axios.get(`${host}/api/popularStudies`),
+          axios.get(`${host}/api/urgentStudies`),
         ]
       : [
           Promise.resolve({ data: { studies: [] } }),
@@ -277,12 +272,10 @@ function Search() {
     }
     try {
       if (userBookmarks.includes(groupId)) {
-        await axios.delete(
-          `http://localhost:8081/api/bookmark/${user.id}/${groupId}`
-        );
+        await axios.delete(`${host}/api/bookmark/${user.id}/${groupId}`);
       } else {
         const payload = { userId: user.id, groupId };
-        await axios.post(`http://localhost:8081/api/bookmark`, payload);
+        await axios.post(`${host}/api/bookmark`, payload);
       }
       // 북마크 토글 후, 최신 데이터를 다시 불러와 상태를 업데이트합니다.
       await fetchAllData(filters);

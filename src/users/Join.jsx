@@ -8,9 +8,7 @@ function Join() {
   const navigate = useNavigate();
 
   // host 설정 개선
-  const [host, setHost] = useState(
-    import.meta.env.VITE_AWS_API_HOST || "http://localhost:8081"
-  );
+  const host = import.meta.env.VITE_AWS_API_HOST;
 
   const [form, setForm] = useState({
     userId: "",

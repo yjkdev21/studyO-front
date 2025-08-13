@@ -1,0 +1,106 @@
+/* src/admin/AdminUsers.css */
+
+.admin-container {
+  font-family: Arial, sans-serif;
+  padding: 40px 60px; /* 상하좌우 여백을 넓혀서 헤더, 푸터 없는 화면에 어울리게 */
+  background-color: #f4f7f9;
+  min-height: 100vh;
+}
+
+.admin-page-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.admin-search-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.admin-search-input {
+  width: 300px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px; /* 둥근 모서리 */
+  font-size: 14px;
+}
+
+.admin-search-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px; /* 둥근 모서리 */
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.admin-search-btn:hover {
+  background-color: #0056b3;
+}
+
+.admin-user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden; /* 모서리가 둥글게 보이도록 */
+}
+
+.admin-user-table thead {
+  background-color: #e9ecef;
+}
+
+.admin-user-table th,
+.admin-user-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e2e6ea;
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+}
+
+.admin-user-table th {
+  font-weight: bold;
+  color: #333;
+}
+
+.admin-user-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-action-btn {
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.admin-action-btn.delete-btn {
+  background-color: #dc3545;
+}
+
+.admin-action-btn.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.loading-spinner,
+.error-message {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  margin-top: 50px;
+}
