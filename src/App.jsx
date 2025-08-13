@@ -45,19 +45,20 @@ import StudyPromotion from "./study/post/StudyPromotion";
 
 import AdminSidebar from "./admin/component/AdminSidebar";
 import AdminBoard from "./admin/admindashboard/AdminBoard";
+import AdminUsers from "./admin/admindashboard/AdminUsers";
+import AdminPost from "./admin/admindashboard/AdminPost";
+import AdminGroups from "./admin/admindashboard/AdminGroups";
 
 function App() {
   const [count, setCount] = useState(0);
   const location = useLocation();
 
-  const hideHeaderPaths = [
-    "/admin"
-  ]
+  const hideHeaderPaths = ["/admin"];
 
   // Header 숨길 경로 설정
   const shouldHideHeader =
-  hideHeaderPaths.includes(location.pathname) ||
-  /^\/admin(\/.*)?$/.test(location.pathname);
+    hideHeaderPaths.includes(location.pathname) ||
+    /^\/admin(\/.*)?$/.test(location.pathname);
 
   const hideFooterPaths = [
     "/login",
@@ -67,7 +68,8 @@ function App() {
     "/groupCreate",
     "/promotion/create",
     "/study/dashboard/dashboardList",
-    "/admin/component/adminSidebar"
+    "/admin/component/adminSidebar",
+    "/admin/admindashboard/adminboard",
   ];
 
   // Footer를 숨길 경로 설정
@@ -75,7 +77,8 @@ function App() {
     hideFooterPaths.includes(location.pathname) || // 고정 경로는 includes()로 체크
     /^\/groupUpdate\/\d+$/.test(location.pathname) || // /groupUpdate/숫자 → 그룹 수정
     /^\/promotion\/edit\/\d+$/.test(location.pathname) || // /promotion/edit/숫자 → 홍보글 수정
-    /^\/study\/\d+\/dashboard$/.test(location.pathname); // 대시보드 화면
+    /^\/study\/\d+\/dashboard$/.test(location.pathname) || // 대시보드 화면
+    /^\/admin(\/.*)?$/.test(location.pathname);
 
   return (
     <div>
@@ -108,7 +111,10 @@ function App() {
               path="/study/dashboard/DashboardList"
               element={<DashboardList />}
             />
-            <Route path="/study/:groupId/dashboard" element={<StudyDashboardWrapper />}>
+            <Route
+              path="/study/:groupId/dashboard"
+              element={<StudyDashboardWrapper />}
+            >
               <Route index element={<StudyMain />} />
               <Route path="member" element={<StudyMember />} />
               <Route path="calendar" element={<StudyCalendar />} />
@@ -153,7 +159,9 @@ function App() {
             path="/admin/admindashboard/adminboard"
             element={<AdminBoard />}
           />
-
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/post" element={<AdminPost />} />
+          <Route path="/admin/groups" element={<AdminGroups />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {!shouldHideFooter && <Footer />}

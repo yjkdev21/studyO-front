@@ -11,12 +11,11 @@ export default function GroupDetail() {
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [memberCount, setMemberCount] = useState(0);
-    const [profileImage, setProfileImage] = useState(null); // 프로필 이미지 상태 추가
+    const [profileImage, setProfileImage] = useState(null);
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading } = useAuth();
     const defaultProfileImageSrc = "/images/default-profile.png";
 
-    // 프로필 이미지를 서버에서 가져오는 함수
     const loadUserProfileImage = async (userId) => {
         if (!userId) return defaultProfileImageSrc;
 
@@ -33,8 +32,7 @@ export default function GroupDetail() {
             } else {
                 return defaultProfileImageSrc;
             }
-        } catch (error) {
-            console.error('프로필 이미지 로딩 실패:', error);
+        } catch {
             return defaultProfileImageSrc;
         }
     };
@@ -53,38 +51,14 @@ export default function GroupDetail() {
             try {
                 const response = await axios.get(`${host}/api/study/${groupId}`, { withCredentials: true });
 
-                console.log('=== 그룹 상세 조회 응답 ===');
-                console.log('전체 응답:', response.data);
-                console.log('성공 여부:', response.data.success);
-
                 if (response.data && response.data.data) {
                     const groupData = response.data.data;
-                    console.log('그룹 데이터:', groupData);
-                    console.log('썸네일 파일명 (DB):', groupData.thumbnail);
-                    console.log('썸네일 전체 URL:', groupData.thumbnailFullPath);
-
                     setGroup(groupData);
 
-                    // 프로필 이미지 로딩 (그룹 소유자의 프로필 이미지)
                     if (groupData.groupOwnerId) {
                         const profileImageUrl = await loadUserProfileImage(groupData.groupOwnerId);
                         setProfileImage(profileImageUrl);
-                        console.log('프로필 이미지 URL:', profileImageUrl);
                     }
-
-                    // S3 썸네일 URL 검증
-                    if (groupData.thumbnailFullPath && !groupData.thumbnailFullPath.includes('default')) {
-                        console.log('🖼️ S3 썸네일 URL 확인:', groupData.thumbnailFullPath);
-
-                        // URL 접근 가능성 테스트
-                        const img = new Image();
-                        img.onload = () => console.log('썸네일 이미지 로드 성공!');
-                        img.onerror = () => console.log('썸네일 이미지 로드 실패!');
-                        img.src = groupData.thumbnailFullPath;
-                    } else {
-                        console.log('📷 기본 썸네일 이미지 사용');
-                    }
-                    console.log('===========================');
                 } else {
                     setGroup(null);
                 }
@@ -95,7 +69,7 @@ export default function GroupDetail() {
                 } catch {
                     setMemberCount(0);
                 }
-            } catch (err) {
+            } catch {
                 setErrorMessage("그룹 정보를 불러오는 데 실패했습니다.");
                 setGroup(null);
             } finally {
@@ -149,32 +123,20 @@ export default function GroupDetail() {
         return isOwner() && memberCount <= 1;
     };
 
-    // S3 썸네일 URL 처리 함수 (기존 로직과 통합)
     const getThumbnailUrl = (group) => {
         if (!group) {
             return '/images/default-thumbnail.png';
         }
-
-        // thumbnailFullPath가 있으면 S3 URL 사용
         if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
-            console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
             return group.thumbnailFullPath;
         }
-
-        // thumbnail 필드만 있는 경우 (기존 호환성)
         if (group.thumbnail && !group.thumbnail.includes('default')) {
-            console.log('썸네일 필드 사용:', group.thumbnail);
             return group.thumbnail;
         }
-
-        // 기본 이미지
-        console.log('기본 썸네일 이미지 사용');
         return '/images/default-thumbnail.png';
     };
 
-    // 프로필 이미지 에러 핸들링
     const handleProfileImageError = (e) => {
-        console.log('프로필 이미지 로딩 실패, 기본 이미지로 변경');
         e.target.src = defaultProfileImageSrc;
     };
 
@@ -216,7 +178,6 @@ export default function GroupDetail() {
                         className="view-profile-image"
                         onError={handleProfileImageError}
                     />
-
                     <span className="view-author">{group.nickname}</span>
                     <span className="view-date"> | 스터디 그룹</span>
                 </div>
@@ -225,7 +186,6 @@ export default function GroupDetail() {
                         src={getThumbnailUrl(group)}
                         alt="썸네일"
                         onError={(e) => {
-                            console.log('이미지 로딩 실패, 기본 이미지로 변경');
                             e.target.src = '/images/default-thumbnail.png';
                         }}
                     />
@@ -269,17 +229,14 @@ export default function GroupDetail() {
                 <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
                     대시보드
                 </Link>
-
                 {isOwner() && (
                     <>
                         <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
                             수정
                         </Link>
-
                     </>
                 )}
             </div>
-
         </div>
     );
 }

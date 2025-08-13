@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from "react-router-dom";
 import axios from 'axios';
-import './StudyCalendar.css';
+import { useParams } from "react-router-dom";
 
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -11,6 +10,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useStudy } from '../../contexts/StudyContext';
+
+import './StudyCalendar.css';
 
 export default function StudyCalendar() {
   const [events, setEvents] = useState([]);
@@ -76,8 +77,14 @@ export default function StudyCalendar() {
           'X-USER-ID': userId
         }
       });
-      const saved = res.data;
 
+      // 전체 응답 구조를 확인
+  console.log('전체 응답 객체:', res);
+  console.log('응답 status:', res.status);
+  console.log('응답 headers:', res.headers);
+  console.log('응답 data:', res.data);
+  console.log('res.data의 타입:', typeof res.data);
+      const saved = res.data;
       // 화면에 바로 반영
       setEvents((prev) => [
         ...prev,
@@ -92,12 +99,23 @@ export default function StudyCalendar() {
           extendedProps: { content: saved.content },
         },
       ]);
-
+      
+      console.log('백엔드 응답:', saved);
+      console.log('추가하려는 이벤트:', {
+        id: saved.id,
+        title: saved.title,
+        start: saved.startDate,
+        end: saved.endDate,
+        backgroundColor: saved.bgColor,
+        textColor: saved.textColor,
+        extendedProps: { content: saved.content },
+      });
       alert('등록 완료');
     } catch (err) {
       console.error("등록 실패:", err);
       alert('등록 실패');
     }
+    
   };
 
   // 일정 클릭(모달 열기)
