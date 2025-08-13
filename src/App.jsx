@@ -47,6 +47,7 @@ import AdminSidebar from "./admin/component/AdminSidebar";
 import AdminUsers from "./admin/admindashboard/AdminUsers";
 import AdminPost from "./admin/admindashboard/AdminPost";
 import AdminGroups from "./admin/admindashboard/AdminGroups";
+import AdminUserDetails from "./admin/admindashboard/AdminUserDetails";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -84,10 +85,8 @@ function App() {
         {!shouldHideHeader && <Header />}
         <Routes>
           <Route path="/" element={<Home />} />
-
           <Route path="/join" element={<Join />} />
           <Route path="/login" element={<Login />} />
-
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
             <Route path="/findId" element={<FindId />} />
@@ -138,16 +137,12 @@ function App() {
               element={<ProjectCalendar />}
             />
           </Route>
-
           <Route path="/search" element={<Search />} />
-
           <Route path="/group/:groupId" element={<GroupDetail />} />
-
           <Route
             path="/study/components/studySidebar"
             element={<StudySidebar />}
           />
-
           {/* amdin */}
           <Route
             path="/admin/component/adminSidebar"
@@ -156,6 +151,7 @@ function App() {
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/post" element={<AdminPost />} />
           <Route path="/admin/groups" element={<AdminGroups />} />
+          <Route path="users/details/:userId" element={<AdminUserDetails />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
