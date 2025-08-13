@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import "./Search.css";
 
-// ✨ 새로운 드롭다운 컴포넌트
+// Dropdown 컴포넌트는 기존과 동일
 const Dropdown = ({ options, value, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -79,6 +79,7 @@ const Dropdown = ({ options, value, onChange, placeholder }) => {
   );
 };
 
+// 메인 Search 컴포넌트
 function Search() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -109,29 +110,51 @@ function Search() {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 9;
 
-  // 헤더에서 "전체"를 선택했는지 확인
   const isShowingAll = initialCategoryFromHeader === "전체";
 
-  // S3 썸네일 URL 처리 함수 (첫 번째 코드와 동일한 로직)
+  const popularRef = useRef(null);
+  const urgentRef = useRef(null);
+
+  const [showPopularLeft, setShowPopularLeft] = useState(false);
+  const [showPopularRight, setShowPopularRight] = useState(false);
+  const [showUrgentLeft, setShowUrgentLeft] = useState(false);
+  const [showUrgentRight, setShowUrgentRight] = useState(false);
+
+  const scrollHorizontally = (ref, direction) => {
+    if (ref.current) {
+      const scrollAmount = 400;
+      const currentScroll = ref.current.scrollLeft;
+      const newScroll =
+        direction === "left"
+          ? Math.max(0, currentScroll - scrollAmount)
+          : currentScroll + scrollAmount;
+
+      ref.current.scrollTo({
+        left: newScroll,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const checkScrollPosition = (ref, setLeft, setRight) => {
+    if (ref.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+      setLeft(scrollLeft > 0);
+      setRight(Math.round(scrollLeft + clientWidth) < scrollWidth);
+    }
+  };
+
   const getThumbnailUrl = (post) => {
     if (!post) {
       return "/images/default-thumbnail.png";
     }
-    // thumbnailFullPath가 있으면 S3 URL 사용
     if (post.thumbnailFullPath && !post.thumbnailFullPath.includes("default")) {
-      console.log("S3 썸네일 URL 사용:", post.thumbnailFullPath);
       return post.thumbnailFullPath;
     }
-
-    // thumbnail 필드만 있는 경우 S3 URL 직접 구성
     if (post.thumbnail && !post.thumbnail.includes("default")) {
       const s3Url = `https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/studygroupimg/${post.thumbnail}`;
-      console.log("S3 URL 직접 구성:", s3Url);
       return s3Url;
     }
-
-    // 기본 이미지
-    console.log("기본 썸네일 이미지 사용");
     return "/images/default-thumbnail.png";
   };
 
@@ -153,7 +176,8 @@ function Search() {
     return { minMembers: null, maxMembers: null };
   };
 
-  const fetchPosts = async (filterParams) => {
+  // fetchAllData 함수 전체
+  const fetchAllData = async (filterParams) => {
     const { minMembers, maxMembers } = getMinMaxMembers(
       filterParams.recruitmentCount
     );
@@ -168,115 +192,82 @@ function Search() {
       search: filterParams.search || "",
     };
 
-    try {
-      const res = await axios.get("http://localhost:8081/api/searchPosts", {
-        params,
-      });
-      console.log("포스트 API 응답:", res.data);
-      if (Array.isArray(res.data)) {
-        setPosts(res.data);
-      } else if (res.data?.posts && Array.isArray(res.data.posts)) {
-        setPosts(res.data.posts);
-      } else {
-        setPosts([]);
-        console.warn("포스트 응답 데이터가 배열이 아닙니다.");
-      }
-    } catch (error) {
-      console.error("포스트 조회 실패", error);
-      throw new Error("포스트를 불러오는 데 실패했습니다.");
-    }
-  };
+    const mainPostsPromise = axios.get(
+      "http://localhost:8081/api/searchPosts",
+      { params }
+    );
 
-  // 인기 스터디 가져오기 (북마크 많은 순)
-  const fetchPopularStudies = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/popularStudies");
-      console.log("인기 스터디 API 응답:", res.data);
-      if (Array.isArray(res.data)) {
-        setPopularStudies(res.data.slice(0, 3)); // 상위 3개만
-      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
-        setPopularStudies(res.data.studies.slice(0, 3));
-      } else {
-        setPopularStudies([]);
-      }
-    } catch (error) {
-      console.warn(
-        "인기 스터디 API가 아직 구현되지 않았습니다:",
-        error.message
+    // 이 부분을 수정해야 합니다: 올바른 API 엔드포인트로 변경
+    // 기존: const bookmarkCountsPromise = axios.get("http://localhost:8081/api/bookmark/counts");
+    const countsPromise = axios.get("http://localhost:8081/api/bookmarks"); // 백엔드 컨트롤러에 정의된 URL
+
+    const userBookmarksPromise =
+      isAuthenticated && user?.id
+        ? axios.get(`http://localhost:8081/api/bookmark/user/${user.id}`)
+        : Promise.resolve({ data: { success: true, data: [] } });
+
+    const specialPromises = isShowingAll
+      ? [
+          axios.get("http://localhost:8081/api/popularStudies"),
+          axios.get("http://localhost:8081/api/urgentStudies"),
+        ]
+      : [
+          Promise.resolve({ data: { studies: [] } }),
+          Promise.resolve({ data: { studies: [] } }),
+        ];
+
+    const [
+      mainPostsRes,
+      countsRes, // countsPromise의 결과
+      userBookmarksRes,
+      popularStudiesRes,
+      urgentStudiesRes,
+    ] = await Promise.all([
+      mainPostsPromise,
+      countsPromise,
+      userBookmarksPromise,
+      ...specialPromises,
+    ]);
+
+    // 모든 데이터를 한 번에 업데이트
+    setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
+
+    if (countsRes.data && Array.isArray(countsRes.data)) {
+      const newCountsData = countsRes.data.reduce((acc, item) => {
+        // 백엔드에서 키가 소문자로 변환되어 오는 경우를 가정
+        const groupId = item.studyGroupId || item.STUDYGROUPID;
+
+        if (groupId !== undefined && groupId !== null) {
+          acc[groupId] = {
+            viewCount: item.viewCount || item.VIEWCOUNT,
+            bookmarkCount: item.bookmarkCount || item.BOOKMARKCOUNT,
+          };
+        }
+        return acc;
+      }, {});
+      setCountsData(newCountsData);
+    } else {
+      setCountsData({});
+    }
+
+    if (
+      userBookmarksRes.data.success &&
+      Array.isArray(userBookmarksRes.data.data)
+    ) {
+      const bookmarkGroupIds = userBookmarksRes.data.data.map(
+        (bookmark) => bookmark.groupId
       );
-      setPopularStudies([]); // 에러 시 빈 배열로 설정
-    }
-  };
-
-  // 마감임박 스터디 가져오기 (마감일 기준 3일 전)
-  const fetchUrgentStudies = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/urgentStudies");
-      console.log("마감임박 스터디 API 응답:", res.data);
-      if (Array.isArray(res.data)) {
-        setUrgentStudies(res.data.slice(0, 3)); // 상위 3개만
-      } else if (res.data?.studies && Array.isArray(res.data.studies)) {
-        setUrgentStudies(res.data.studies.slice(0, 3));
-      } else {
-        setUrgentStudies([]);
-      }
-    } catch (error) {
-      console.warn(
-        "마감임박 스터디 API가 아직 구현되지 않았습니다:",
-        error.message
-      );
-      setUrgentStudies([]); // 에러 시 빈 배열로 설정
-    }
-  };
-
-  const fetchUserBookmarks = async () => {
-    if (!isAuthenticated || !user?.id) {
+      setUserBookmarks(bookmarkGroupIds);
+    } else {
       setUserBookmarks([]);
-      return;
     }
-    try {
-      const res = await axios.get(
-        `http://localhost:8081/api/bookmark/user/${user.id}`
-      );
-      console.log("사용자 북마크 API 응답:", res.data);
-      if (res.data.success && Array.isArray(res.data.data)) {
-        const bookmarkGroupIds = res.data.data.map(
-          (bookmark) => bookmark.groupId
-        );
-        setUserBookmarks(bookmarkGroupIds);
-      } else {
-        setUserBookmarks([]);
-      }
-    } catch (error) {
-      console.error("사용자 북마크 조회 실패", error);
-      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
-    }
-  };
 
-  const fetchBookmarkViewCounts = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/api/bookmark/counts");
-      console.log("북마크+조회수 API 응답:", res.data);
-      if (res.data.success && Array.isArray(res.data.data)) {
-        const newCountsData = res.data.data.reduce((acc, item) => {
-          const groupId = item.GROUPID;
-          if (groupId !== undefined && groupId !== null) {
-            acc[groupId] = {
-              viewCount: 0,
-              bookmarkCount: item.BOOKMARKCOUNT,
-            };
-          }
-          return acc;
-        }, {});
-        setCountsData(newCountsData);
-        console.log("변환된 countsData:", newCountsData);
-      } else {
-        setCountsData({});
-      }
-    } catch (error) {
-      console.error("북마크 수 조회 실패", error);
-      throw new Error("북마크 정보를 불러오는 데 실패했습니다.");
-    }
+    setPopularStudies(
+      popularStudiesRes.data?.studies || popularStudiesRes.data || []
+    );
+    setUrgentStudies(
+      urgentStudiesRes.data?.studies || urgentStudiesRes.data || []
+    );
   };
 
   const handleBookmarkToggle = async (groupId) => {
@@ -293,7 +284,8 @@ function Search() {
         const payload = { userId: user.id, groupId };
         await axios.post(`http://localhost:8081/api/bookmark`, payload);
       }
-      await Promise.all([fetchUserBookmarks(), fetchBookmarkViewCounts()]);
+      // 북마크 토글 후, 최신 데이터를 다시 불러와 상태를 업데이트합니다.
+      await fetchAllData(filters);
     } catch (error) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
@@ -311,38 +303,13 @@ function Search() {
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        const promises = [
-          fetchPosts(filters),
-          fetchBookmarkViewCounts(),
-          isAuthenticated && user?.id
-            ? fetchUserBookmarks()
-            : Promise.resolve(),
-        ];
-
-        // "전체" 카테고리일 때만 인기 스터디와 마감임박 스터디 가져오기
-        if (isShowingAll) {
-          // Promise.allSettled를 사용해서 일부 API가 실패해도 다른 API는 계속 진행
-          const specialPromises = await Promise.allSettled([
-            fetchPopularStudies(),
-            fetchUrgentStudies(),
-          ]);
-
-          // 성공한 것만 로그 출력
-          specialPromises.forEach((result, index) => {
-            if (result.status === "fulfilled") {
-              console.log(`특별 섹션 ${index} 로드 성공`);
-            } else {
-              console.warn(`특별 섹션 ${index} 로드 실패:`, result.reason);
-            }
-          });
-        }
-
-        await Promise.all(promises);
+        // 모든 데이터 로딩을 fetchAllData 함수 하나로 통합
+        await fetchAllData(filters);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
         console.error("데이터 불러오기 실패:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // 모든 로딩이 끝난 후에만 상태 변경
       }
       setCurrentPage(1);
     }, 300);
@@ -353,15 +320,36 @@ function Search() {
   }, [filters, isAuthenticated, user?.id, isShowingAll]);
 
   useEffect(() => {
-    const newCategory = location.state?.category;
-    if (newCategory !== undefined) {
-      setFilters((prev) => ({
-        ...prev,
-        category: newCategory === "전체" ? "" : newCategory,
-      }));
-    }
-  }, [location.state]);
+    checkScrollPosition(popularRef, setShowPopularLeft, setShowPopularRight);
+    checkScrollPosition(urgentRef, setShowUrgentLeft, setShowUrgentRight);
 
+    const popularElement = popularRef.current;
+    const urgentElement = urgentRef.current;
+
+    const handlePopularScroll = () =>
+      checkScrollPosition(popularRef, setShowPopularLeft, setShowPopularRight);
+    const handleUrgentScroll = () =>
+      checkScrollPosition(urgentRef, setShowUrgentLeft, setShowUrgentRight);
+
+    if (popularElement) {
+      popularElement.addEventListener("scroll", handlePopularScroll);
+    }
+    if (urgentElement) {
+      urgentElement.addEventListener("scroll", handleUrgentScroll);
+    }
+
+    return () => {
+      if (popularElement) {
+        popularElement.removeEventListener("scroll", handlePopularScroll);
+      }
+      if (urgentElement) {
+        urgentElement.removeEventListener("scroll", handleUrgentScroll);
+      }
+    };
+  }, [popularStudies, urgentStudies]);
+
+  // 이 위치로 변수 선언을 옮겼습니다.
+  // 이 변수들은 이제 컴포넌트가 렌더링될 때마다 최신 상태를 참조하여 생성됩니다.
   const mergedPosts = posts.map((post) => {
     const counts = countsData[post.groupId] || {
       viewCount: 0,
@@ -377,7 +365,6 @@ function Search() {
     };
   });
 
-  // 인기 스터디와 마감임박 스터디도 북마크 정보 병합
   const mergedPopularStudies = popularStudies.map((post) => {
     const counts = countsData[post.groupId] || {
       viewCount: 0,
@@ -435,11 +422,9 @@ function Search() {
         alt={`${post.title} 썸네일`}
         className="g-post-thumbnail"
         onError={(e) => {
-          console.log("이미지 로딩 실패, 기본 이미지로 변경");
           e.target.src = DEFAULT_THUMBNAIL_URL;
         }}
       />
-
       <div className="g-post-info">
         <div
           className="g-bookmark-toggle"
@@ -464,18 +449,12 @@ function Search() {
             </svg>
           )}
         </div>
-
         <h3>{post.title}</h3>
         <p className="g-truncated-text">{post.content}</p>
         <div className="g-post-meta">
-          {/* 1줄 - 작성자 이름 */}
-          <span className="g-meta-item g-author-name">
-            <strong className="strong-1">
-              {post.authorName ?? "알 수 없음"}
-            </strong>
+          <span className="g-meta-authorone">
+            <strong>{post.authorName ?? "알 수 없음"}</strong>
           </span>
-
-          {/* 2줄 - 모집 마감일(왼쪽) + 조회수+북마크(오른쪽) */}
           <div className="g-meta-row">
             <div className="g-meta-item g-recruit-end-date">
               모집 마감일:{" "}
@@ -483,13 +462,8 @@ function Search() {
                 ? new Date(post.recruitEndDate).toLocaleDateString()
                 : "마감일 없음"}
             </div>
-
             <div className="g-meta-vb">
-              {/* 조회수 */}
-              <div
-                className="g-meta-item g-views"
-                style={{ display: "flex", alignItems: "center", gap: "4px" }}
-              >
+              <div className="g-meta-item g-views">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -501,11 +475,6 @@ function Search() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="feather-eye"
-                  style={{
-                    position: "relative",
-                    top: "1px",
-                    right: "1px",
-                  }}
                 >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
@@ -514,12 +483,7 @@ function Search() {
                   <strong>{post.viewCount ?? 0}</strong>
                 </span>
               </div>
-
-              {/* 북마크 */}
-              <div
-                className="g-meta-item g-bookmarks"
-                style={{ display: "flex", alignItems: "center", gap: "4px" }}
-              >
+              <div className="g-meta-item g-bookmarks">
                 <svg
                   className="g-bookmark-svg1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -539,6 +503,7 @@ function Search() {
       </div>
     </Link>
   );
+
   // 스터디 카드 렌더링 함수
   const renderStudyCardOne = (post) => (
     <Link
@@ -576,16 +541,11 @@ function Search() {
             </svg>
           )}
         </div>
-
         <h3>{post.title}</h3>
-
         <div className="g-post-metaone">
-          {/* 작성자 한 줄 */}
           <span className="g-meta-authorone">
             <strong>{post.authorName ?? "알 수 없음"}</strong>
           </span>
-
-          {/* 모집 마감일과 조회수+북마크 한 줄 */}
           <div className="g-meta-bottom-rowone">
             <div className="g-meta-recruit-end-dateone">
               모집 마감일:{" "}
@@ -593,9 +553,8 @@ function Search() {
                 ? new Date(post.recruitEndDate).toLocaleDateString()
                 : "마감일 없음"}
             </div>
-
             <div className="g-meta-vbone">
-              <div className="g-meta-itemone g-viewson">
+              <div className="g-meta-itemone g-views">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -607,11 +566,6 @@ function Search() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="feather-eye"
-                  style={{
-                    position: "relative",
-                    top: "1px",
-                    right: "1px",
-                  }}
                 >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
@@ -620,7 +574,7 @@ function Search() {
                   <strong>{post.viewCount ?? 0}</strong>
                 </span>
               </div>
-              <div className="g-meta-itemone g-bookmarkson">
+              <div className="g-meta-itemone g-bookmarks">
                 <svg
                   className="g-bookmark-svg1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -641,7 +595,6 @@ function Search() {
     </Link>
   );
 
-  // 드롭다운에 사용할 옵션 데이터
   const studyModeOptions = [
     { label: "온라인", value: "온라인" },
     { label: "오프라인", value: "오프라인" },
@@ -682,40 +635,123 @@ function Search() {
         </div>
       </div>
 
-      {/* "전체" 카테고리일 때만 인기 스터디와 마감임박 섹션 표시 */}
-      {isShowingAll && isAuthenticated && (
+      {isShowingAll && !isLoading && isAuthenticated && (
         <>
           {/* 인기 스터디 섹션 */}
-          <div className="g-special-section">
-            <h2 className="g-section-title">인기 스터디</h2>
-            {mergedPopularStudies.length > 0 ? (
-              <div className="g-special-studies">
-                {mergedPopularStudies.map(renderStudyCardOne)}
+          {mergedPopularStudies.length > 0 && (
+            <div className="g-special-section">
+              <h2 className="g-section-title">인기 스터디</h2>
+              <div className="g-special-studies-wrapper">
+                {showPopularLeft && (
+                  <button
+                    className="g-scroll-btn g-scroll-btn-left"
+                    onClick={() => scrollHorizontally(popularRef, "left")}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15 18L9 12L15 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+                <div className="g-special-studies" ref={popularRef}>
+                  {mergedPopularStudies.map(renderStudyCardOne)}
+                </div>
+                {showPopularRight && (
+                  <button
+                    className="g-scroll-btn g-scroll-btn-right"
+                    onClick={() => scrollHorizontally(popularRef, "right")}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="g-loading-container">
-                <div className="g-loading-spinner"></div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* 마감임박 스터디 섹션 */}
-          <div className="g-special-section">
-            <h2 className="g-section-title">마감임박 스터디</h2>
-            {mergedUrgentStudies.length > 0 ? (
-              <div className="g-special-studies">
-                {mergedUrgentStudies.map(renderStudyCardOne)}
+          {mergedUrgentStudies.length > 0 && (
+            <div className="g-special-section">
+              <h2 className="g-section-title">마감임박 스터디</h2>
+              <div className="g-special-studies-wrapper">
+                {showUrgentLeft && (
+                  <button
+                    className="g-scroll-btn g-scroll-btn-left"
+                    onClick={() => scrollHorizontally(urgentRef, "left")}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15 18L9 12L15 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+                <div className="g-special-studies" ref={urgentRef}>
+                  {mergedUrgentStudies.map(renderStudyCardOne)}
+                </div>
+                {showUrgentRight && (
+                  <button
+                    className="g-scroll-btn g-scroll-btn-right"
+                    onClick={() => scrollHorizontally(urgentRef, "right")}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="g-loading-container">
-                <div className="g-loading-spinner"></div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
-      <h2 className="g-section-title">스터디</h2>
 
+      <h2 className="g-section-title">스터디</h2>
       <div className="g-filter-and-search">
         <div className="g-filter-controls">
           <Dropdown
