@@ -44,6 +44,7 @@ import ProtectedRoute from "./common/auth/ProtectedRoute";
 import StudyPromotion from "./study/post/StudyPromotion";
 
 import AdminSidebar from "./admin/component/AdminSidebar";
+import AdminBoard from "./admin/admindashboard/AdminBoard";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -147,6 +148,10 @@ function App() {
           <Route
             path="/admin/component/adminSidebar"
             element={<AdminSidebar />}
+          />
+          <Route
+            path="/admin/admindashboard/adminboard"
+            element={<AdminBoard />}
           />
 
           <Route path="*" element={<NotFoundPage />} />

@@ -1,0 +1,130 @@
+.admin-board {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.admin-main-content {
+  flex: 1;
+  margin-left: 280px; /* 사이드바 너비만큼 여백 */
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.admin-header {
+  margin-bottom: 40px;
+}
+
+.admin-header h1 {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 30px;
+  height: calc(100vh - 200px);
+}
+
+.admin-section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.admin-section h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.admin-section h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
+  margin: 0 0 15px 0;
+}
+
+.section-content {
+  height: calc(100% - 50px);
+  overflow-y: auto;
+}
+
+.filter-section {
+  background: #fafafa;
+}
+
+.filter-section p {
+  color: #666;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.data-section .section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.stat-label {
+  font-size: 16px;
+  color: #555;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.stats-row {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+}
+
+.stats-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stats-column .stat-item {
+  border-left-color: #28a745;
+}
+
+.stats-column:last-child .stat-item {
+  border-left-color: #ffc107;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+  
+  .stats-row {
+    flex-direction: column;
+  }
+}
