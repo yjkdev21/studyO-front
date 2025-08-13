@@ -1,12 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
+import axios from 'axios';
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+
+  // 프로필 이미지 상태 추가
+  const [profileImage, setProfileImage] = useState(null);
+  const [displayUser, setDisplayUser] = useState(null);
+  const defaultProfileImageSrc = "/images/default-profile.png";
 
   const categories = [
     "전체",
@@ -21,16 +27,83 @@ export default function Header() {
   const isSearchPage = location.pathname === "/search";
   const selectedCategory = isSearchPage ? location.state?.category : null;
 
+  // 서버에서 사용자 프로필 정보 로딩
+  const loadUserProfileFromServer = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
+        withCredentials: true,
+        timeout: 10000
+      });
+
+      if (response.status === 200 && response.data.success) {
+        const serverUser = response.data.data;
+        
+        const imageToSet = serverUser.profileImageFullPath || defaultProfileImageSrc;
+        setProfileImage(imageToSet);
+        
+        const updatedUser = {
+          ...user,
+          ...serverUser,
+          profileImage: serverUser.profileImageFullPath || defaultProfileImageSrc
+        };
+        setDisplayUser(updatedUser);
+        
+      } else {
+        fallbackToLocalUser();
+      }
+      
+    } catch (error) {
+      console.error('Header 프로필 로딩 실패:', error);
+      fallbackToLocalUser();
+    }
+  };
+
+  // 서버 로딩 실패 시 로컬 user 데이터 사용
+  const fallbackToLocalUser = () => {
+    const imageToSet = (user?.profileImage && user.profileImage.startsWith('http')) 
+      ? user.profileImage 
+      : defaultProfileImageSrc;
+    
+    setProfileImage(imageToSet);
+    setDisplayUser(user);
+  };
+
+  const handleImageError = (e) => {
+    e.target.src = defaultProfileImageSrc;
+  };
+
+  // 컴포넌트 마운트 시 사용자 프로필 전체 로딩
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      loadUserProfileFromServer();
+    }
+  }, [user, isAuthenticated]);
+
+  // 프로필 업데이트 이벤트 리스너 추가
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      if (user && isAuthenticated) {
+        loadUserProfileFromServer();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [user, isAuthenticated]);
+
   // 페이지 이동 시 메뉴 닫기
   useEffect(() => {
     setOpen(false);
     setIsMenuOpen(false);
   }, [location]);
 
-  // 프로필 이미지 경로
-  const imageSrc = user?.profileImage
-    ? user?.profileImage
-    : "/images/default-profile.png";
+  // 프로필 이미지 경로 - 서버에서 가져온 최신 이미지 사용
+  const imageSrc = profileImage || defaultProfileImageSrc;
 
   // 로그아웃 핸들
   const handleLogout = async () => {
@@ -99,10 +172,15 @@ export default function Header() {
                   <li>
                     <button
                       type="button"
-                      className="header-profile-btn block w-[40px] !rounded-[100%] overflow-hidden"
+                      className="header-profile-btn block w-[40px] h-[40px] !rounded-[100%] overflow-hidden"
                       onClick={() => setOpen((prev) => !prev)}
                     >
-                      <img src={imageSrc} alt="프로필이미지" />
+                      <img 
+                        src={imageSrc} 
+                        alt="프로필이미지" 
+                        onError={handleImageError}
+                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                      />
                     </button>
                     {open && (
                       <div className="header-dropmenu absolute top-[70px] right-3 !p-3 border border-[#eee] rounded-lg bg-white z-50">
