@@ -1,0 +1,97 @@
+/* src/admin/AdminGroups.css */
+
+.g-admin-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.g-admin-page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.g-admin-search-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 10px;
+}
+
+.g-admin-search-input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 300px;
+  font-size: 1rem;
+}
+
+.g-admin-search-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #6a1b9a; /* 보라색 계열 */
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.g-admin-search-btn:hover {
+  background-color: #4a148c;
+}
+
+.g-admin-group-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.g-admin-group-table th,
+.g-admin-group-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.g-admin-group-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #555;
+  white-space: nowrap;
+}
+
+.g-admin-group-table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.g-admin-action-btn.g-delete-btn {
+  background-color: #e53935; /* 빨간색 계열 */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.g-admin-action-btn.g-delete-btn:hover {
+  background-color: #b71c1c;
+}
+
+.g-loading-spinner,
+.g-error-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #777;
+}
