@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./AdminUserDetails.css"; // 새로운 CSS 파일
+import "./AdminUserDetails.css";
 
 const AdminUserDetails = () => {
   const { userId } = useParams();
@@ -18,11 +18,13 @@ const AdminUserDetails = () => {
       setIsLoading(true);
       setError(null);
       try {
+        // 회원 상세 정보 API 호출 경로 수정
         const userResponse = await axios.get(
-          `${host}/api/admin/users/${userId}`
+          `${host}/api/admin/users/details/${userId}`
         );
         setUserDetails(userResponse.data);
 
+        // 회원이 속한 스터디 목록 API 호출 경로
         const studiesResponse = await axios.get(
           `${host}/api/admin/users/${userId}/studies`
         );
@@ -60,7 +62,8 @@ const AdminUserDetails = () => {
       window.confirm(`${userDetails.nickname} 회원을 탈퇴 처리하시겠습니까?`)
     ) {
       try {
-        await axios.delete(`${host}/api/admin/users/${userDetails.id}`);
+        // 회원 탈퇴 API 호출
+        await axios.delete(`${host}/api/admin/users/${userDetails.userId}`);
         alert("회원 탈퇴 처리가 완료되었습니다.");
         navigate("/admin/users");
       } catch (err) {
@@ -150,4 +153,5 @@ const AdminUserDetails = () => {
     </div>
   );
 };
+
 export default AdminUserDetails;

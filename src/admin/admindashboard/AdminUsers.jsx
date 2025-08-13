@@ -45,6 +45,8 @@ const AdminUsers = () => {
   };
 
   const handleUserClick = (userId) => {
+    // 백엔드 경로에 맞게 프론트엔드 라우트 경로를 설정
+    // /admin/users/details/{userId}
     navigate(`/admin/users/details/${userId}`);
   };
 
