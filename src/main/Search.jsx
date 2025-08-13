@@ -176,7 +176,7 @@ function Search() {
     return { minMembers: null, maxMembers: null };
   };
 
-  // 모든 API 호출을 한 곳에서 관리하는 함수
+  // fetchAllData 함수 전체
   const fetchAllData = async (filterParams) => {
     const { minMembers, maxMembers } = getMinMaxMembers(
       filterParams.recruitmentCount
@@ -196,9 +196,11 @@ function Search() {
       "http://localhost:8081/api/searchPosts",
       { params }
     );
-    const bookmarkCountsPromise = axios.get(
-      "http://localhost:8081/api/bookmark/counts"
-    );
+
+    // 이 부분을 수정해야 합니다: 올바른 API 엔드포인트로 변경
+    // 기존: const bookmarkCountsPromise = axios.get("http://localhost:8081/api/bookmark/counts");
+    const countsPromise = axios.get("http://localhost:8081/api/bookmarks"); // 백엔드 컨트롤러에 정의된 URL
+
     const userBookmarksPromise =
       isAuthenticated && user?.id
         ? axios.get(`http://localhost:8081/api/bookmark/user/${user.id}`)
@@ -216,13 +218,13 @@ function Search() {
 
     const [
       mainPostsRes,
-      bookmarkCountsRes,
+      countsRes, // countsPromise의 결과
       userBookmarksRes,
       popularStudiesRes,
       urgentStudiesRes,
     ] = await Promise.all([
       mainPostsPromise,
-      bookmarkCountsPromise,
+      countsPromise,
       userBookmarksPromise,
       ...specialPromises,
     ]);
@@ -230,16 +232,15 @@ function Search() {
     // 모든 데이터를 한 번에 업데이트
     setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
 
-    if (
-      bookmarkCountsRes.data.success &&
-      Array.isArray(bookmarkCountsRes.data.data)
-    ) {
-      const newCountsData = bookmarkCountsRes.data.data.reduce((acc, item) => {
-        const groupId = item.GROUPID;
+    if (countsRes.data && Array.isArray(countsRes.data)) {
+      const newCountsData = countsRes.data.reduce((acc, item) => {
+        // 백엔드에서 키가 소문자로 변환되어 오는 경우를 가정
+        const groupId = item.studyGroupId || item.STUDYGROUPID;
+
         if (groupId !== undefined && groupId !== null) {
           acc[groupId] = {
-            viewCount: 0,
-            bookmarkCount: item.BOOKMARKCOUNT,
+            viewCount: item.viewCount || item.VIEWCOUNT,
+            bookmarkCount: item.bookmarkCount || item.BOOKMARKCOUNT,
           };
         }
         return acc;
@@ -451,10 +452,8 @@ function Search() {
         <h3>{post.title}</h3>
         <p className="g-truncated-text">{post.content}</p>
         <div className="g-post-meta">
-          <span className="g-meta-item g-author-name">
-            <strong className="strong-1">
-              {post.authorName ?? "알 수 없음"}
-            </strong>
+          <span className="g-meta-authorone">
+            <strong>{post.authorName ?? "알 수 없음"}</strong>
           </span>
           <div className="g-meta-row">
             <div className="g-meta-item g-recruit-end-date">
@@ -464,10 +463,7 @@ function Search() {
                 : "마감일 없음"}
             </div>
             <div className="g-meta-vb">
-              <div
-                className="g-meta-item g-views"
-                style={{ display: "flex", alignItems: "center", gap: "4px" }}
-              >
+              <div className="g-meta-item g-views">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -479,11 +475,6 @@ function Search() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="feather-eye"
-                  style={{
-                    position: "relative",
-                    top: "1px",
-                    right: "1px",
-                  }}
                 >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
@@ -492,10 +483,7 @@ function Search() {
                   <strong>{post.viewCount ?? 0}</strong>
                 </span>
               </div>
-              <div
-                className="g-meta-item g-bookmarks"
-                style={{ display: "flex", alignItems: "center", gap: "4px" }}
-              >
+              <div className="g-meta-item g-bookmarks">
                 <svg
                   className="g-bookmark-svg1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -566,7 +554,7 @@ function Search() {
                 : "마감일 없음"}
             </div>
             <div className="g-meta-vbone">
-              <div className="g-meta-itemone g-viewson">
+              <div className="g-meta-itemone g-views">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -578,11 +566,6 @@ function Search() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="feather-eye"
-                  style={{
-                    position: "relative",
-                    top: "1px",
-                    right: "1px",
-                  }}
                 >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
@@ -591,7 +574,7 @@ function Search() {
                   <strong>{post.viewCount ?? 0}</strong>
                 </span>
               </div>
-              <div className="g-meta-itemone g-bookmarkson">
+              <div className="g-meta-itemone g-bookmarks">
                 <svg
                   className="g-bookmark-svg1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -652,7 +635,7 @@ function Search() {
         </div>
       </div>
 
-      {isShowingAll && !isLoading && (
+      {isShowingAll && !isLoading && isAuthenticated && (
         <>
           {/* 인기 스터디 섹션 */}
           {mergedPopularStudies.length > 0 && (
@@ -769,7 +752,6 @@ function Search() {
       )}
 
       <h2 className="g-section-title">스터디</h2>
-      {/* ... (필터 및 검색창 UI는 기존과 동일) ... */}
       <div className="g-filter-and-search">
         <div className="g-filter-controls">
           <Dropdown

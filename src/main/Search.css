@@ -319,10 +319,13 @@
 .g-bookmark-svg.g-bookmarked {
   fill: orange;
   stroke: orange;
-  stroke-width: 1px;
+  stroke-width: 0.5px;
 }
 .feather-eye {
   stroke: #999;
+  position: relative;
+  padding-top: 1px;
+  padding-right: 1px;
 }
 
 .g-truncated-text {
@@ -526,7 +529,7 @@
   margin-top: auto;
 }
 
-.g-meta-authorone {
+.g-meta-author {
   margin-bottom: 8px;
   font-weight: 600;
   color: #444;
@@ -545,14 +548,20 @@
   color: #999;
 }
 
-.g-meta-itemone.g-viewson,
-.g-meta-itemone.g-bookmarkson {
+.g-meta-itemone.g-views,
+.g-meta-item.g-views {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: #999;
+}
+.g-meta-itemone.g-bookmarks,
+.g-meta-item.g-bookmarks {
   display: flex;
   align-items: center;
   gap: 4px;
   color: #999;
 }
-
 /*
 --------------------------------------------------
   반응형 CSS (미디어 쿼리)
