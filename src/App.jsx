@@ -48,7 +48,7 @@ import AdminBoard from "./admin/admindashboard/AdminBoard";
 import AdminUsers from "./admin/admindashboard/AdminUsers";
 import AdminPost from "./admin/admindashboard/AdminPost";
 import AdminGroups from "./admin/admindashboard/AdminGroups";
-
+import AdminUserDetails from "./admin/admindashboard/AdminUserDetails";
 function App() {
   const [count, setCount] = useState(0);
   const location = useLocation();
@@ -162,6 +162,10 @@ function App() {
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/post" element={<AdminPost />} />
           <Route path="/admin/groups" element={<AdminGroups />} />
+          <Route
+            path="admin/users/details/:userId"
+            element={<AdminUserDetails />}
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {!shouldHideFooter && <Footer />}

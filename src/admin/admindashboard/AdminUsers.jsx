@@ -2,19 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./AdminUsers.css"; // 수정된 CSS 파일 불러오기
+import { useNavigate } from "react-router-dom";
+import "./AdminUsers.css";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const host = import.meta.env.VITE_AWS_API_HOST;
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get("http://localhost:8081/api/admin/users");
+      const response = await axios.get(`${host}/api/admin/users`);
       setUsers(response.data);
     } catch (err) {
       console.error("회원 목록을 불러오는 데 실패했습니다.", err);
@@ -29,12 +32,9 @@ const AdminUsers = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(
-        "http://localhost:8081/api/admin/users/search",
-        {
-          params: { searchKeyword },
-        }
-      );
+      const response = await axios.get(`${host}/api/admin/users/search`, {
+        params: { searchKeyword },
+      });
       setUsers(response.data);
     } catch (err) {
       console.error("회원 검색에 실패했습니다.", err);
@@ -44,6 +44,12 @@ const AdminUsers = () => {
     }
   };
 
+  const handleUserClick = (userId) => {
+    // 백엔드 경로에 맞게 프론트엔드 라우트 경로를 설정
+    // /admin/users/details/{userId}
+    navigate(`/admin/users/details/${userId}`);
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -51,7 +57,6 @@ const AdminUsers = () => {
   return (
     <div className="admin-container">
       <h2 className="admin-page-title">회원 관리</h2>
-
       <div className="admin-search-bar">
         <input
           type="text"
@@ -84,7 +89,11 @@ const AdminUsers = () => {
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.userId}>
+              <tr
+                key={user.userId}
+                onClick={() => handleUserClick(user.userId)}
+                style={{ cursor: "pointer" }}
+              >
                 <td>{user.userId}</td>
                 <td>{user.nickname}</td>
                 <td>{user.email}</td>

@@ -1,0 +1,113 @@
+/* src/admin/AdminUserDetails.css */
+.admin-user-details-container {
+  padding: 40px 60px;
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f9;
+  min-height: 100vh;
+}
+
+.back-button-section {
+  cursor: pointer;
+  font-size: 16px;
+  color: #007bff;
+  margin-bottom: 30px;
+}
+
+.user-profile-section {
+  display: flex;
+  gap: 40px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  align-items: center;
+}
+
+.profile-image-container {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-profile-section h2 {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 20px 0;
+}
+
+.user-info {
+  flex-grow: 1;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 30px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: bold;
+}
+
+.info-value {
+  font-size: 16px;
+  color: #333;
+  margin-top: 5px;
+}
+
+.withdrawal-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.user-studies-section {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-studies-section h3 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 15px;
+}
+
+.user-studies-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-studies-table th,
+.user-studies-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e6ea;
+  text-align: left;
+  font-size: 14px;
+}
+
+.user-studies-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #333;
+}
