@@ -5,6 +5,7 @@ import ConfirmModal from "./modal/ConfirmModal";
 import PasswordModal from './modal/PasswordModal';
 import MyPageCalendar from './components/MyPageCalendar';
 import ProjectAnalytics from '../project/analytics/ProjectAnalytics';
+import axios from 'axios';
 import './MyPage.css';
 
 // StudyCard와 BookmarkCard 컴포넌트
@@ -196,10 +197,11 @@ const BookmarkCard = ({
 function MyPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const defaultProfileImageSrc = "/images/default-profile.png";
 
-  const profileImageSrc = user?.profileImage ? 
-    user.profileImage : 
-    "/images/default-profile.png";
+  // 프로필 이미지 상태 추가
+  const [profileImage, setProfileImage] = useState(null);
+  const [displayUser, setDisplayUser] = useState(null);
 
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedBookmarkCard, setSelectedBookmarkCard] = useState(null);
@@ -227,6 +229,60 @@ function MyPage() {
     { key: 'participating', label: '참여중인' },
     { key: 'completed', label: '참여했던' }
   ];
+
+  // MyEdit과 동일한 프로필 로딩 함수
+  const loadUserProfileFromServer = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
+        withCredentials: true,
+        timeout: 10000
+      });
+
+      if (response.status === 200 && response.data.success) {
+        const serverUser = response.data.data;
+        
+        const imageToSet = serverUser.profileImageFullPath || defaultProfileImageSrc;
+        setProfileImage(imageToSet);
+        
+        const updatedUser = {
+          ...user,
+          ...serverUser,
+          profileImage: serverUser.profileImageFullPath || defaultProfileImageSrc
+        };
+        setDisplayUser(updatedUser);
+        
+      } else {
+        fallbackToLocalUser();
+      }
+      
+    } catch (error) {
+      console.error('프로필 로딩 실패:', error);
+      fallbackToLocalUser();
+    }
+  };
+
+  // 서버 로딩 실패 시 로컬 user 데이터 사용
+  const fallbackToLocalUser = () => {
+    const imageToSet = (user.profileImage && user.profileImage.startsWith('http')) 
+      ? user.profileImage 
+      : defaultProfileImageSrc;
+    
+    setProfileImage(imageToSet);
+    setDisplayUser(user);
+  };
+
+  const handleImageError = (e) => {
+    e.target.src = defaultProfileImageSrc;
+  };
+
+  // 컴포넌트 마운트 시 사용자 프로필 전체 로딩
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      loadUserProfileFromServer();
+    }
+  }, [user, isAuthenticated]);
 
   // 스터디 상세 페이지로 이동하는 핸들러
   const handleNavigateToStudy = (groupId) => {
@@ -511,17 +567,15 @@ function MyPage() {
           <div className="mypage-profile-image-wrapper">
             <div className="mypage-profile-image">
               <img 
-                src={profileImageSrc} 
+                src={profileImage || defaultProfileImageSrc} 
                 alt="프로필" 
-                onError={(e) => {
-                  e.target.src = "/images/default-profile.png";
-                }}
+                onError={handleImageError}
               />
             </div>
           </div>
           <div className="mypage-profile-info">
             <h1 className="mypage-profile-name">
-              {user.nickname || user.userId}
+              {displayUser?.nickname || displayUser?.userId || user?.nickname || user?.userId}
             </h1>
             <button className="mypage-edit-profile-btn" onClick={handleEditProfile}>
               프로필 수정
@@ -768,8 +822,8 @@ function MyPage() {
         onCancel={handleCancelEdit}
         onConfirm={handleConfirmEdit}
         type="editProfileSimple"
-        userName={user?.nickname || user?.userId}
-        profileImage={profileImageSrc}
+        userName={displayUser?.nickname || displayUser?.userId || user?.nickname || user?.userId}
+        profileImage={profileImage || defaultProfileImageSrc}
       />
 
       <PasswordModal

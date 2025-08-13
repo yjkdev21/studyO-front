@@ -1,0 +1,70 @@
+.admin-sidebar {
+  width: 280px;
+  height: 100vh;
+  background-color: #333;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.admin-title {
+  margin: 120px 0 100px 0;
+  text-align: center;
+}
+
+.admin-title h1 {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+}
+
+.admin-menu {
+  flex: 1;
+}
+
+.admin-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  width: 100%;
+  height: 60px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  padding-left: 50px;
+  box-sizing: border-box;
+}
+
+.menu-item.active {
+  background-color: #FDB515;
+  color: #333;
+}
+
+.sidebar-footer {
+  width: 100%;
+  height: 78px;
+  background-color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
