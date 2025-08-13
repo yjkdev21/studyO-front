@@ -1,3 +1,4 @@
+/* qullEditor 내용 중앙정렬 */
 .ql-align-center {
   text-align: center;
 }
@@ -8,6 +9,40 @@
   margin-right: auto;
 }
 
+/* 홍보글 북마크 스타일 */
+.p-bookmark-post-count-container {
+  position: relative;
+  float: inline-end;
+}
+
+.g-bookmark-svg.g-bookmarked {
+  fill: orange;
+  stroke: orange;
+  stroke-width: 1px;
+}
+
+.bookmark-postview-count-container {
+  display: flex;
+  font-size: 0.6rem;
+  color: #888;
+  gap: 0.3rem;
+}
+
+.bookmark-post-button-container {
+  display: flex;
+  justify-content: right;
+  padding-bottom: 10px;
+}
+
+.bookmark-title {
+  position: absolute;
+  right: 24px;
+  top: 5px;
+  font-size: 0.5rem;
+  color: #9ca3af;
+}
+
+/* 홍보글 컨테이너 */
 .promotion-container {
   max-width: 1200px;
   padding: 20px;
@@ -124,6 +159,27 @@
   padding: 0.3rem;
 }
 
+/* postmain-group-title */
+.group-edit-navigator {
+  display: flex;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  cursor: pointer;
+  gap: 3px;
+  margin-top: 45px;
+  margin-left: 10px;
+}
+
+.group-edit-navigator:hover {
+  color: #ff6600;
+}
+
+.studypost-main-group-title-container {
+  display: flex;
+  /* justify-content: space-between; */
+}
+
+/* 첨부파일 */
 .attachment-section-container {
   width: 100%;
   margin-bottom: 1.5rem; /* mb-6 */
@@ -241,9 +297,18 @@
   2. 헤더 섹션 (제목, 작성자, 메타정보)
 -------------------- */
 .view-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #333;
+  margin-bottom: 10px;
+}
+
+.promotion-view-title {
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
@@ -251,6 +316,7 @@
   font-size: 14px;
   color: #888;
   margin-bottom: 20px;
+  margin-top: 25px;
 }
 
 .view-author {
@@ -400,4 +466,28 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.empty-group-page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 85vh;
+  gap: 20px;
+}
+
+.empty-group-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #373737;
+}
+
+.empty-group-img {
+  width: 400px;
+}
+
+.empty-btn-text {
+  margin-top: 20px;
+  text-align: center;
 }

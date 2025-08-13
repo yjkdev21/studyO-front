@@ -15,8 +15,13 @@ export default function StudyPromotion() {
   const [message, setMessage] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [applyCompleted, setApplyCompleted] = useState(false);
 
   const handleStudyJoin = (postId) => {
+    if (applyCompleted) {
+      alert("이미 가입신청이 완료 되었습니다.");
+      return;
+    }
     //console.log("handleStudyJoin postId: ", postId);
     setStudyPostId(postId);
     setIsModalOpen(true);
@@ -61,6 +66,7 @@ export default function StudyPromotion() {
       );
 
       alert(response?.data?.message || "가입 신청이 완료되었습니다.");
+      setApplyCompleted(true);
     } catch (error) {
       let errorMsg = "가입 신청 중 오류가 발생했습니다.";
       if (error.response?.data?.error) {
@@ -81,10 +87,10 @@ export default function StudyPromotion() {
 
   return (
     <div className="promotion-container">
-      <h2 className="form-title">
+      {/* <h2 className="form-title">
         <span className="form-badge">✔</span>
         스터디 모집 홍보글
-      </h2>
+      </h2> */}
       <StudyPostView groupId={groupId} onStudyJoin={handleStudyJoin} />
       <RequestModal
         isOpen={isModalOpen}

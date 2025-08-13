@@ -3,7 +3,12 @@ import axios from "axios";
 import StudyCard from "./StudyCard";
 import "./StudyCard.css";
 
-const StudyCarousel = ({ userId, selectedGroupId, onSelectStudy }) => {
+const StudyCarousel = ({
+  userId,
+  selectedGroupId,
+  onSelectStudy,
+  onEmptyGroup,
+}) => {
   const host = import.meta.env.VITE_AWS_API_HOST;
   const [studies, setStudies] = useState([]);
   const [viewCardNum, setViewCardNum] = useState(2);
@@ -16,7 +21,14 @@ const StudyCarousel = ({ userId, selectedGroupId, onSelectStudy }) => {
         { withCredentials: true }
       );
       const { groupList } = response.data;
+
       if (groupList) {
+        // 개설한 스터디 그룹없음
+        if (groupList.length == 0 && onEmptyGroup) {
+          onEmptyGroup();
+          return null;
+        }
+
         setStudies(groupList);
 
         // 첫 번째 스터디 그룹을 선택하는 로직
