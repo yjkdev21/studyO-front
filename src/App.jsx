@@ -43,9 +43,20 @@ import StudyPostMain from "./study/post/StudyPostMain";
 import ProtectedRoute from "./common/auth/ProtectedRoute";
 import StudyPromotion from "./study/post/StudyPromotion";
 
+import AdminSidebar from "./admin/component/AdminSidebar";
+
 function App() {
   const [count, setCount] = useState(0);
   const location = useLocation();
+
+  const hideHeaderPaths = [
+    "/admin"
+  ]
+
+  // Header 숨길 경로 설정
+  const shouldHideHeader =
+  hideHeaderPaths.includes(location.pathname) ||
+  /^\/admin(\/.*)?$/.test(location.pathname);
 
   const hideFooterPaths = [
     "/login",
@@ -55,6 +66,7 @@ function App() {
     "/groupCreate",
     "/promotion/create",
     "/study/dashboard/dashboardList",
+    "/admin/component/adminSidebar"
   ];
 
   // Footer를 숨길 경로 설정
@@ -67,7 +79,7 @@ function App() {
   return (
     <div>
       <AuthProvider>
-        <Header />
+        {!shouldHideHeader && <Header />}
         <Routes>
           <Route path="/" element={<Home />} />
 
@@ -129,6 +141,12 @@ function App() {
           <Route
             path="/study/components/studySidebar"
             element={<StudySidebar />}
+          />
+
+          {/* amdin */}
+          <Route
+            path="/admin/component/adminSidebar"
+            element={<AdminSidebar />}
           />
 
           <Route path="*" element={<NotFoundPage />} />
