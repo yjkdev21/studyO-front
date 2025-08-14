@@ -27,12 +27,10 @@
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
-    /* 패딩을 완전히 제거하고 내부 요소들에서 개별 처리 */
     padding: 0 !important;
     margin: 0 !important;
 }
 
-/* 컨텐츠 영역 - 버튼을 제외한 모든 내용 */
 .modal-body {
     padding: 24px !important;
     flex: 1 !important;
@@ -117,7 +115,6 @@
     text-align: center;
 }
 
-/* 제목에서 "수정" 텍스트를 주황색으로 */
 .modal-greeting .highlight {
     color: #FDB515;
 }
@@ -140,7 +137,7 @@
 .highlight {
     color: #FDB515;
 }
-/* 추방, 탈퇴 액션의 경우 빨간색 */
+
 .highlight.danger {
     color: #FF2525 !important;
 }
@@ -198,7 +195,6 @@
     background-color: #FFCC5B !important;
 }
 
-/* 추방, 탈퇴 액션의 경우 빨간색 버튼 */
 .modal-confirm-btn.danger {
     background-color: #FF2525 !important;
 }

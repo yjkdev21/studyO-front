@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import ConfirmModal from "./modal/ConfirmModal";
 import axios from 'axios';
 import './MyEdit.css';
 
 function MyEdit() {
     const { user, isAuthenticated, isLoading } = useAuth();
+    const navigate = useNavigate();
     const defaultProfileImageSrc = "/images/default-profile.png";
 
+    // 폼 데이터 상태
     const [formData, setFormData] = useState({
         id: null,
         userId: '',
@@ -18,21 +21,26 @@ function MyEdit() {
         profileImage: null
     });
 
+    // 프로필 이미지 관련 상태
     const [profileImage, setProfileImage] = useState(null);
     const [profileImageFile, setProfileImageFile] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [displayUser, setDisplayUser] = useState(null);
     const [isImageChanged, setIsImageChanged] = useState(false);
 
-    // 컴포넌트 마운트 시 사용자 프로필 전체 로딩
+    // 모달 상태
+    const [showModal, setShowModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    // 표시용 사용자 정보
+    const [displayUser, setDisplayUser] = useState(null);
+
+    // 컴포넌트 마운트 시 사용자 프로필 로드
     useEffect(() => {
         if (user && isAuthenticated) {
             loadUserProfileFromServer();
         }
     }, [user, isAuthenticated]);
 
-    // 서버에서 사용자 프로필 정보 로딩
+    // 서버에서 사용자 프로필 정보 로드
     const loadUserProfileFromServer = async () => {
         try {
             const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
@@ -43,6 +51,7 @@ function MyEdit() {
             if (response.status === 200 && response.data.success) {
                 const serverUser = response.data.data;
                 
+                // 서버 데이터로 폼 초기화
                 setFormData({
                     id: serverUser.id,
                     userId: user.userId || '',
@@ -53,9 +62,11 @@ function MyEdit() {
                     profileImage: serverUser.profileImage
                 });
 
+                // 프로필 이미지 설정
                 const imageToSet = serverUser.profileImageFullPath || defaultProfileImageSrc;
                 setProfileImage(imageToSet);
                 
+                // 표시용 사용자 정보 업데이트
                 const updatedUser = {
                     ...user,
                     ...serverUser,
@@ -63,6 +74,7 @@ function MyEdit() {
                 };
                 setDisplayUser(updatedUser);
                 
+                // 이미지 상태 초기화
                 setProfileImageFile(null);
                 setIsImageChanged(false);
                 
@@ -71,12 +83,11 @@ function MyEdit() {
             }
             
         } catch (error) {
-            console.error('프로필 로딩 실패:', error);
             fallbackToLocalUser();
         }
     };
 
-    // 서버 로딩 실패 시 로컬 user 데이터 사용
+    // 서버 로드 실패 시 로컬 데이터 사용
     const fallbackToLocalUser = () => {
         setFormData({
             id: user.id,
@@ -88,6 +99,7 @@ function MyEdit() {
             profileImage: user.profileImage
         });
 
+        // 프로필 이미지 설정
         const imageToSet = (user.profileImage && user.profileImage.startsWith('http')) 
             ? user.profileImage 
             : defaultProfileImageSrc;
@@ -98,6 +110,7 @@ function MyEdit() {
         setIsImageChanged(false);
     };
 
+    // 입력 필드 변경 처리
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -106,14 +119,17 @@ function MyEdit() {
         }));
     };
 
+    // 프로필 이미지 변경 처리
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // 파일 크기 검증 (5MB 제한)
             if (file.size > 5 * 1024 * 1024) {
                 alert('파일 크기는 5MB 이하여야 합니다.');
                 return;
             }
 
+            // 이미지 파일 형식 검증
             if (!file.type.startsWith('image/')) {
                 alert('이미지 파일만 업로드할 수 있습니다.');
                 return;
@@ -122,7 +138,7 @@ function MyEdit() {
             setProfileImageFile(file);
             setIsImageChanged(true);
 
-            // 미리보기 설정
+            // 이미지 미리보기 설정
             const reader = new FileReader();
             reader.onload = (e) => {
                 setProfileImage(e.target.result);
@@ -131,6 +147,7 @@ function MyEdit() {
         }
     };
 
+    // 폼 제출 전 유효성 검사
     const handleSubmit = () => {
         if (!formData.nickname.trim()) {
             alert('닉네임을 입력해주세요.');
@@ -145,11 +162,13 @@ function MyEdit() {
         setShowModal(true);
     };
 
+    // 수정 확인 및 서버 전송
     const handleConfirm = async () => {
         try {
             let response;
             
             if (profileImageFile) {
+                // 이미지 파일이 있는 경우 FormData로 전송
                 const formDataToSend = new FormData();
                 
                 const userDto = {
@@ -158,6 +177,7 @@ function MyEdit() {
                     introduction: formData.introduction || '',
                 };
 
+                // 비밀번호 변경이 있는 경우 추가
                 if (formData.newPassword && formData.newPassword.trim()) {
                     userDto.password = formData.newPassword;
                 }
@@ -170,6 +190,7 @@ function MyEdit() {
                     timeout: 30000
                 });
             } else {
+                // 일반 데이터만 전송
                 const dataToSend = {
                     id: formData.id,
                     nickname: formData.nickname.trim(),
@@ -188,11 +209,12 @@ function MyEdit() {
             }
 
             if (response.status === 200) {
-                // 수정 완료 후 서버에서 최신 프로필 정보 다시 로딩
+                // 수정 완료 후 최신 정보 다시 로드
                 setTimeout(() => {
                     loadUserProfileFromServer();
                 }, 500);
                 
+                // 상태 초기화
                 setProfileImageFile(null);
                 setIsImageChanged(false);
                 setFormData(prev => ({
@@ -208,8 +230,7 @@ function MyEdit() {
             }
             
         } catch (err) {
-            console.error('프로필 수정 오류:', err);
-
+            // 에러 상황별 처리
             if (err.response) {
                 const status = err.response.status;
                 const errorData = err.response.data;
@@ -245,24 +266,28 @@ function MyEdit() {
         }
     };
 
+    // 모달 취소
     const handleModalCancel = () => {
         setShowModal(false);
     };
 
+    // 성공 모달 확인 후 마이페이지로 이동
     const handleSuccessConfirm = () => {
         setShowSuccessModal(false);
+        navigate('/mypage');
     };
 
+    // 수정 취소 및 초기화 후 마이페이지로 이동
     const handleCancel = () => {
-        loadUserProfileFromServer();
-        setProfileImageFile(null);
-        setIsImageChanged(false);
+        navigate('/mypage');
     };
 
+    // 이미지 로드 실패 시 기본 이미지로 대체
     const handleImageError = (e) => {
         e.target.src = defaultProfileImageSrc;
     };
 
+    // 로딩 중 화면
     if (isLoading) {
         return (
             <div className="myedit-container">
@@ -271,6 +296,7 @@ function MyEdit() {
         );
     }
 
+    // 비로그인 상태 화면
     if (!isAuthenticated) {
         return (
             <div className="myedit-container">
@@ -282,6 +308,7 @@ function MyEdit() {
     return (
         <div className="myedit-container">
             <div className="myedit-form">
+                {/* 프로필 이미지 섹션 */}
                 <div className="myedit-profile-section">
                     <div className="myedit-profile-image-wrapper">
                         <div className="myedit-profile-image">
@@ -310,6 +337,7 @@ function MyEdit() {
                         {displayUser?.nickname || displayUser?.userId || user?.nickname || user?.userId}
                     </div>
 
+                    {/* 새 이미지 선택 상태 표시 */}
                     {profileImageFile && (
                         <div className="myedit-image-status">
                             <small style={{color: '#007bff'}}>
@@ -319,6 +347,7 @@ function MyEdit() {
                     )}
                 </div>
 
+                {/* 폼 필드 섹션 */}
                 <div className="myedit-form-fields">
                     <div className="myedit-field-group">
                         <label className="myedit-field-label">아이디</label>
@@ -367,6 +396,7 @@ function MyEdit() {
                             className="myedit-field-input"
                             placeholder="새 비밀번호를 다시 입력하세요"
                         />
+                        {/* 비밀번호 불일치 에러 메시지 */}
                         {formData.newPassword && formData.confirmPassword && 
                          formData.newPassword !== formData.confirmPassword && (
                             <p className="myedit-password-error">비밀번호를 확인해주세요.</p>
@@ -390,6 +420,7 @@ function MyEdit() {
                     </div>
                 </div>
 
+                {/* 버튼 그룹 */}
                 <div className="myedit-button-group">
                     <button onClick={handleCancel} className="myedit-cancel-btn">
                         취소
@@ -400,6 +431,7 @@ function MyEdit() {
                 </div>
             </div>
 
+            {/* 확인 모달 */}
             <ConfirmModal
                 isOpen={showModal}
                 onCancel={handleModalCancel}
@@ -409,6 +441,7 @@ function MyEdit() {
                 type="editProfile"
             />
 
+            {/* 성공 모달 */}
             <ConfirmModal
                 isOpen={showSuccessModal}
                 userName={formData.nickname}

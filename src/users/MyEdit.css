@@ -13,7 +13,6 @@
   appearance: none !important;
 }
 
-/* 특정 input 타입별로 강제 스타일 적용 */
 input[type="text"].myedit-field-input,
 input[type="password"].myedit-field-input {
   border-radius: 3px !important;
@@ -32,12 +31,11 @@ input[type="password"].myedit-field-input {
   box-shadow: 0 0 0 3px rgba(253, 181, 21, 0.1);
 }
 
-/* disabled 스타일을 더 명확하게 정의 */
 .myedit-field-input.myedit-disabled {
-  background-color: #f8f8f8; /* 약간 더 연한 회색 */
-  color: #888; /* 텍스트 색상 조정 */
+  background-color: #f8f8f8;
+  color: #888;
   cursor: not-allowed;
-  border-color: #ddd; /* 테두리 색상도 조정 */
+  border-color: #ddd;
 }
 
 .myedit-container {
@@ -201,6 +199,27 @@ input[type="password"].myedit-field-input {
   cursor: not-allowed;
 }
 
+.myedit-image-status {
+  text-align: center;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #f0f8ff;
+  border-radius: 4px;
+  border: 1px solid #e3f2fd;
+}
+
+.myedit-image-status small {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.myedit-char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
 @media (max-width: 768px) {
   .myedit-container {
     padding: 40px 20px;
@@ -219,27 +238,4 @@ input[type="password"].myedit-field-input {
   .myedit-cancel-btn {
     width: 100%;
   }
-}
-
-/* 이미지 변경 상태 표시 */
-.myedit-image-status {
-    text-align: center;
-    margin-top: 8px;
-    padding: 4px 8px;
-    background-color: #f0f8ff;
-    border-radius: 4px;
-    border: 1px solid #e3f2fd;
-}
-
-.myedit-image-status small {
-    font-size: 12px;
-    font-weight: 500;
-}
-
-/* 글자 수 카운터 */
-.myedit-char-count {
-    text-align: right;
-    font-size: 12px;
-    color: #666;
-    margin-top: 4px;
 }
