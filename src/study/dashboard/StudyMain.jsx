@@ -3,15 +3,26 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStudy } from '../../contexts/StudyContext';
+import { getProfileImageSrc } from '../../utils/imageUtils';
 import './StudyMain.css';
 import WeeklyCalendar from './WeeklyCalendar';
 
 export default function StudyMain() {
   const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
   const { user } = useAuth(); // 현재 로그인한 사용자 정보
+  
+  // StudyContext에서 필요한 함수 가져오기
+  const {
+    studyInfo, 
+    isLoading: studyLoading, 
+    error,
+    getProfileImageUrl,
+    getPostWriterNickname,
+    studyMembers,
+    memberNicknames
+  }= useStudy();
 
-  const { studyInfo, isLoading: studyLoading, error } = useStudy(); // 스터디 정보 context 사용
-
+  // const { studyInfo, isLoading: studyLoading, error } = useStudy(); // 스터디 정보 context 사용
   const [isNotice, setIsNotice] = useState(false); // 공지 여부 체크박스 상태
   const [allNotices, setAllNotices] = useState([]); // 공지 목록
   const [allPosts, setAllPosts] = useState([]); // 일반 글 목록
@@ -31,6 +42,12 @@ export default function StudyMain() {
   const [showAllNotices, setShowAllNotices] = useState(false); // 공지 더보기 상태
 
   const host = import.meta.env.VITE_AWS_API_HOST;
+
+  // 이미지 로드 에러 처리 함수
+  const handleImageError = (e) => {
+    console.log('이미지 로드 실패:', e.target.src);
+    e.target.src = getProfileImageSrc(null);
+  };
 
   // 공지 및 일반글 가져오기
   const fetchPosts = async () => {
@@ -267,14 +284,13 @@ export default function StudyMain() {
               {/* 왼쪽: 프로필 이미지 + 닉네임 */}
               <div className='post-left'>
                 <img
-                  src={post.writerProfileImage ||
-                    (post.userId === user?.id ? user.profileImage : null) ||
-                    '/images/default-profile.png'}
+                  src={getProfileImageUrl(post, user)}
                   alt='프로필'
                   className='profile-img'
+                  onError={handleImageError}
                 />
                 <div className='nickname'>
-                  {post.writerNickname || (post.userId === user?.id ? user.nickname : '작성자')}
+                  {getPostWriterNickname(post, user)}
                 </div>
               </div>
 
@@ -345,14 +361,13 @@ export default function StudyMain() {
             <div className='post-layout'>
               <div className='post-left'>
                 <img
-                  src={post.writerProfileImage ||
-                    (post.userId === user?.id ? user.profileImage : null) ||
-                    '/images/default-profile.png'}
+                  src={getProfileImageUrl(post, user)}
                   alt='프로필'
                   className='profile-img'
+                  onError={handleImageError}
                 />
                 <div className='nickname'>
-                  {post.writerNickname || post.studyNickname || (post.userId === user?.id ? user.nickname : '작성자')}
+                  {getPostWriterNickname(post, user)}
                 </div>
               </div>
 
