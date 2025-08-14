@@ -6,7 +6,7 @@
 
 .admin-main-content {
   flex: 1;
-  margin-left: 280px; /* 사이드바 너비만큼 여백 */
+  margin-left: 280px;
   padding: 40px;
   box-sizing: border-box;
 }
@@ -26,23 +26,23 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 30px;
-  height: calc(100vh - 200px);
+  gap: 15px;
+  max-width: calc(100vw - 320px - 40px); /* 사이드바와 패딩 제외한 최대 너비 */
+  max-height: 70vh; /* 최대 높이 제한으로 살짝 줄임 */
 }
 
 .admin-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
 }
 
 .admin-section h2 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   color: #333;
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
 }
 
 .admin-section h3 {
@@ -53,7 +53,6 @@
 }
 
 .section-content {
-  height: calc(100% - 50px);
   overflow-y: auto;
 }
 
@@ -87,7 +86,7 @@
 .stat-label {
   font-size: 16px;
   color: #555;
-  font-weight: 500;
+  font-weight: bold;
 }
 
 .stat-value {
@@ -117,11 +116,54 @@
   border-left-color: #ffc107;
 }
 
+/* 차트 컨테이너 크기 조정 */
+.chart-container {
+  height: 100%;
+  min-height: 200px;
+}
+
+/* 필터 스타일링 */
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.filter-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-reset-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.filter-reset-btn:hover {
+  background-color: #0056b3;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
   .admin-grid {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
+    max-height: none;
   }
   
   .stats-row {

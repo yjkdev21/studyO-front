@@ -6,7 +6,7 @@ const StudyForm = ({
     onChange,
     onFileChange,
     onSubmit,
-    onCancel, // 취소 버튼 핸들러 추가
+    onCancel,
     isSubmitting,
     submitLabel,
     disabledFields = [],
@@ -19,17 +19,17 @@ const StudyForm = ({
     // 기존 썸네일이 있는 경우 미리보기 설정 (수정 모드)
     useEffect(() => {
         if (!imagePreview && formData.thumbnail) {
-        if (typeof formData.thumbnail === 'string') {
-            // 기존 S3 이미지 URL
-            setImagePreview(formData.thumbnail);
-        } else if (formData.thumbnail instanceof File) {
-            // 업로드된 새 파일
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result);
-            reader.readAsDataURL(formData.thumbnail);
+            if (typeof formData.thumbnail === 'string') {
+                // 기존 S3 이미지 URL
+                setImagePreview(formData.thumbnail);
+            } else if (formData.thumbnail instanceof File) {
+                // 업로드된 새 파일
+                const reader = new FileReader();
+                reader.onloadend = () => setImagePreview(reader.result);
+                reader.readAsDataURL(formData.thumbnail);
+            }
         }
-    }
-}, [formData.thumbnail]);
+    }, [formData.thumbnail]);
 
     const handleFileInputChange = (e) => {
         const file = e.target.files[0];
@@ -76,7 +76,7 @@ const StudyForm = ({
                 스터디 기본 정보
             </div>
             <form id="studygroup-main-form" onSubmit={onSubmit} encType="multipart/form-data">
-                
+
                 {/* 썸네일 업로드 섹션 */}
                 <div id="studygroup-thumbnail-section">
                     <div id="studygroup-thumbnail-container">
@@ -190,7 +190,7 @@ const StudyForm = ({
                             required
                         >
                             <option value="">인원을 선택해주세요</option>
-                            {Array.from({length: 10}, (_, i) => i + 1).map(num => (
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
                                 <option key={num} value={num}>{num}명</option>
                             ))}
                         </select>
@@ -217,20 +217,41 @@ const StudyForm = ({
                     {/* 지역 */}
                     <div id="studygroup-form-group">
                         <label id="studygroup-region-label">지역</label>
-                        <input
-                            id="studygroup-region-input"
-                            type="text"
+                        <select
+                            id="studygroup-region-select"
                             name="region"
                             value={formData.region || ''}
                             onChange={onChange}
                             disabled={disabledFields.includes('region') || formData.studyMode === '온라인'}
                             required={formData.studyMode === '오프라인' || formData.studyMode === '온오프'}
-                            placeholder={
-                                formData.studyMode === '온라인'
+                        >
+                            <option value="">
+                                {formData.studyMode === '온라인'
                                     ? '온라인 모드에서는 지역 정보가 필요하지 않습니다.'
-                                    : '지역을 입력하세요'
-                            }
-                        />
+                                    : '지역을 선택하세요'}
+                            </option>
+                            {formData.studyMode !== '온라인' && (
+                                <>
+                                    <option value="서울">서울</option>
+                                    <option value="부산">부산</option>
+                                    <option value="대구">대구</option>
+                                    <option value="인천">인천</option>
+                                    <option value="광주">광주</option>
+                                    <option value="대전">대전</option>
+                                    <option value="울산">울산</option>
+                                    <option value="세종">세종</option>
+                                    <option value="경기">경기</option>
+                                    <option value="강원">강원</option>
+                                    <option value="충북">충북</option>
+                                    <option value="충남">충남</option>
+                                    <option value="전북">전북</option>
+                                    <option value="전남">전남</option>
+                                    <option value="경북">경북</option>
+                                    <option value="경남">경남</option>
+                                    <option value="제주">제주</option>
+                                </>
+                            )}
+                        </select>
                     </div>
 
                     {/* 연락방법 */}
@@ -276,7 +297,7 @@ const StudyForm = ({
                     >
                         취소
                     </button>
-                    
+
                     <button
                         id="studygroup-submit-btn"
                         type="submit"

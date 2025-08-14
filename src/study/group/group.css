@@ -130,11 +130,11 @@
 /* 입력 필드 공통 스타일 */
 #studygroup-groupname-input,
 #studygroup-nickname-input,
-#studygroup-region-input,
 #studygroup-contact-input,
 #studygroup-category-select,
 #studygroup-maxmembers-input,
 #studygroup-studymode-select,
+#studygroup-region-select,
 #studygroup-introduction-textarea {
     padding: 12px;
     border: 1px solid #ddd;

@@ -112,9 +112,8 @@ function GroupUpdate() {
                             groupOwnerId: data.groupOwnerId || 1,
                             nickname: data.nickname || ''
                         });
-                        setUserNickname(data.nickname || ''); // 원본 닉네임도 저장
+                        setUserNickname(data.nickname || '');
                         
-                        // 멤버 수 설정 (예시: API에서 받아오거나 기본값 설정)
                         setMemberCount(data.memberCount || 1);
                     } else {
                         setSubmitMessage('데이터를 불러올 수 없습니다.');
