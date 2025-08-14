@@ -10,7 +10,7 @@ import "./StudyMember.css";
 export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
-  
+
 
   /* ========== 상태 관리 ========== */
   // 닉네임 관련 상태
@@ -42,36 +42,38 @@ export default function StudyMember() {
     return groupMembers.find(member => member?.userId === user?.id);
   }, [groupMembers, user?.id]);
 
+  // 신청목록 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
+  // 현재 페이지의 데이터 계산
+  const paginatedRequests = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return userRequests.slice(start, end);
+  }, [userRequests, currentPage]);
+
+  const totalPages = Math.ceil(userRequests.length / itemsPerPage);
 
   /* ========== API 호출 함수 ========== */
   // 회원 신청 목록
   const fetchUserRequests = async () => {
-    if (!groupId) return;
-    setLoading(true);
-    setError(null);
-
     try {
       const data = await getUserRequests(groupId);
       setUserRequests(data.list || []);
       setMessage(data.message || "");
     } catch (error) {
       handleApiError(error);
-    } finally {
-      setLoading(false);
     }
   };
 
   // 그룹 멤버 목록
   const loadGroupMembers = async () => {
-    if (!groupId) return;
-
     try {
       const data = await fetchGroupMembers(groupId);
       setGroupMembers(data || []);
     } catch (error) {
       handleApiError(error);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -90,6 +92,22 @@ export default function StudyMember() {
       );
     } else if (error.request) {
       setError("서버에 연결할 수 없습니다.");
+    }
+  };
+
+  // 데이터 리로드
+  const reloadData = async () => {
+    if (!groupId) return;
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchUserRequests(),
+        loadGroupMembers()
+      ]);
+    } catch (err) {
+      handleApiError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,8 +167,7 @@ export default function StudyMember() {
 
   /** 마운트/GroupId 변경 시 신청 목록 불러오기 */
   useEffect(() => {
-    fetchUserRequests();
-    loadGroupMembers();
+    reloadData();
   }, [groupId]);
 
   // 닉네임 로드
@@ -171,7 +188,7 @@ export default function StudyMember() {
     }
   }, [isEditing]);
 
-  /** 모달 */
+  /* ========== 모달 ========== */
   /** 모달 취소 핸들러 */
   const handleModalCancel = () => {
     setIsAcceptModalOpen(false);
@@ -211,7 +228,14 @@ export default function StudyMember() {
     }
   };
 
+  /* ========== 페이지 이동 함수 ========== */
+  const goPrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
 
+  const goNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
 
   return (
     <div id="study-member">
@@ -280,20 +304,19 @@ export default function StudyMember() {
               {userRequests.length}
             </span>
           </h3>
-
           <div className="request-btn-wrap">
-            <button type="button" className="request-btn-prev">
+            <button type="button" className="request-btn-prev" onClick={goPrevPage} disabled={currentPage === 1}>
               <span className="material-symbols-rounded !text-4xl">keyboard_arrow_left</span>
             </button>
-            <button type="button" className="request-btn-next">
+            <button type="button" className="request-btn-next" onClick={goNextPage} disabled={currentPage === totalPages}>
               <span className="material-symbols-rounded !text-4xl">keyboard_arrow_right</span>
             </button>
           </div>
         </div>
         {/* 신청 목록 불러오기 */}
         <ul className="dashboard-member-wrap">
-          {userRequests.length > 0 ? (
-            userRequests.map((req, idx) => (
+          {paginatedRequests.length > 0 ? (
+            paginatedRequests.map((req, idx) => (
               <li key={req.id || idx} className="dashboard-member-list justify-between">
                 <div className="profile-image rounded-full overflow-hidden">
                   <img className="w-full block" src={req.profileImage ?? imageSrc} alt="프로필" />
@@ -321,6 +344,9 @@ export default function StudyMember() {
             (<li className="text-[#666]">신청자가 없습니다.</li>)
           }
         </ul>
+        {paginatedRequests.length > 0 ? (
+          <div className="text-center text-sm text-[#999] font-normal !mt-4">({currentPage}/{totalPages})</div>
+        ) : ""}
       </div>
 
       {/* 멤버목록 */}
@@ -333,7 +359,7 @@ export default function StudyMember() {
           {groupMembers.length > 0 ? (
             groupMembers.map((member, idx) => (
               <li key={member?.id || idx} className="dashboard-member-list justify-start">
-                <div className="profile-image rounded-full overflow-hidden">
+                <div className={`profile-image rounded-full overflow-hidden ${member?.userId == user?.id ? 'me' : ''}`}>
                   <img className="w-full block" src={imageSrc} alt="프로필" />
                 </div>
                 <div className="member-info">
@@ -341,7 +367,9 @@ export default function StudyMember() {
                     {member?.memberRole === "ADMIN" ? (<span className="leader-tag">방장</span>) : ""}
                     {member?.nickname}
                   </p>
-                  <span className="text-xs text-[#999] absolute bottom-4 right-4">{member?.joinedAt.substring(0, 10)}</span>
+                  <span className="text-xs text-[#999] absolute bottom-4 right-4">
+                    {member?.joinedAt ? member.joinedAt.substring(0, 10) : ""}
+                  </span>
                 </div>
               </li>
             ))
@@ -350,7 +378,9 @@ export default function StudyMember() {
           }
         </ul>
       </div>
-
+      {/* <div className="!mt-40 text-center">
+        <button type="button" className="study-leave-btn md:float-right">스터디 탈퇴</button>
+      </div> */}
       {/* 수락 모달 - ConfirmModal 컴포넌트 */}
       <ConfirmModal
         isOpen={isAcceptModalOpen}
@@ -369,7 +399,7 @@ export default function StudyMember() {
         isOpen={isRejectModalOpen}
         onCancel={handleModalCancel}
         onConfirm={handleModalConfirm}
-        type="accept"
+        type="kick"
         userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
         profileImage={selectedRequest?.profileImage}
         customText={{
@@ -378,6 +408,17 @@ export default function StudyMember() {
           actionText: "거절"
         }}
       />
+      {/* 스터디 탈퇴 모달 - ConfirmModal 컴포넌트 */}
+      {/* <ConfirmModal
+        isOpen={''}
+        onCancel={handleModalCancel}
+        onConfirm={handleModalConfirm}
+        type="kick"
+        userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
+        profileImage={selectedRequest?.profileImage}
+        customText={{
+        }}
+      /> */}
     </div>
   );
 }

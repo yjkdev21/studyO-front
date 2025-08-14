@@ -89,11 +89,11 @@ function App() {
 
           <Route path="/join" element={<Join />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/findId" element={<FindId />} />
+          <Route path="/findPw" element={<FindPw />} />
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/findId" element={<FindId />} />
-            <Route path="/findPw" element={<FindPw />} />
             <Route path="/myHistory" element={<MyHistory />} />
 
             <Route path="/myPage" element={<MyPage />} />
