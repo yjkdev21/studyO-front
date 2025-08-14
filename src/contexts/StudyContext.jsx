@@ -10,6 +10,7 @@
 */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { getProfileImageSrc } from '../utils/imageUtils';
 
 const StudyContext = createContext();
 
@@ -113,24 +114,25 @@ export const StudyProvider = ({ children, groupId }) => {
 
   // 프로필 이미지 URL 처리 함수
   const getProfileImageUrl = (post, user) => {
-    // 작성자 프로필 이미지
+    // 1순위: 작성자 프로필 이미지
     if (post.writerProfileImage) {
-      if (post.writerProfileImage.startsWith('/')) {
-        return `${host}${post.writerProfileImage}`;
-      }
-      return post.writerProfileImage;
+      return getProfileImageSrc(post.writerProfileImage);
     }
 
-    // 현재 사용자의 프로필 이미지 (본인 글일 경우)
+    // 2순위: 현재 사용자의 프로필 이미지 (본인 글일 경우)
     if (post.userId === user?.id && user?.profileImage) {
-      if (user.profileImage.startsWith('/')) {
-        return `${host}${user.profileImage}`;
-      }
-      return user.profileImage;
+      return getProfileImageSrc(user.profileImage);
     }
 
-    return '/images/default-profile.png';
-  }
+    // 3순위: 스터디 멤버에서 찾기
+    const member = studyMembers.find(m => m.userId === (post.userId || post.writerId));
+    if (member && member.profileImage) {
+      return getProfileImageSrc(member.profileImage);
+    }
+
+    // 4순위: 기본 이미지 (getProfileImageSrc에 null 전달시 기본 이미지 반환)
+    return getProfileImageSrc(null);
+  };
 
   // 게시글 작성자 닉네임 가져오기
   const getPostWriterNickname = (post, user) => {
@@ -157,13 +159,18 @@ export const StudyProvider = ({ children, groupId }) => {
 
     // 5순위: 기본값
     return '사용자';
-  }
+  };
 
   // 스터디 정보 새로고침 함수 (외부에서 호출 가능한 공개 함수)
   const refreshStudyInfo = async () => {
-    return await fetchStudyInfo();
-  };
+    const studyResult = await fetchStudyInfo();
+    const memberResult = await fetchStudyMembers();
 
+    return {
+      studyInfo: studyResult,
+      members: memberResult
+    };
+  };
 
 
   // Effect 훅

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStudy } from '../../contexts/StudyContext';
+import { getProfileImageSrc } from '../../utils/imageUtils';
 import './StudyMain.css';
 import WeeklyCalendar from './WeeklyCalendar';
 
@@ -45,7 +46,7 @@ export default function StudyMain() {
   // 이미지 로드 에러 처리 함수
   const handleImageError = (e) => {
     console.log('이미지 로드 실패:', e.target.src);
-    e.target.src = '/images/default-profile.png';
+    e.target.src = getProfileImageSrc(null);
   };
 
   // 공지 및 일반글 가져오기
