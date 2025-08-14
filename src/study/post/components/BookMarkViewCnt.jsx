@@ -9,13 +9,13 @@ export default function BookMarkViewCnt({ post }) {
   const userId = user?.id;
   const groupId = post.groupId;
 
-  const [userBookmarks, setUserBookmarks] = useState([]);
+  const [postBookmarksCnt, setPostBookmarkCnt] = useState(0);
   const [bookMark, setBookMark] = useState(false);
+  const [userBookmarks, setUserBookmarks] = useState([]);
 
   useEffect(() => {
     const fetchUserBookmarks = async () => {
       if (!isAuthenticated || !user?.id) {
-        setUserBookmarks([]);
         return;
       }
 
@@ -23,19 +23,17 @@ export default function BookMarkViewCnt({ post }) {
         const res = await axios.get(`${host}/api/bookmark/user/${userId}`, {
           withCredentials: true,
         });
-        // console.log("사용자 북마크 API 응답:", res.data);
+        console.log("사용자 북마크 API 응답:", res.data);
         if (res.data.success && Array.isArray(res.data.data)) {
           const bookmarkGroupIds = res.data.data.map(
             (bookmark) => bookmark.groupId
           );
-          setUserBookmarks(bookmarkGroupIds);
 
           if (bookmarkGroupIds.includes(groupId)) {
             // console.log("include :", groupId);
             setBookMark(true);
+            setUserBookmarks(bookmarkGroupIds);
           }
-        } else {
-          setUserBookmarks([]);
         }
       } catch (error) {
         console.error("사용자 북마크 조회 실패", error);
@@ -66,7 +64,23 @@ export default function BookMarkViewCnt({ post }) {
     };
 
     fetchPostViewIncrement();
+    postBookmarkCnt();
   }, []);
+
+  const postBookmarkCnt = async () => {
+    try {
+      const res = await axios.get(
+        `${host}/api/study-groups/bookmark-count/${groupId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      //console.log("aaa:", res.data);
+      setPostBookmarkCnt(res.data);
+    } catch (error) {
+      console.error("view count fail!", error);
+    }
+  };
 
   const handleBookmarkToggle = async () => {
     if (!user) {
@@ -80,6 +94,7 @@ export default function BookMarkViewCnt({ post }) {
         });
         alert("북마크가 삭제되었습니다.");
         setBookMark(false);
+        setUserBookmarks([]);
       } else {
         const payload = { userId: userId, groupId };
         await axios.post(`${host}/api/bookmark`, payload, {
@@ -92,6 +107,8 @@ export default function BookMarkViewCnt({ post }) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
     }
+
+    postBookmarkCnt();
   };
 
   return (
@@ -150,7 +167,7 @@ export default function BookMarkViewCnt({ post }) {
           <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
         </svg>
 
-        <p>{userBookmarks.length}</p>
+        <p>{postBookmarksCnt}</p>
       </div>
     </div>
   );
