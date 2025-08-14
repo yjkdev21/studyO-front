@@ -244,7 +244,9 @@ function MyPage() {
     if (!user?.id) return;
 
     try {
-      const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
+      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      
+      const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
         withCredentials: true,
         timeout: 10000
       });
@@ -403,26 +405,27 @@ function MyPage() {
         password: password
       };
 
-      const response = await fetch(`${apiUrl}/api/user/verify-password`, {
-        method: 'POST',
+      const response = await axios.post(`${apiUrl}/api/user/verify-password`, requestBody, {
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        credentials: 'include',
-        body: JSON.stringify(requestBody),
+        timeout: 10000
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (response.status === 200 && response.data.success) {
         setShowPasswordModal(false);
         navigate('/myedit');
       } else {
-        setPasswordError(data.message || '비밀번호가 일치하지 않습니다.');
+        setPasswordError(response.data.message || '비밀번호가 일치하지 않습니다.');
       }
     } catch (error) {
-      setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
+      if (error.response && error.response.data) {
+        setPasswordError(error.response.data.message || '비밀번호가 일치하지 않습니다.');
+      } else {
+        setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
+      }
     } finally {
       setPasswordLoading(false);
     }
@@ -462,36 +465,30 @@ function MyPage() {
         setStudyError(null);
 
         const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
-        const url = `${apiUrl}/api/study/user/${user.id}/active`;
-
-        const response = await fetch(url, {
-          method: 'GET',
+        
+        const response = await axios.get(`${apiUrl}/api/study/user/${user.id}/active`, {
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          credentials: 'include',
+          timeout: 10000
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.data)) {
+        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
           // 최신순으로 정렬
-          const sortedStudies = data.data.sort((a, b) => {
+          const sortedStudies = response.data.data.sort((a, b) => {
             const dateA = new Date(a.createdAt);
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
           setMyStudies(sortedStudies);
         } else {
-          throw new Error(data.message || '데이터 형식이 올바르지 않습니다.');
+          throw new Error(response.data.message || '데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        setStudyError(`스터디 데이터를 불러올 수 없습니다: ${error.message}`);
+        const errorMessage = error.response?.data?.message || error.message || '스터디 데이터를 불러올 수 없습니다.';
+        setStudyError(`스터디 데이터를 불러올 수 없습니다: ${errorMessage}`);
         setMyStudies([]);
       } finally {
         setStudyLoading(false);
@@ -514,36 +511,30 @@ function MyPage() {
         setBookmarkError(null);
 
         const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
-        const url = `${apiUrl}/api/bookmark/user/${user.id}`;
-
-        const response = await fetch(url, {
-          method: 'GET',
+        
+        const response = await axios.get(`${apiUrl}/api/bookmark/user/${user.id}`, {
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          credentials: 'include',
+          timeout: 10000
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.data)) {
+        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
           // 최신순으로 정렬
-          const sortedBookmarks = data.data.sort((a, b) => {
+          const sortedBookmarks = response.data.data.sort((a, b) => {
             const dateA = new Date(a.createdAt);
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
           setMyBookmarks(sortedBookmarks);
         } else {
-          throw new Error(data.message || '북마크 데이터 형식이 올바르지 않습니다.');
+          throw new Error(response.data.message || '북마크 데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        setBookmarkError(`북마크 데이터를 불러올 수 없습니다: ${error.message}`);
+        const errorMessage = error.response?.data?.message || error.message || '북마크 데이터를 불러올 수 없습니다.';
+        setBookmarkError(`북마크 데이터를 불러올 수 없습니다: ${errorMessage}`);
         setMyBookmarks([]);
       } finally {
         setBookmarkLoading(false);
