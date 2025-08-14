@@ -177,6 +177,7 @@ function Search() {
   };
 
   // fetchAllData 함수 전체 (수정됨)
+  // fetchAllData 함수 전체 (수정됨)
   const fetchAllData = async (filterParams) => {
     // 필터링 파라미터를 백엔드 API 요청에 포함시키기 위한 설정
     const { minMembers, maxMembers } = getMinMaxMembers(
@@ -406,7 +407,6 @@ function Search() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 스터디 카드 렌더링 함수
   const renderStudyCard = (post) => (
     <Link
       to={`/study/postView/${post.groupId}`}
@@ -451,17 +451,21 @@ function Search() {
           )}
         </div>
         <h3>{post.title}</h3>
-
         <div className="g-post-meta">
           <span className="g-meta-authorone">
             <strong>{post.authorName ?? "알 수 없음"}</strong>
           </span>
           <div className="g-meta-row">
             <div className="g-meta-item g-recruit-end-date">
-              모집 마감일:{" "}
-              {post.recruitEndDate
-                ? new Date(post.recruitEndDate).toLocaleDateString()
-                : "마감일 없음"}
+              {post.hashTag && (
+                <span className="g-hashtag-text">{post.hashTag}</span>
+              )}
+              <span className="g-deadline-text">
+                모집 마감일:{" "}
+                {post.recruitEndDate
+                  ? new Date(post.recruitEndDate).toLocaleDateString()
+                  : "마감일 없음"}
+              </span>
             </div>
             <div className="g-meta-vb">
               <div className="g-meta-item g-views">
@@ -630,7 +634,7 @@ function Search() {
     <div className="g-search-filter">
       <div className="g-top-buttons">
         <div className="g-write-button-wrapper">
-          <Link to="/groupCreate" className="g-btn-write">
+          <Link to="/study/PostMain" className="g-btn-write">
             글 작성하기
           </Link>
         </div>
@@ -791,7 +795,7 @@ function Search() {
           <input
             type="text"
             name="search"
-            placeholder="제목, 글 내용 등 검색해보세요"
+            placeholder="제목, 해시태그 검색해보세요"
             className="g-search-input"
             value={filters.search}
             onChange={(e) => handleFilterChange("search", e.target.value)}

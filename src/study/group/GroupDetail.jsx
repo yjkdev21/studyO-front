@@ -3,6 +3,7 @@ import axios from "axios";
 import './group.css';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
+import { getProfileImageSrc, getThumbnailSrc } from "../../utils/imageUtils";
 
 
 export default function GroupDetail() {
@@ -15,7 +16,6 @@ export default function GroupDetail() {
     const [profileImage, setProfileImage] = useState(null);
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading } = useAuth();
-    const defaultProfileImageSrc = "/images/default-profile.png";
 
     const loadUserProfileImage = async (userId) => {
         if (!userId) return defaultProfileImageSrc;
@@ -141,6 +141,8 @@ export default function GroupDetail() {
         e.target.src = defaultProfileImageSrc;
     };
 
+    console.log(group?.thumbnail);
+
     const handleDelete = async () => {
         if (!canDelete()) {
             if (!isOwner()) {
@@ -174,21 +176,17 @@ export default function GroupDetail() {
                 <h1 className="view-title">{group.groupName}</h1>
                 <div className="view-author-info">
                     <img
-                        src={profileImage || defaultProfileImageSrc}
-                        alt="프로필 이미지"
-                        className="view-profile-image"
-                        onError={handleProfileImageError}
+                        src={getProfileImageSrc(user?.profileImage)}
+                        alt="프로필이미지"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover' ,borderRadius:'50px'}}
                     />
                     <span className="view-author">{group.nickname}</span>
                     <span className="view-date"> | 스터디 그룹</span>
                 </div>
                 <div id="groupdetail" className="thumbnail-section">
                     <img
-                        src={getThumbnailUrl(group)}
+                        src={getThumbnailSrc(group?.thumbnail)}
                         alt="썸네일"
-                        onError={(e) => {
-                            e.target.src = '/images/default-thumbnail.png';
-                        }}
                     />
                 </div>
                 <div className="view-meta-info-flex">
