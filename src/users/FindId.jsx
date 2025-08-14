@@ -60,8 +60,6 @@ function FindId() {
 
   return (
     <main style={{ maxWidth: 400, margin: '0 auto', padding: '2rem' }}>
-
-      <span>(디자인 추후수정)</span>
       <div>
         <h2>아이디 찾기</h2>
         <p>가입 시 사용한 이메일 주소를 입력해주세요</p>

@@ -152,7 +152,7 @@ function ConfirmModal({
                     {!isSuccess && showDescription && (
                         <div className="modal-question">
                             해당 작업을
-                            <span className="highlight"> {actionText} </span>
+                            <span className={`highlight ${isDangerousAction ? 'danger' : ''}`}> {actionText} </span>
                             하시겠습니까?
                         </div>
                     )}

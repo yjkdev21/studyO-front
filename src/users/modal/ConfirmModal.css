@@ -140,6 +140,10 @@
 .highlight {
     color: #FDB515;
 }
+/* 추방, 탈퇴 액션의 경우 빨간색 */
+.highlight.danger {
+    color: #FF2525 !important;
+}
 
 .modal-buttons {
     position: absolute !important;

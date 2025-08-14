@@ -38,7 +38,6 @@ function FindPw() {
 
   return (
     <main>
-      <span>(디자인 추후수정)</span>
       <div className="main-center !w-200">
         <h2 className="text-2xl font-semibold mb-4 text-center">비밀번호 재설정</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

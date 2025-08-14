@@ -110,12 +110,18 @@
     height: 50px;
 }
 
+#study-member .dashboard-member-list .profile-image.me {
+    border: 1px solid var(--main-color);
+}
+
 #study-member .dashboard-member-list .member-info {
     width: calc(100% - 140px);
 }
+
 #study-member .dashboard-member-list .member-info.request {
     width: calc(100% - 194px);
 }
+
 #study-member .dashboard-member-list .member-info .leader-tag {
     padding: 1px 10px;
     border: 1px solid #5AA1F9;
@@ -126,7 +132,8 @@
     font-weight: normal;
 }
 
-#study-member .dashboard-member-list .member-btn {
+#study-member .dashboard-member-list .member-btn,
+#study-member .study-leave-btn {
     width: 48px;
     padding: 5px 10px;
     border: 1px solid;
@@ -138,4 +145,21 @@
 #study-member .dashboard-member-list .member-btn:hover {
     color: #fff;
     background-color: var(--main-color);
+}
+
+/* 신청목록 페이지 버튼 */
+#study-member .request-btn-wrap button:disabled {
+    opacity: 0.3;
+    cursor: auto;
+}
+
+/* ========== 멤버 대시보드 - 탈퇴 버튼 ========== */
+#study-member .study-leave-btn {
+    width: auto;
+    color: #999;
+}
+
+#study-member .study-leave-btn:hover {
+    background-color: #ff2525;
+    color: white;
 }
