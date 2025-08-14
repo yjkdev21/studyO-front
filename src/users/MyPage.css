@@ -52,6 +52,7 @@
   background-color: #EEEEEE;
   border-radius: 50%;
 }
+
 .mypage-profile-image img {
   width: 100%;
   height: 100%;
@@ -98,7 +99,6 @@
   flex-shrink: 0; 
 }
 
-/* 통계와 캘린더 나란히 배치 */
 .mypage-analytics-calendar-wrapper {
   display: flex;
   gap: 1.5rem;
@@ -318,7 +318,6 @@
   transition: all 0.2s ease;
 }
 
-/* 호버 시에만 테두리 변경 */
 .mypage-study-card-item:hover {
   border-color: #FDB515;
   background-color: #ffffff;
@@ -454,8 +453,6 @@
   font-size: 16px;
   color: #666666;
 }
-
-
 
 @media (max-width: 1024px) {
   .mypage-studies-cards-container {

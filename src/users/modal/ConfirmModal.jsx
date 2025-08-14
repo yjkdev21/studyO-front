@@ -3,30 +3,25 @@ import { createPortal } from 'react-dom';
 import './ConfirmModal.css';
 
 function ConfirmModal({
-    isOpen,
-    onCancel,
-    onConfirm,
-    type = 'editProfile',
-    userName,
-    profileImage,
-    customText = {},
-    isSuccess = false,
-    onSuccessConfirm,
+    isOpen,                // 모달 표시 여부
+    onCancel,              // 취소 버튼 클릭 시 실행 함수
+    onConfirm,             // 확인 버튼 클릭 시 실행 함수
+    type = 'editProfile',  // 모달 종류
+    userName,              // 사용자 이름
+    profileImage,          // 프로필 이미지 URL
+    customText = {},       // 커스텀 텍스트 설정
+    isSuccess = false,     // 성공 모드 여부
+    onSuccessConfirm,      // 성공 모드에서 확인 버튼 클릭 시 실행 함수
 }) {
+    // 모달이 열릴 때 스크롤 잠금
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+        document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+        return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen) return null; // 모달이 닫혀있으면 렌더링 안 함
 
+    // 성공 모드 프리셋 텍스트
     const successPresets = {
         editProfile: {
             title: '수정 완료',
@@ -54,6 +49,7 @@ function ConfirmModal({
         }
     };
 
+    // 기본 모드 프리셋 텍스트
     const modalPresets = {
         editProfile: {
             title: '회원정보 수정',
@@ -62,11 +58,7 @@ function ConfirmModal({
             actionText: '수정',
         },
         editProfileSimple: {
-            title: (
-                <>
-                    프로필을 <span className="highlight">수정</span>하시겠습니까?
-                </>
-            ),
+            title: <>프로필을 <span className="highlight">수정</span>하시겠습니까?</>,
             subtitle: '',
             description: '',
             actionText: '수정',
@@ -94,8 +86,10 @@ function ConfirmModal({
         }
     };
 
+    // 현재 모드에 맞는 프리셋 선택
     const presets = isSuccess ? successPresets : modalPresets;
     
+    // 프리셋과 커스텀 텍스트 병합
     const { 
         title, 
         subtitle, 
@@ -109,13 +103,15 @@ function ConfirmModal({
         ...customText
     };
 
-    // 위험한 액션 (추방, 탈퇴)인지 확인
+    // 위험한 작업 여부(추방, 탈퇴)
     const isDangerousAction = type === 'kick' || type === 'leave';
 
+    // 모달 렌더링
     return createPortal(
         <div className="confirm-modal-overlay">
             <div className="modal-content">
                 <div className="modal-body">
+                    {/* 프로필 영역 */}
                     {showProfile && (
                         <div className="modal-profile">
                             <div className="modal-profile-image">
@@ -129,12 +125,14 @@ function ConfirmModal({
                         </div>
                     )}
 
+                    {/* 경고 아이콘 */}
                     {showExclamation && (
                         <div className="modal-exclamation">
                             <div className="exclamation-icon">!</div>
                         </div>
                     )}
 
+                    {/* 메시지 영역 */}
                     <div className={`modal-message ${showDescription && subtitle ? 'with-background' : ''}`}>
                         <div className="modal-greeting">{title}</div>
                         {showDescription && subtitle && (
@@ -149,6 +147,7 @@ function ConfirmModal({
                         )}
                     </div>
 
+                    {/* 일반 모드일 경우 확인 질문 표시 */}
                     {!isSuccess && showDescription && (
                         <div className="modal-question">
                             해당 작업을
@@ -158,6 +157,7 @@ function ConfirmModal({
                     )}
                 </div>
 
+                {/* 버튼 영역 */}
                 <div className="modal-buttons">
                     {isSuccess ? (
                         <button 
