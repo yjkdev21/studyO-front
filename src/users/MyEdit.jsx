@@ -43,7 +43,9 @@ function MyEdit() {
     // 서버에서 사용자 프로필 정보 로드
     const loadUserProfileFromServer = async () => {
         try {
-            const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
+            const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+            
+            const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
                 withCredentials: true,
                 timeout: 10000
             });
@@ -165,6 +167,7 @@ function MyEdit() {
     // 수정 확인 및 서버 전송
     const handleConfirm = async () => {
         try {
+            const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
             let response;
             
             if (profileImageFile) {
@@ -185,7 +188,7 @@ function MyEdit() {
                 formDataToSend.append('userDto', JSON.stringify(userDto));
                 formDataToSend.append('profileImage', profileImageFile);
 
-                response = await axios.put('http://localhost:8081/api/user/update-with-image', formDataToSend, {
+                response = await axios.put(`${apiUrl}/api/user/update-with-image`, formDataToSend, {
                     withCredentials: true,
                     timeout: 30000
                 });
@@ -201,7 +204,7 @@ function MyEdit() {
                     dataToSend.password = formData.newPassword;
                 }
 
-                response = await axios.put('http://localhost:8081/api/user/update', dataToSend, {
+                response = await axios.put(`${apiUrl}/api/user/update`, dataToSend, {
                     withCredentials: true,
                     headers: { 'Content-Type': 'application/json' },
                     timeout: 10000
