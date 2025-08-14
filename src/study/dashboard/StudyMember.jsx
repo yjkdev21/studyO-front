@@ -7,10 +7,11 @@ import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembe
 
 import "./StudyMember.css";
 
+const PROFILE_IMG_BASE_PATH = "https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/myprofileimg/";
+
 export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
-
 
   /* ========== 상태 관리 ========== */
   // 닉네임 관련 상태
@@ -30,7 +31,7 @@ export default function StudyMember() {
 
   // ref
   const inputRef = useRef(null);
-  const imageSrc = user?.profileImage ?? "/images/default-profile.png";
+  // const imageSrc = user?.profileImage ? `${PROFILE_IMG_BASE_PATH + user.profileImage}` : "/images/default-profile.png";
 
   // 모달 관련 상태
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -93,6 +94,11 @@ export default function StudyMember() {
     } else if (error.request) {
       setError("서버에 연결할 수 없습니다.");
     }
+  };
+
+  // 프로필 이미지 경로 헬퍼 함수
+  const getProfileImageSrc = (profileImage) => {
+    return profileImage ? `${PROFILE_IMG_BASE_PATH + profileImage}` : "/images/default-profile.png";
   };
 
   // 데이터 리로드
@@ -228,6 +234,8 @@ export default function StudyMember() {
     }
   };
 
+  // console.log(groupMembers);
+
   /* ========== 페이지 이동 함수 ========== */
   const goPrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -237,6 +245,7 @@ export default function StudyMember() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+
   return (
     <div id="study-member">
       {/* 내 정보 */}
@@ -245,7 +254,7 @@ export default function StudyMember() {
         <div className="dashboard-my-info">
           {/* 프로필 이미지 */}
           <div className="profile-image rounded-full overflow-hidden">
-            <img className="w-full block" src={imageSrc} alt="프로필" />
+            <img className="w-full block" src={getProfileImageSrc(user?.profileImage)} alt="프로필" />
           </div>
 
           {/* 닉네임 */}
@@ -319,7 +328,8 @@ export default function StudyMember() {
             paginatedRequests.map((req, idx) => (
               <li key={req.id || idx} className="dashboard-member-list justify-between">
                 <div className="profile-image rounded-full overflow-hidden">
-                  <img className="w-full block" src={req.profileImage ?? imageSrc} alt="프로필" />
+                  <img className="w-full block"
+                    src={getProfileImageSrc(req.profileImage)} alt="프로필" />
                 </div>
                 <div className="member-info request">
                   <p className="font-bold text-[#333]">{req.nickname}</p>
@@ -360,7 +370,7 @@ export default function StudyMember() {
             groupMembers.map((member, idx) => (
               <li key={member?.id || idx} className="dashboard-member-list justify-start">
                 <div className={`profile-image rounded-full overflow-hidden ${member?.userId == user?.id ? 'me' : ''}`}>
-                  <img className="w-full block" src={imageSrc} alt="프로필" />
+                  <img className="w-full block" src={getProfileImageSrc(member?.profileImage)} alt="프로필" />
                 </div>
                 <div className="member-info">
                   <p className="font-bold text-[#333]">

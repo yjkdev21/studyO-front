@@ -120,6 +120,9 @@ function Search() {
   const [showUrgentLeft, setShowUrgentLeft] = useState(false);
   const [showUrgentRight, setShowUrgentRight] = useState(false);
 
+  // 스크롤 위치를 저장할 useRef 추가
+  const scrollPosRef = useRef(0);
+
   const scrollHorizontally = (ref, direction) => {
     if (ref.current) {
       const scrollAmount = 400;
@@ -290,6 +293,9 @@ function Search() {
   };
 
   useEffect(() => {
+    // 필터 변경 시, 스크롤 위치를 저장
+    scrollPosRef.current = window.pageYOffset;
+
     setIsLoading(true);
     setError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -303,6 +309,11 @@ function Search() {
         console.error("데이터 불러오기 실패:", err);
       } finally {
         setIsLoading(false); // 모든 로딩이 끝난 후에만 상태 변경
+
+        // 로딩이 끝난 후, 이전에 저장한 위치로 스크롤을 이동
+        setTimeout(() => {
+          window.scrollTo({ top: scrollPosRef.current });
+        }, 100);
       }
       setCurrentPage(1);
     }, 300);
@@ -621,14 +632,16 @@ function Search() {
   return (
     <div className="g-search-filter">
       <div className="g-top-buttons">
-        <div className="g-write-button-wrapper">
-          <Link to="/groupCreate" className="g-btn-write">
-            글 작성하기
-          </Link>
-        </div>
+        {isShowingAll && !isLoading && (
+          <div className="g-write-button-wrapper">
+            <Link to="/groupCreate" className="g-btn-write">
+              글 작성하기
+            </Link>
+          </div>
+        )}
       </div>
 
-      {isShowingAll && !isLoading && isAuthenticated && (
+      {!isLoading && isAuthenticated && (
         <>
           {/* 인기 스터디 섹션 */}
           {mergedPopularStudies.length > 0 && (
