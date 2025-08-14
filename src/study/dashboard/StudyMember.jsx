@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useStudy } from '../../contexts/StudyContext';
 import { useParams } from "react-router-dom";
 import ConfirmModal from '../../users/modal/ConfirmModal';
+import {getProfileImageSrc} from "../../utils/imageUtils";
 
 import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname } from "./studyMemberApi";
 
 import "./StudyMember.css";
 
-const PROFILE_IMG_BASE_PATH = "https://upload-bucket-study.s3.ap-northeast-2.amazonaws.com/uploads/myprofileimg/";
-
 export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
+  const { studyInfo } = useStudy();
 
   /* ========== 상태 관리 ========== */
   // 닉네임 관련 상태
@@ -24,14 +25,8 @@ export default function StudyMember() {
   const [userRequests, setUserRequests] = useState([]);
   const [groupMembers, setGroupMembers] = useState([]);
 
-  // UI 상태
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   // ref
   const inputRef = useRef(null);
-  // const imageSrc = user?.profileImage ? `${PROFILE_IMG_BASE_PATH + user.profileImage}` : "/images/default-profile.png";
 
   // 모달 관련 상태
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -62,7 +57,6 @@ export default function StudyMember() {
     try {
       const data = await getUserRequests(groupId);
       setUserRequests(data.list || []);
-      setMessage(data.message || "");
     } catch (error) {
       handleApiError(error);
     }
@@ -82,29 +76,21 @@ export default function StudyMember() {
   const handleApiError = (error) => {
     if (error.response) {
       const status = error.response.status;
-      setError(
-        status === 401
-          ? "로그인이 필요합니다."
-          : status === 403
-            ? "접근 권한이 없습니다."
-            : status === 404
-              ? "요청한 리소스를 찾을 수 없습니다."
-              : "서버 오류가 발생했습니다."
-      );
+      const errorMessage =
+        status === 401 ? "로그인이 필요합니다." :
+          status === 403 ? "접근 권한이 없습니다." :
+            status === 404 ? "요청한 리소스를 찾을 수 없습니다." : "서버 오류가 발생했습니다.";
+      alert(errorMessage);
     } else if (error.request) {
-      setError("서버에 연결할 수 없습니다.");
+      alert("서버에 연결할 수 없습니다.");
+    } else {
+      alert("알 수 없는 오류가 발생했습니다.");
     }
-  };
-
-  // 프로필 이미지 경로 헬퍼 함수
-  const getProfileImageSrc = (profileImage) => {
-    return profileImage ? `${PROFILE_IMG_BASE_PATH + profileImage}` : "/images/default-profile.png";
   };
 
   // 데이터 리로드
   const reloadData = async () => {
     if (!groupId) return;
-    setLoading(true);
     try {
       await Promise.all([
         fetchUserRequests(),
@@ -112,8 +98,6 @@ export default function StudyMember() {
       ]);
     } catch (err) {
       handleApiError(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -128,7 +112,6 @@ export default function StudyMember() {
   /** 닉네임 저장 */
   const handleSaveClick = async () => {
     try {
-      setLoading(true);
 
       const result = await updateNickname(groupId, tempNickname);
 
@@ -153,8 +136,6 @@ export default function StudyMember() {
 
       // 실패 시 원래 닉네임으로 되돌리기
       setTempNickname(nickname);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -175,6 +156,14 @@ export default function StudyMember() {
   useEffect(() => {
     reloadData();
   }, [groupId]);
+
+  // userRequests가 변경되고 현재 페이지가 유효하지 않을 때만 초기화
+  useEffect(() => {
+    const maxPage = Math.ceil(userRequests.length / itemsPerPage) || 1;
+    if (currentPage > maxPage) {
+      setCurrentPage(1);
+    }
+  }, [userRequests, currentPage, itemsPerPage]);
 
   // 닉네임 로드
   useEffect(() => {
@@ -203,12 +192,11 @@ export default function StudyMember() {
   };
 
   /** 모달 확인 핸들러 */
-  const handleModalConfirm = async (req) => {
+  const handleModalConfirm = async () => {
 
     if (!selectedRequest) return;
 
     try {
-      setLoading(true);
 
       if (isAcceptModalOpen) {
         // 수락 처리 로직
@@ -234,8 +222,6 @@ export default function StudyMember() {
     }
   };
 
-  // console.log(groupMembers);
-
   /* ========== 페이지 이동 함수 ========== */
   const goPrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -244,7 +230,6 @@ export default function StudyMember() {
   const goNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
-
 
   return (
     <div id="study-member">
@@ -299,66 +284,69 @@ export default function StudyMember() {
                 </div>
               )}
             </div>
-            <p className="text-[#666] !pl-2">{user?.introduction}</p>
+            <p className="text-[#666] !px-2">{user?.introduction}</p>
           </div>
         </div>
       </div>
 
       {/* 신청목록 */}
-      <div className="request-container !mb-[40px]">
-        <div className="!mb-8 flex justify-between items-center">
-          <h3 className="text-3xl">
-            신청목록
-            <span className="text-sm text-[#666] font-normal !ml-2">
-              {userRequests.length}
-            </span>
-          </h3>
-          <div className="request-btn-wrap">
-            <button type="button" className="request-btn-prev" onClick={goPrevPage} disabled={currentPage === 1}>
-              <span className="material-symbols-rounded !text-4xl">keyboard_arrow_left</span>
-            </button>
-            <button type="button" className="request-btn-next" onClick={goNextPage} disabled={currentPage === totalPages}>
-              <span className="material-symbols-rounded !text-4xl">keyboard_arrow_right</span>
-            </button>
+      {studyInfo?.groupOwnerId === user?.id ? (
+        <div className="request-container !mb-[40px]">
+          <div className="!mb-8 flex justify-between items-center">
+            <h3 className="text-3xl">
+              신청목록
+              <span className="text-sm text-[#666] font-normal !ml-2">
+                {userRequests.length}
+              </span>
+            </h3>
+            <div className="request-btn-wrap">
+              <button type="button" className="request-btn-prev" onClick={goPrevPage}
+                disabled={currentPage === 1 || userRequests.length === 0}>
+                <span className="material-symbols-rounded !text-4xl">keyboard_arrow_left</span>
+              </button>
+              <button type="button" className="request-btn-next" onClick={goNextPage}
+                disabled={currentPage === totalPages || userRequests.length === 0}>
+                <span className="material-symbols-rounded !text-4xl">keyboard_arrow_right</span>
+              </button>
+            </div>
           </div>
-        </div>
-        {/* 신청 목록 불러오기 */}
-        <ul className="dashboard-member-wrap">
+          {/* 신청 목록 불러오기 */}
+          <ul className="dashboard-member-wrap">
+            {paginatedRequests.length > 0 ? (
+              paginatedRequests.map((req, idx) => (
+                <li key={req.id || idx} className="dashboard-member-list justify-between">
+                  <div className="profile-image rounded-full overflow-hidden">
+                    <img className="w-full block"
+                      src={getProfileImageSrc(req.profileImage)} alt="프로필" />
+                  </div>
+                  <div className="member-info request">
+                    <p className="font-bold text-[#333]">{req.nickname}</p>
+                    <p className="text-sm text-[#666] truncate">{req.applicationMessage}</p>
+                  </div>
+                  <div className="flex">
+                    <button type="button" className="member-btn !mr-2"
+                      onClick={() => {
+                        setSelectedRequest(req);
+                        setIsAcceptModalOpen(true);
+                      }}>수락</button>
+                    <button type="button" className="member-btn"
+                      onClick={() => {
+                        setSelectedRequest(req);
+                        setIsRejectModalOpen(true);
+                      }}>거절</button>
+                  </div>
+                </li>
+              ))
+            )
+              :
+              (<li className="text-[#666]">신청자가 없습니다.</li>)
+            }
+          </ul>
           {paginatedRequests.length > 0 ? (
-            paginatedRequests.map((req, idx) => (
-              <li key={req.id || idx} className="dashboard-member-list justify-between">
-                <div className="profile-image rounded-full overflow-hidden">
-                  <img className="w-full block"
-                    src={getProfileImageSrc(req.profileImage)} alt="프로필" />
-                </div>
-                <div className="member-info request">
-                  <p className="font-bold text-[#333]">{req.nickname}</p>
-                  <p className="text-sm text-[#666] truncate">{req.applicationMessage}</p>
-                </div>
-                <div className="flex">
-                  <button type="button" className="member-btn !mr-2"
-                    onClick={() => {
-                      setSelectedRequest(req);
-                      setIsAcceptModalOpen(true);
-                    }}>수락</button>
-                  <button type="button" className="member-btn"
-                    onClick={() => {
-                      setSelectedRequest(req);
-                      setIsRejectModalOpen(true);
-                    }}>거절</button>
-                </div>
-              </li>
-            ))
-          )
-            :
-            (<li className="text-[#666]">신청자가 없습니다.</li>)
-          }
-        </ul>
-        {paginatedRequests.length > 0 ? (
-          <div className="text-center text-sm text-[#999] font-normal !mt-4">({currentPage}/{totalPages})</div>
-        ) : ""}
-      </div>
-
+            <div className="text-center text-sm text-[#999] font-normal !mt-4">({currentPage}/{totalPages})</div>
+          ) : ""}
+        </div>
+      ) : ""}
       {/* 멤버목록 */}
       <div className="member-container">
         <h3 className="text-3xl !mb-8">
@@ -368,8 +356,8 @@ export default function StudyMember() {
         <ul className="dashboard-member-wrap">
           {groupMembers.length > 0 ? (
             groupMembers.map((member, idx) => (
-              <li key={member?.id || idx} className="dashboard-member-list justify-start">
-                <div className={`profile-image rounded-full overflow-hidden ${member?.userId == user?.id ? 'me' : ''}`}>
+              <li key={member?.id || idx} className={`dashboard-member-list justify-start  ${member?.userId === user?.id ? 'me' : ''}`}>
+                <div className="profile-image rounded-full overflow-hidden">
                   <img className="w-full block" src={getProfileImageSrc(member?.profileImage)} alt="프로필" />
                 </div>
                 <div className="member-info">
