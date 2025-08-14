@@ -120,9 +120,6 @@ function Search() {
   const [showUrgentLeft, setShowUrgentLeft] = useState(false);
   const [showUrgentRight, setShowUrgentRight] = useState(false);
 
-  // 스크롤 위치를 저장할 useRef 추가
-  const scrollPosRef = useRef(0);
-
   const scrollHorizontally = (ref, direction) => {
     if (ref.current) {
       const scrollAmount = 400;
@@ -179,31 +176,35 @@ function Search() {
     return { minMembers: null, maxMembers: null };
   };
 
-  // fetchAllData 함수 전체
+  // fetchAllData 함수 전체 (수정됨)
   const fetchAllData = async (filterParams) => {
+    // 필터링 파라미터를 백엔드 API 요청에 포함시키기 위한 설정
     const { minMembers, maxMembers } = getMinMaxMembers(
       filterParams.recruitmentCount
     );
     const recruitingOnlyInt = filterParams.recruitingOnly ? 1 : 0;
 
     const params = {
-      ...filterParams,
-      category: filterParams.category || "",
+      category: filterParams.category || null,
+      studyMode: filterParams.studyMode || null,
+      region: filterParams.region || null,
+      search: filterParams.search || null,
       recruitingOnly: recruitingOnlyInt,
       minMembers: minMembers,
       maxMembers: maxMembers,
-      search: filterParams.search || "",
     };
 
-    const mainPostsPromise = axios.get(`${host}/api/searchPosts`);
+    // 필터링 파라미터를 포함하여 메인 게시물 요청
+    const mainPostsPromise = axios.get(`${host}/api/searchPosts`, { params });
 
-    const countsPromise = axios.get(`${host}/api/bookmarks`); // 백엔드 컨트롤러에 정의된 URL
+    const countsPromise = axios.get(`${host}/api/bookmarks`);
 
     const userBookmarksPromise =
       isAuthenticated && user?.id
         ? axios.get(`${host}/api/bookmark/user/${user.id}`)
         : Promise.resolve({ data: { success: true, data: [] } });
 
+    // isShowingAll 상태에 따라 특수 스터디 요청을 분기
     const specialPromises = isShowingAll
       ? [
           axios.get(`${host}/api/popularStudies`),
@@ -214,58 +215,62 @@ function Search() {
           Promise.resolve({ data: { studies: [] } }),
         ];
 
-    const [
-      mainPostsRes,
-      countsRes, // countsPromise의 결과
-      userBookmarksRes,
-      popularStudiesRes,
-      urgentStudiesRes,
-    ] = await Promise.all([
-      mainPostsPromise,
-      countsPromise,
-      userBookmarksPromise,
-      ...specialPromises,
-    ]);
+    try {
+      const [
+        mainPostsRes,
+        countsRes,
+        userBookmarksRes,
+        popularStudiesRes,
+        urgentStudiesRes,
+      ] = await Promise.all([
+        mainPostsPromise,
+        countsPromise,
+        userBookmarksPromise,
+        ...specialPromises,
+      ]);
 
-    // 모든 데이터를 한 번에 업데이트
-    setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
+      // 모든 데이터를 한 번에 업데이트
+      setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
 
-    if (countsRes.data && Array.isArray(countsRes.data)) {
-      const newCountsData = countsRes.data.reduce((acc, item) => {
-        // 백엔드에서 키가 소문자로 변환되어 오는 경우를 가정
-        const groupId = item.studyGroupId || item.STUDYGROUPID;
+      if (countsRes.data && Array.isArray(countsRes.data)) {
+        const newCountsData = countsRes.data.reduce((acc, item) => {
+          const groupId = item.studyGroupId || item.STUDYGROUPID;
 
-        if (groupId !== undefined && groupId !== null) {
-          acc[groupId] = {
-            viewCount: item.viewCount || item.VIEWCOUNT,
-            bookmarkCount: item.bookmarkCount || item.BOOKMARKCOUNT,
-          };
-        }
-        return acc;
-      }, {});
-      setCountsData(newCountsData);
-    } else {
-      setCountsData({});
-    }
+          if (groupId !== undefined && groupId !== null) {
+            acc[groupId] = {
+              viewCount: item.viewCount || item.VIEWCOUNT,
+              bookmarkCount: item.bookmarkCount || item.BOOKMARKCOUNT,
+            };
+          }
+          return acc;
+        }, {});
+        setCountsData(newCountsData);
+      } else {
+        setCountsData({});
+      }
 
-    if (
-      userBookmarksRes.data.success &&
-      Array.isArray(userBookmarksRes.data.data)
-    ) {
-      const bookmarkGroupIds = userBookmarksRes.data.data.map(
-        (bookmark) => bookmark.groupId
+      if (
+        userBookmarksRes.data.success &&
+        Array.isArray(userBookmarksRes.data.data)
+      ) {
+        const bookmarkGroupIds = userBookmarksRes.data.data.map(
+          (bookmark) => bookmark.groupId
+        );
+        setUserBookmarks(bookmarkGroupIds);
+      } else {
+        setUserBookmarks([]);
+      }
+
+      setPopularStudies(
+        popularStudiesRes.data?.studies || popularStudiesRes.data || []
       );
-      setUserBookmarks(bookmarkGroupIds);
-    } else {
-      setUserBookmarks([]);
+      setUrgentStudies(
+        urgentStudiesRes.data?.studies || urgentStudiesRes.data || []
+      );
+    } catch (error) {
+      console.error("데이터 로드 중 오류 발생:", error);
+      throw error;
     }
-
-    setPopularStudies(
-      popularStudiesRes.data?.studies || popularStudiesRes.data || []
-    );
-    setUrgentStudies(
-      urgentStudiesRes.data?.studies || urgentStudiesRes.data || []
-    );
   };
 
   const handleBookmarkToggle = async (groupId) => {
@@ -293,9 +298,6 @@ function Search() {
   };
 
   useEffect(() => {
-    // 필터 변경 시, 스크롤 위치를 저장
-    scrollPosRef.current = window.pageYOffset;
-
     setIsLoading(true);
     setError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -309,11 +311,6 @@ function Search() {
         console.error("데이터 불러오기 실패:", err);
       } finally {
         setIsLoading(false); // 모든 로딩이 끝난 후에만 상태 변경
-
-        // 로딩이 끝난 후, 이전에 저장한 위치로 스크롤을 이동
-        setTimeout(() => {
-          window.scrollTo({ top: scrollPosRef.current });
-        }, 100);
       }
       setCurrentPage(1);
     }, 300);
@@ -454,7 +451,7 @@ function Search() {
           )}
         </div>
         <h3>{post.title}</h3>
-        <p className="g-truncated-text">{post.content}</p>
+
         <div className="g-post-meta">
           <span className="g-meta-authorone">
             <strong>{post.authorName ?? "알 수 없음"}</strong>
@@ -632,16 +629,14 @@ function Search() {
   return (
     <div className="g-search-filter">
       <div className="g-top-buttons">
-        {isShowingAll && !isLoading && (
-          <div className="g-write-button-wrapper">
-            <Link to="/groupCreate" className="g-btn-write">
-              글 작성하기
-            </Link>
-          </div>
-        )}
+        <div className="g-write-button-wrapper">
+          <Link to="/groupCreate" className="g-btn-write">
+            글 작성하기
+          </Link>
+        </div>
       </div>
 
-      {!isLoading && isAuthenticated && (
+      {isShowingAll && !isLoading && isAuthenticated && (
         <>
           {/* 인기 스터디 섹션 */}
           {mergedPopularStudies.length > 0 && (
