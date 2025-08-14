@@ -16,6 +16,8 @@ const StudyContext = createContext();
 export const StudyProvider = ({ children, groupId }) => {
 
   const [studyInfo, setStudyInfo] = useState(null);
+  const [studyMembers, setStudyMembers] = useState([]);
+  const [memberNicknames, setMemberNicknames] = useState({})
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
@@ -44,18 +46,18 @@ export const StudyProvider = ({ children, groupId }) => {
       if (data && data.data) {
         setStudyInfo(data.data);
         setError(null);
-        return { success: true, data: data.data};
-      }else {
+        return { success: true, data: data.data };
+      } else {
         setError('스터디 정보를 찾을 수 없습니다.');
-        return {success: false, message: '스터디 정보를 찾을 수 없습니다.'};
+        return { success: false, message: '스터디 정보를 찾을 수 없습니다.' };
       }
     } catch (error) {
       console.error('스터디 정보 가져오기 실패:', error);
 
       // 상세한 에러처리
       let errorMessage = '스터디 정보를 불러오는데 실패했습니다.'
-    
-      if(error.response && error.response.data) {
+
+      if (error.response && error.response.data) {
         errorMessage = error.response.data.message || errorMessage;
       } else if (error.code === 'ECONNABORTED') {
         errorMessage = "요청 시간이 초과되었습니다.";
@@ -64,23 +66,122 @@ export const StudyProvider = ({ children, groupId }) => {
       }
 
       setError(errorMessage);
-      return { success: false, message: errorMessage};
+      return { success: false, message: errorMessage };
     } finally {
       setIsLoading(false);
     }
   };
+
+  // 스터디 멤버 정보 가져오기
+  const fetchStudyMembers = async () => {
+    try {
+      const response = await studyApi.get(`/group/${groupId}/members`);
+
+      if (response.data) {
+        setStudyMembers(response.data);
+
+        //닉네임 매핑 객체 생성
+        const nicknameMap = {};
+        response.data.forEach(member => {
+          // 스터디 닉네임 우선, 없으면 일반 닉네임 사용
+          nicknameMap[member.userId] = member.studyNickname || member.nickname || '사용자';
+        });
+        setMemberNicknames(nicknameMap);
+
+        console.log('스터디 멤버 정보:', response.data);
+        console.log('닉네임 매핑:', nicknameMap);
+
+        return { success: true, data: response.data };
+      }
+      return { success: false, message: '멤버 정보가 없습니다.' };
+    } catch (error) {
+      console.error('스터디 멤버 정보 가져오기 실패:', error);
+
+      let errorMessage = '멤버 정보를 불러오는데 실패했습니다.';
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+
+      return { success: false, message: errorMessage };
+    }
+  };
+
+  // 득정 사용자의 스터디 닉네임 가져오기
+  const getStudyNickname = (userId) => {
+    return memberNicknames[userId] || '사용자';
+  };
+
+  // 프로필 이미지 URL 처리 함수
+  const getProfileImageUrl = (post, user) => {
+    // 작성자 프로필 이미지
+    if (post.writerProfileImage) {
+      if (post.writerProfileImage.startsWith('/')) {
+        return `${host}${post.writerProfileImage}`;
+      }
+      return post.writerProfileImage;
+    }
+
+    // 현재 사용자의 프로필 이미지 (본인 글일 경우)
+    if (post.userId === user?.id && user?.profileImage) {
+      if (user.profileImage.startsWith('/')) {
+        return `${host}${user.profileImage}`;
+      }
+      return user.profileImage;
+    }
+
+    return '/images/default-profile.png';
+  }
+
+  // 게시글 작성자 닉네임 가져오기
+  const getPostWriterNickname = (post, user) => {
+    //api 응당 스터디 닉네임
+    if (post.studyNickname) {
+      return post.studyNickname;
+    }
+
+    // 2순위: API 응답의 작성자 닉네임
+    if (post.writerNickname) {
+      return post.writerNickname;
+    }
+
+    // 3순위: 멤버 목록에서 스터디 닉네임 찾기
+    const writerId = post.userId || post.writerId;
+    if (writerId && memberNicknames[writerId]) {
+      return memberNicknames[writerId];
+    }
+
+    // 4순위: 현재 사용자 닉네임 (본인 글인 경우)
+    if (writerId === user?.id && user?.nickname) {
+      return user.nickname;
+    }
+
+    // 5순위: 기본값
+    return '사용자';
+  }
+
   // 스터디 정보 새로고침 함수 (외부에서 호출 가능한 공개 함수)
   const refreshStudyInfo = async () => {
     return await fetchStudyInfo();
   };
 
+
+
   // Effect 훅
   useEffect(() => {
     if (groupId) {
-      fetchStudyInfo();
+      // 스터디 정보와 멤버 정보를 동시에 가져오기
+      Promise.all([
+        fetchStudyInfo(),
+        fetchStudyMembers()
+      ]).then(([studyResult, memberResult]) => {
+        console.log('스터디 정보 로딩 완료:', studyResult);
+        console.log('멤버 정보 로딩 완료:', memberResult);
+      });
     } else {
       // groupId 없으면 초기화
       setStudyInfo(null);
+      setStudyMembers([]);
+      setMemberNicknames({});
       setError(null);
       setIsLoading(false);
     }
@@ -93,6 +194,14 @@ export const StudyProvider = ({ children, groupId }) => {
     error,
     refreshStudyInfo, // 새로고침 함수
     host,
+
+    // 새로 추가된 값들
+    studyMembers,
+    memberNicknames,
+    getStudyNickname,
+    getProfileImageUrl,
+    getPostWriterNickname,
+    fetchStudyMembers,
   };
 
   //provider 렌더링
