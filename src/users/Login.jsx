@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import "./Auth.css";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,8 @@ export default function Login() {
   });
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [hasLoginError, setHasLoginError] = useState(false);
 
   const { user, isAuthenticated, isLoading, login, logout, deleteAccount } = useAuth();
 
@@ -19,6 +22,17 @@ export default function Login() {
       ...prev,
       [name]: value
     }));
+
+    // 입력 시 에러 상태 초기화
+    if (hasLoginError) {
+      setHasLoginError(false);
+      setMessage('');
+    }
+  };
+
+  // 비밀번호 보이기 토글 
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
   };
 
   // 로그인 처리
@@ -26,11 +40,15 @@ export default function Login() {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage('');
+    setHasLoginError(false);
 
     const result = await login(formData);
 
     if (result.success) {
       setFormData({ userId: '', password: '' });
+      setHasLoginError(false);
+    } else {
+      setHasLoginError(true);
     }
 
     setMessage(result.message);
@@ -45,8 +63,6 @@ export default function Login() {
     const result = await logout();
     setMessage(result.message);
     alert("로그아웃되었습니다.");
-    // 로그인 화면으로 이동
-    // window.location.href = "/login";
   };
 
   // 회원 탈퇴 요청
@@ -67,32 +83,12 @@ export default function Login() {
 
   };
 
-  // 로딩 중일 때 로딩 화면 표시
-  // if (isLoading) {
-  //   return (
-  //     <main style={{ 
-  //       padding: '20px', 
-  //       maxWidth: '500px', 
-  //       margin: '0 auto',
-  //       textAlign: 'center'
-  //     }}>
-  //       <div style={{
-  //         padding: '40px',
-  //         fontSize: '18px',
-  //         color: '#666'
-  //       }}>
-  //         로딩 중...
-  //       </div>
-  //     </main>
-  //   );
-  // }
-
   return (
     <main>
-      <div className="main-center w-xl">
+      <div className="main-center auth-container">
 
         <h2 className="text-5xl">로그인</h2>
-        <p>(임시 디자인)</p>
+        <p className="text-base !my-5 text-[#666]">모든 스터디의 시작 StudyO</p>
         {/* 메시지 표시 */}
         {message && (
           <div style={{
@@ -106,7 +102,6 @@ export default function Login() {
             {message}
           </div>
         )}
-
         {/* 로그인된 상태 */}
         {isAuthenticated ? (
           <div>
@@ -146,108 +141,65 @@ export default function Login() {
           </div>
         ) : (
           /* 로그인 폼 */
-          <div>
+          <div className="auth-form">
             <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: '15px' }}>
-                <label htmlFor="userId" style={{ display: 'block', marginBottom: '5px' }}>
-                  ID
-                </label>
+              <div className="form-field">
+                <label htmlFor="userId" className={hasLoginError ? "error" : ""}>ID</label>
                 <input
                   type="text"
                   id="userId"
                   name="userId"
                   value={formData.userId}
                   onChange={handleInputChange}
-                  required
+                  // required
                   disabled={isSubmitting}
-                  style={{
-                    padding: '8px',
-                    width: '100%',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
+                  className={hasLoginError ? "error" : ""}
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isSubmitting}
-                  style={{
-                    padding: '8px',
-                    width: '100%',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
-                />
+              <div className="form-field !mt-10">
+                <label htmlFor="password" className={hasLoginError ? "error" : ""}>Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    // required
+                    disabled={isSubmitting}
+                    className={hasLoginError ? "error" : ""}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="password-toggle-btn"
+                  >
+                    <span className="material-symbols-rounded text-[#666]">Visibility{showPassword ? "_off" : ""}</span>
+
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {isSubmitting ? '로그인 중...' : '로그인'}
-                </button>
-                <Link
-                  to="/join"
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    borderRadius: '4px',
-                  }}
-                >
-                  회원가입
-                </Link>
+              <div className="auth-btn-wrap">
+                <button type="submit" className="auth-btn">로그인</button>
+                <Link to="/join" className="auth-btn">회원가입</Link>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }} className='!my-4'>
-                <Link
-                  to="/findId"
-                  style={{
-                    padding: '10px 20px',
-                    border: '1px solid gray',
-                    borderRadius: '4px',
-                  }}
-                >
-                  아이디 찾기
-                </Link>
-                <Link
-                  to="/findPw"
-                  style={{
-                    padding: '10px 20px',
-                    border: '1px solid gray',
-                    borderRadius: '4px',
-                  }}
-                >
-                  비밀번호 찾기
-                </Link>
+              <div className="text-[#999] text-sm !my-4">
+                <Link to="/findId" className="">아이디/</Link>
+                <Link to="/findPw" className="">비밀번호 찾기</Link>
               </div>
             </form>
-            <pre className='bg-gray-200'>
-              <b>[로그인 테스트 정보]</b><br />
-              id:   kim_coder<br />
-              pw:        1234
-            </pre><br />
-            <pre className='bg-gray-200'>
-              <b>[로그인 테스트 정보]</b><br />
-              id:         demo<br />
-              pw:        1234
-            </pre>
+            <div className="none">
+              <pre className='bg-gray-200'>
+                <b>[로그인 테스트 정보]</b><br />
+                id:   kim_coder<br />
+                pw:        1234
+              </pre><br />
+              <pre className='bg-gray-200'>
+                <b>[로그인 테스트 정보]</b><br />
+                id:         demo<br />
+                pw:        1234
+              </pre>
+            </div>
           </div>
         )}
       </div>
