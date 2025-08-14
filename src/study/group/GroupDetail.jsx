@@ -4,6 +4,7 @@ import './group.css';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
 
+
 export default function GroupDetail() {
     const host = import.meta.env.VITE_AWS_API_HOST;
     const { groupId } = useParams();
