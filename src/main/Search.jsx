@@ -85,7 +85,6 @@ function Search() {
   const { user, isAuthenticated } = useAuth();
   const debounceTimer = useRef(null);
   const scrollPositionRef = useRef(0);
-  const studyListRef = useRef(null); // 스터디 목록 섹션을 참조할 ref
 
   const initialCategoryFromHeader = location.state?.category || "전체";
 
@@ -347,16 +346,6 @@ function Search() {
     };
   }, [popularStudies, urgentStudies]);
 
-  // 페이지 번호가 변경될 때마다 스터디 목록으로 스크롤 이동
-  useEffect(() => {
-    if (studyListRef.current) {
-      studyListRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, [currentPage]);
-
   const mergedPosts = posts.map((post) => {
     const counts = countsData[post.groupId] || {
       viewCount: 0,
@@ -409,6 +398,7 @@ function Search() {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const renderStudyCard = (post) => (
@@ -635,6 +625,7 @@ function Search() {
 
   return (
     <div className="g-search-filter">
+      {/* isShowingAll이 true이고 로딩 중일 때는 이 부분을 숨깁니다. */}
       {!(isShowingAll && isLoading) && (
         <>
           <div className="g-top-buttons">
@@ -758,149 +749,145 @@ function Search() {
               )}
             </>
           )}
+
+          <h2 className="g-section-title">스터디</h2>
+          <div className="g-filter-and-search">
+            <div className="g-filter-controls">
+              <Dropdown
+                options={studyModeOptions}
+                value={filters.studyMode}
+                onChange={(value) => handleFilterChange("studyMode", value)}
+                placeholder="진행방식"
+              />
+              <Dropdown
+                options={regionOptions}
+                value={filters.region}
+                onChange={(value) => handleFilterChange("region", value)}
+                placeholder="지역"
+              />
+              <Dropdown
+                options={recruitmentCountOptions}
+                value={filters.recruitmentCount}
+                onChange={(value) =>
+                  handleFilterChange("recruitmentCount", value)
+                }
+                placeholder="모집인원"
+              />
+
+              <button
+                type="button"
+                className={`g-recruiting-btn ${
+                  filters.recruitingOnly ? "g-active" : ""
+                }`}
+                onClick={() =>
+                  handleFilterChange("recruitingOnly", !filters.recruitingOnly)
+                }
+              >
+                모집중만 보기
+              </button>
+            </div>
+
+            <div className="g-search-input-wrapper">
+              <input
+                type="text"
+                name="search"
+                placeholder="제목, 해시태그 검색해보세요"
+                className="g-search-input"
+                value={filters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+              />
+            </div>
+          </div>
         </>
       )}
 
-      {/* 🚨 이 부분의 구조가 수정되었습니다. */}
-      {/* '스터디' 제목과 필터, 그리고 스터디 목록을 하나의 div로 감싸고 ref를 연결합니다. */}
-      <div ref={studyListRef}>
-        <h2 className="g-section-title">스터디</h2>
-        <div className="g-filter-and-search">
-          <div className="g-filter-controls">
-            <Dropdown
-              options={studyModeOptions}
-              value={filters.studyMode}
-              onChange={(value) => handleFilterChange("studyMode", value)}
-              placeholder="진행방식"
-            />
-            <Dropdown
-              options={regionOptions}
-              value={filters.region}
-              onChange={(value) => handleFilterChange("region", value)}
-              placeholder="지역"
-            />
-            <Dropdown
-              options={recruitmentCountOptions}
-              value={filters.recruitmentCount}
-              onChange={(value) =>
-                handleFilterChange("recruitmentCount", value)
-              }
-              placeholder="모집인원"
-            />
-
-            <button
-              type="button"
-              className={`g-recruiting-btn ${
-                filters.recruitingOnly ? "g-active" : ""
-              }`}
-              onClick={() =>
-                handleFilterChange("recruitingOnly", !filters.recruitingOnly)
-              }
-            >
-              모집중만 보기
-            </button>
-          </div>
-
-          <div className="g-search-input-wrapper">
-            <input
-              type="text"
-              name="search"
-              placeholder="제목, 해시태그 검색해보세요"
-              className="g-search-input"
-              value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-            />
+      {isLoading ? (
+        <div
+          className={`g-loading-container ${
+            isShowingAll ? "is-loading-all" : ""
+          }`}
+        >
+          <div className="g-loading-spinner"></div>
+        </div>
+      ) : error ? (
+        <div className="g-error-message">
+          <p>{error}</p>
+        </div>
+      ) : !isAuthenticated ? (
+        <div className="g-login-required">
+          <div className="g-login-message-container">
+            <p>로그인해야 게시물을 볼 수 있습니다.</p>
+            <p>
+              로그인 페이지로 이동하시려면 <Link to="/login">여기</Link>를
+              클릭하세요.
+            </p>
           </div>
         </div>
+      ) : (
+        <div className="g-main-content">
+          {mergedPosts.length === 0 ? (
+            <p className="g-no-results">검색 결과가 없습니다.</p>
+          ) : (
+            <>{currentPosts.map(renderStudyCard)}</>
+          )}
 
-        {isLoading ? (
-          <div
-            className={`g-loading-container ${
-              isShowingAll ? "is-loading-all" : ""
-            }`}
-          >
-            <div className="g-loading-spinner"></div>
-          </div>
-        ) : error ? (
-          <div className="g-error-message">
-            <p>{error}</p>
-          </div>
-        ) : !isAuthenticated ? (
-          <div className="g-login-required">
-            <div className="g-login-message-container">
-              <p>로그인해야 게시물을 볼 수 있습니다.</p>
-              <p>
-                로그인 페이지로 이동하시려면 <Link to="/login">여기</Link>를
-                클릭하세요.
-              </p>
+          {mergedPosts.length === 0 ? (
+            ""
+          ) : (
+            <div className="g-pagination-controls">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="g-pagination-btn"
+              >
+                &laquo;
+              </button>
+              <button
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="g-pagination-btn"
+              >
+                &lt;
+              </button>
+              {[...Array(5)].map((_, i) => {
+                const startPage = Math.max(
+                  1,
+                  Math.min(currentPage - 2, totalPages - 4)
+                );
+                const pageNumber = startPage + i;
+                if (pageNumber > totalPages) return null;
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => handlePageChange(pageNumber)}
+                    className={`g-pagination-btn ${
+                      pageNumber === currentPage ? "g-active" : ""
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="g-pagination-btn"
+              >
+                &gt;
+              </button>
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="g-pagination-btn"
+              >
+                &raquo;
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="g-main-content">
-            {mergedPosts.length === 0 ? (
-              <p className="g-no-results">검색 결과가 없습니다.</p>
-            ) : (
-              <>{currentPosts.map(renderStudyCard)}</>
-            )}
-
-            {mergedPosts.length === 0 ? (
-              ""
-            ) : (
-              <div className="g-pagination-controls">
-                <button
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                  className="g-pagination-btn"
-                >
-                  &laquo;
-                </button>
-                <button
-                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="g-pagination-btn"
-                >
-                  &lt;
-                </button>
-                {[...Array(5)].map((_, i) => {
-                  const startPage = Math.max(
-                    1,
-                    Math.min(currentPage - 2, totalPages - 4)
-                  );
-                  const pageNumber = startPage + i;
-                  if (pageNumber > totalPages) return null;
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => handlePageChange(pageNumber)}
-                      className={`g-pagination-btn ${
-                        pageNumber === currentPage ? "g-active" : ""
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() =>
-                    handlePageChange(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="g-pagination-btn"
-                >
-                  &gt;
-                </button>
-                <button
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="g-pagination-btn"
-                >
-                  &raquo;
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
