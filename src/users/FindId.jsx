@@ -59,45 +59,46 @@ function FindId() {
   };
 
   return (
-    <main style={{ maxWidth: 400, margin: '0 auto', padding: '2rem' }}>
-      <div>
-        <h2>아이디 찾기</h2>
-        <p>가입 시 사용한 이메일 주소를 입력해주세요</p>
+    <main>
+      <div className="main-center auth-container">
+        <h2 className="text-5xl">아이디 찾기</h2>
+        <p className="text-base !my-5 text-[#666]">가입 시 사용한 이메일 주소를 입력해주세요</p>
 
         {!result ? (
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginTop: '1rem' }}>
-              <label htmlFor="email">이메일 주소</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                placeholder="example@email.com"
-                disabled={isLoading}
-                style={{ width: '100%', padding: '8px', marginTop: '4px',border: '1px dashed gray' }}
-              />
-              {errors.email && (
-                <p style={{ color: 'red', fontSize: '0.9rem' }}>{errors.email}</p>
-              )}
-            </div>
+          <div className="auth-form">
+            <form onSubmit={handleSubmit}>
+              <div className="form-field">
+                {/* <label htmlFor="email">이메일 주소</label> */}
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="example@email.com"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p style={{ color: 'red', fontSize: '0.9rem' }}>{errors.email}</p>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                marginTop: '1rem',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#444',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              {isLoading ? '찾는 중...' : '아이디 찾기'}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={isLoading}
+                style={{
+                  marginTop: '1rem',
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#444',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                {isLoading ? '찾는 중...' : '아이디 찾기'}
+              </button>
+            </form>
+          </div>
         ) : (
           <div style={{ marginTop: '2rem', textAlign: 'center' }}>
             {result.success ? (
