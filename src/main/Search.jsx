@@ -84,6 +84,7 @@ function Search() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const debounceTimer = useRef(null);
+  const scrollPositionRef = useRef(0);
 
   const initialCategoryFromHeader = location.state?.category || "전체";
 
@@ -176,10 +177,7 @@ function Search() {
     return { minMembers: null, maxMembers: null };
   };
 
-  // fetchAllData 함수 전체 (수정됨)
-  // fetchAllData 함수 전체 (수정됨)
   const fetchAllData = async (filterParams) => {
-    // 필터링 파라미터를 백엔드 API 요청에 포함시키기 위한 설정
     const { minMembers, maxMembers } = getMinMaxMembers(
       filterParams.recruitmentCount
     );
@@ -195,9 +193,7 @@ function Search() {
       maxMembers: maxMembers,
     };
 
-    // 필터링 파라미터를 포함하여 메인 게시물 요청
     const mainPostsPromise = axios.get(`${host}/api/searchPosts`, { params });
-
     const countsPromise = axios.get(`${host}/api/bookmarks`);
 
     const userBookmarksPromise =
@@ -205,7 +201,6 @@ function Search() {
         ? axios.get(`${host}/api/bookmark/user/${user.id}`)
         : Promise.resolve({ data: { success: true, data: [] } });
 
-    // isShowingAll 상태에 따라 특수 스터디 요청을 분기
     const specialPromises = isShowingAll
       ? [
           axios.get(`${host}/api/popularStudies`),
@@ -230,13 +225,11 @@ function Search() {
         ...specialPromises,
       ]);
 
-      // 모든 데이터를 한 번에 업데이트
       setPosts(mainPostsRes.data?.posts || mainPostsRes.data || []);
 
       if (countsRes.data && Array.isArray(countsRes.data)) {
         const newCountsData = countsRes.data.reduce((acc, item) => {
           const groupId = item.studyGroupId || item.STUDYGROUPID;
-
           if (groupId !== undefined && groupId !== null) {
             acc[groupId] = {
               viewCount: item.viewCount || item.VIEWCOUNT,
@@ -250,8 +243,10 @@ function Search() {
         setCountsData({});
       }
 
+      // 🚨 이 부분을 수정합니다.
+      // userBookmarksRes가 존재하고, data 속성도 존재하며, data.data가 배열인지 확인
       if (
-        userBookmarksRes.data.success &&
+        userBookmarksRes?.data?.success &&
         Array.isArray(userBookmarksRes.data.data)
       ) {
         const bookmarkGroupIds = userBookmarksRes.data.data.map(
@@ -286,7 +281,6 @@ function Search() {
         const payload = { userId: user.id, groupId };
         await axios.post(`${host}/api/bookmark`, payload);
       }
-      // 북마크 토글 후, 최신 데이터를 다시 불러와 상태를 업데이트합니다.
       await fetchAllData(filters);
     } catch (error) {
       console.error("북마크 토글 실패", error);
@@ -299,19 +293,21 @@ function Search() {
   };
 
   useEffect(() => {
+    scrollPositionRef.current = window.scrollY;
+
     setIsLoading(true);
     setError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        // 모든 데이터 로딩을 fetchAllData 함수 하나로 통합
         await fetchAllData(filters);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
         console.error("데이터 불러오기 실패:", err);
       } finally {
-        setIsLoading(false); // 모든 로딩이 끝난 후에만 상태 변경
+        setIsLoading(false);
+        window.scrollTo(0, scrollPositionRef.current);
       }
       setCurrentPage(1);
     }, 300);
@@ -350,8 +346,6 @@ function Search() {
     };
   }, [popularStudies, urgentStudies]);
 
-  // 이 위치로 변수 선언을 옮겼습니다.
-  // 이 변수들은 이제 컴포넌트가 렌더링될 때마다 최신 상태를 참조하여 생성됩니다.
   const mergedPosts = posts.map((post) => {
     const counts = countsData[post.groupId] || {
       viewCount: 0,
@@ -509,7 +503,6 @@ function Search() {
     </Link>
   );
 
-  // 스터디 카드 렌더링 함수
   const renderStudyCardOne = (post) => (
     <Link
       to={`/study/postView/${post.groupId}`}
@@ -632,179 +625,188 @@ function Search() {
 
   return (
     <div className="g-search-filter">
-      <div className="g-top-buttons">
-        <div className="g-write-button-wrapper">
-          <Link to="/study/PostMain" className="g-btn-write">
-            글 작성하기
-          </Link>
-        </div>
-      </div>
-
-      {isShowingAll && !isLoading && isAuthenticated && (
+      {/* isShowingAll이 true이고 로딩 중일 때는 이 부분을 숨깁니다. */}
+      {!(isShowingAll && isLoading) && (
         <>
-          {/* 인기 스터디 섹션 */}
-          {mergedPopularStudies.length > 0 && (
-            <div className="g-special-section">
-              <h2 className="g-section-title">인기 스터디</h2>
-              <div className="g-special-studies-wrapper">
-                {showPopularLeft && (
-                  <button
-                    className="g-scroll-btn g-scroll-btn-left"
-                    onClick={() => scrollHorizontally(popularRef, "left")}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M15 18L9 12L15 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-                <div className="g-special-studies" ref={popularRef}>
-                  {mergedPopularStudies.map(renderStudyCardOne)}
-                </div>
-                {showPopularRight && (
-                  <button
-                    className="g-scroll-btn g-scroll-btn-right"
-                    onClick={() => scrollHorizontally(popularRef, "right")}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9 18L15 12L9 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
+          <div className="g-top-buttons">
+            <div className="g-write-button-wrapper">
+              <Link to="/study/PostMain" className="g-btn-write">
+                글 작성하기
+              </Link>
             </div>
+          </div>
+
+          {isShowingAll && isAuthenticated && (
+            <>
+              {mergedPopularStudies.length > 0 && (
+                <div className="g-special-section">
+                  <h2 className="g-section-title">인기 스터디</h2>
+                  <div className="g-special-studies-wrapper">
+                    {showPopularLeft && (
+                      <button
+                        className="g-scroll-btn g-scroll-btn-left"
+                        onClick={() => scrollHorizontally(popularRef, "left")}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M15 18L9 12L15 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                    <div className="g-special-studies" ref={popularRef}>
+                      {mergedPopularStudies.map(renderStudyCardOne)}
+                    </div>
+                    {showPopularRight && (
+                      <button
+                        className="g-scroll-btn g-scroll-btn-right"
+                        onClick={() => scrollHorizontally(popularRef, "right")}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 18L15 12L9 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {mergedUrgentStudies.length > 0 && (
+                <div className="g-special-section">
+                  <h2 className="g-section-title">마감임박 스터디</h2>
+                  <div className="g-special-studies-wrapper">
+                    {showUrgentLeft && (
+                      <button
+                        className="g-scroll-btn g-scroll-btn-left"
+                        onClick={() => scrollHorizontally(urgentRef, "left")}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M15 18L9 12L15 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                    <div className="g-special-studies" ref={urgentRef}>
+                      {mergedUrgentStudies.map(renderStudyCardOne)}
+                    </div>
+                    {showUrgentRight && (
+                      <button
+                        className="g-scroll-btn g-scroll-btn-right"
+                        onClick={() => scrollHorizontally(urgentRef, "right")}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 18L15 12L9 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* 마감임박 스터디 섹션 */}
-          {mergedUrgentStudies.length > 0 && (
-            <div className="g-special-section">
-              <h2 className="g-section-title">마감임박 스터디</h2>
-              <div className="g-special-studies-wrapper">
-                {showUrgentLeft && (
-                  <button
-                    className="g-scroll-btn g-scroll-btn-left"
-                    onClick={() => scrollHorizontally(urgentRef, "left")}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M15 18L9 12L15 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-                <div className="g-special-studies" ref={urgentRef}>
-                  {mergedUrgentStudies.map(renderStudyCardOne)}
-                </div>
-                {showUrgentRight && (
-                  <button
-                    className="g-scroll-btn g-scroll-btn-right"
-                    onClick={() => scrollHorizontally(urgentRef, "right")}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9 18L15 12L9 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
+          <h2 className="g-section-title">스터디</h2>
+          <div className="g-filter-and-search">
+            <div className="g-filter-controls">
+              <Dropdown
+                options={studyModeOptions}
+                value={filters.studyMode}
+                onChange={(value) => handleFilterChange("studyMode", value)}
+                placeholder="진행방식"
+              />
+              <Dropdown
+                options={regionOptions}
+                value={filters.region}
+                onChange={(value) => handleFilterChange("region", value)}
+                placeholder="지역"
+              />
+              <Dropdown
+                options={recruitmentCountOptions}
+                value={filters.recruitmentCount}
+                onChange={(value) =>
+                  handleFilterChange("recruitmentCount", value)
+                }
+                placeholder="모집인원"
+              />
+
+              <button
+                type="button"
+                className={`g-recruiting-btn ${
+                  filters.recruitingOnly ? "g-active" : ""
+                }`}
+                onClick={() =>
+                  handleFilterChange("recruitingOnly", !filters.recruitingOnly)
+                }
+              >
+                모집중만 보기
+              </button>
             </div>
-          )}
+
+            <div className="g-search-input-wrapper">
+              <input
+                type="text"
+                name="search"
+                placeholder="제목, 해시태그 검색해보세요"
+                className="g-search-input"
+                value={filters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+              />
+            </div>
+          </div>
         </>
       )}
 
-      <h2 className="g-section-title">스터디</h2>
-      <div className="g-filter-and-search">
-        <div className="g-filter-controls">
-          <Dropdown
-            options={studyModeOptions}
-            value={filters.studyMode}
-            onChange={(value) => handleFilterChange("studyMode", value)}
-            placeholder="진행방식"
-          />
-          <Dropdown
-            options={regionOptions}
-            value={filters.region}
-            onChange={(value) => handleFilterChange("region", value)}
-            placeholder="지역"
-          />
-          <Dropdown
-            options={recruitmentCountOptions}
-            value={filters.recruitmentCount}
-            onChange={(value) => handleFilterChange("recruitmentCount", value)}
-            placeholder="모집인원"
-          />
-
-          <button
-            type="button"
-            className={`g-recruiting-btn ${
-              filters.recruitingOnly ? "g-active" : ""
-            }`}
-            onClick={() =>
-              handleFilterChange("recruitingOnly", !filters.recruitingOnly)
-            }
-          >
-            모집중만 보기
-          </button>
-        </div>
-
-        <div className="g-search-input-wrapper">
-          <input
-            type="text"
-            name="search"
-            placeholder="제목, 해시태그 검색해보세요"
-            className="g-search-input"
-            value={filters.search}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
-          />
-        </div>
-      </div>
-
       {isLoading ? (
-        <div className="g-loading-container">
+        <div
+          className={`g-loading-container ${
+            isShowingAll ? "is-loading-all" : ""
+          }`}
+        >
           <div className="g-loading-spinner"></div>
         </div>
       ) : error ? (
