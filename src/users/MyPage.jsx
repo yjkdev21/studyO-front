@@ -8,7 +8,7 @@ import ProjectAnalytics from '../project/analytics/ProjectAnalytics';
 import axios from 'axios';
 import './MyPage.css';
 
-// StudyCard와 BookmarkCard 컴포넌트
+// 스터디 카드 컴포넌트 - 사용자가 참여한 스터디 정보를 카드 형태로 표시
 const StudyCard = ({
   groupId,
   category,
@@ -27,29 +27,25 @@ const StudyCard = ({
 }) => {
   const navigate = useNavigate();
   
-  // GroupDetail과 동일한 썸네일 URL 처리 함수
+  // 썸네일 이미지 URL을 우선순위에 따라 반환 (S3 URL > 기존 썸네일 > 기본 이미지)
   const getThumbnailUrl = () => {
-    // 1순위: S3 전체 URL 사용 (thumbnailFullPath)
     if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
-      console.log('S3 썸네일 URL 사용:', thumbnailFullPath);
       return thumbnailFullPath;
     }
     
-    // 2순위: 기존 썸네일 필드 사용 (thumbnail)
     if (thumbnail && !thumbnail.includes('default')) {
-      console.log('썸네일 필드 사용:', thumbnail);
       return thumbnail;
     }
     
-    // 3순위: 기본 이미지
-    console.log('기본 썸네일 이미지 사용');
     return '/images/default-thumbnail.png';
   };
 
+  // 스터디 상세 페이지로 이동
   const handleClick = () => {
     navigate(`/group/${groupId}`);
   };
 
+  // 날짜를 한국어 형식으로 포맷팅
   const formatDate = (dateString) => {
     if (!dateString) return '날짜 없음';
     try {
@@ -70,11 +66,14 @@ const StudyCard = ({
       onClick={handleClick}
     >
       <div className="mypage-study-card-header">
+        {/* 스터디 정보 뱃지들 (모드, 지역, 최대인원) */}
         <div className="mypage-study-card-badges">
           <span className="mypage-study-card-badge mode">{studyMode || '모드 없음'}</span>
           <span className="mypage-study-card-badge location">{region || '지역 정보 없음'}</span>
           <span className="mypage-study-card-badge members">최대 {maxMembers || 0}명</span>
         </div>
+        
+        {/* 스터디 상세 정보 (카테고리, 제목, 소개, 그룹장, 생성일) */}
         <div className="mypage-study-card-content">
           <div className="mypage-study-title-row">
             <p className="mypage-study-card-category">{category || '카테고리 없음'}</p>
@@ -87,6 +86,8 @@ const StudyCard = ({
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
+      
+      {/* 스터디 썸네일 이미지 */}
       <div className="mypage-study-thumbnail-wrapper">
         <div className="mypage-study-thumbnail-image">
           <img
@@ -94,7 +95,6 @@ const StudyCard = ({
             alt={`${groupName} 썸네일`}
             width="200"
             onError={(e) => { 
-              console.log('이미지 로딩 실패, 기본 이미지로 변경');
               e.target.src = '/images/default-thumbnail.png'; 
             }}
           />
@@ -104,6 +104,7 @@ const StudyCard = ({
   );
 };
 
+// 북마크 카드 컴포넌트 - 사용자가 북마크한 스터디 정보를 카드 형태로 표시
 const BookmarkCard = ({
   bookmarkId,
   groupId,
@@ -123,7 +124,7 @@ const BookmarkCard = ({
 }) => {
   const navigate = useNavigate();
   
-  // 동일한 썸네일 URL 처리 함수
+  // 썸네일 이미지 URL을 우선순위에 따라 반환
   const getThumbnailUrl = () => {
     if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
       return thumbnailFullPath;
@@ -184,7 +185,6 @@ const BookmarkCard = ({
             alt={`${groupName} 썸네일`}
             width="200"
             onError={(e) => { 
-              console.log('이미지 로딩 실패, 기본 이미지로 변경');
               e.target.src = '/images/default-thumbnail.png'; 
             }}
           />
@@ -199,30 +199,39 @@ function MyPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const defaultProfileImageSrc = "/images/default-profile.png";
 
-  // 프로필 이미지 상태 추가
+  // 프로필 관련 상태
   const [profileImage, setProfileImage] = useState(null);
   const [displayUser, setDisplayUser] = useState(null);
 
+  // 카드 선택 상태
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedBookmarkCard, setSelectedBookmarkCard] = useState(null);
+  
+  // 스터디 관련 상태
   const [myStudies, setMyStudies] = useState([]);
   const [studyLoading, setStudyLoading] = useState(true);
   const [studyError, setStudyError] = useState(null);
+  
+  // 북마크 관련 상태
   const [myBookmarks, setMyBookmarks] = useState([]);
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
   const [bookmarkError, setBookmarkError] = useState(null);
+  
+  // 필터링 및 페이지네이션 상태
   const [activeStudyFilter, setActiveStudyFilter] = useState('all');
   const [filteredStudies, setFilteredStudies] = useState([]);
   const [studyCurrentPage, setStudyCurrentPage] = useState(0);
   const [bookmarkCurrentPage, setBookmarkCurrentPage] = useState(0);
   
+  // 모달 관련 상태
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  const ITEMS_PER_PAGE = 3;
+  const ITEMS_PER_PAGE = 3; // 페이지당 표시할 아이템 수
 
+  // 스터디 필터 옵션 정의
   const studyFilterOptions = [
     { key: 'all', label: '전체 스터디' },
     { key: 'owner', label: '내가 관리하는' },
@@ -230,12 +239,14 @@ function MyPage() {
     { key: 'completed', label: '참여했던' }
   ];
 
-  // MyEdit과 동일한 프로필 로딩 함수
+  // 서버에서 사용자 프로필 정보를 로드
   const loadUserProfileFromServer = async () => {
     if (!user?.id) return;
 
     try {
-      const response = await axios.get(`http://localhost:8081/api/user/${user.id}`, {
+      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      
+      const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
         withCredentials: true,
         timeout: 10000
       });
@@ -258,7 +269,6 @@ function MyPage() {
       }
       
     } catch (error) {
-      console.error('프로필 로딩 실패:', error);
       fallbackToLocalUser();
     }
   };
@@ -273,6 +283,7 @@ function MyPage() {
     setDisplayUser(user);
   };
 
+  // 이미지 로딩 실패 시 기본 이미지로 대체
   const handleImageError = (e) => {
     e.target.src = defaultProfileImageSrc;
   };
@@ -287,12 +298,12 @@ function MyPage() {
   // 스터디 상세 페이지로 이동하는 핸들러
   const handleNavigateToStudy = (groupId) => {
     if (!groupId) {
-      console.error('그룹 ID가 없습니다.');
       return;
     }
     navigate(`/group/${groupId}`);
   };
 
+  // 필터 타입에 따라 스터디 목록 필터링
   const filterStudies = (filterType) => {
     let filtered = [];
     
@@ -318,12 +329,14 @@ function MyPage() {
     
     setFilteredStudies(filtered);
     setActiveStudyFilter(filterType);
-    setStudyCurrentPage(0);
+    setStudyCurrentPage(0); // 필터 변경 시 첫 페이지로 리셋
   };
 
+  // 페이지 수 계산 함수들
   const getStudyPages = () => Math.ceil(filteredStudies.length / ITEMS_PER_PAGE);
   const getBookmarkPages = () => Math.ceil(myBookmarks.length / ITEMS_PER_PAGE);
 
+  // 현재 페이지의 아이템들을 가져오는 함수들
   const getCurrentStudyItems = () => {
     const start = studyCurrentPage * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
@@ -336,6 +349,7 @@ function MyPage() {
     return myBookmarks.slice(start, end);
   };
 
+  // 스터디 페이지네이션 핸들러들
   const handleStudyPrevPage = () => {
     if (studyCurrentPage > 0) {
       setStudyCurrentPage(studyCurrentPage - 1);
@@ -348,6 +362,7 @@ function MyPage() {
     }
   };
 
+  // 북마크 페이지네이션 핸들러들
   const handleBookmarkPrevPage = () => {
     if (bookmarkCurrentPage > 0) {
       setBookmarkCurrentPage(bookmarkCurrentPage - 1);
@@ -360,88 +375,84 @@ function MyPage() {
     }
   };
 
+  // 프로필 수정 버튼 클릭 시 확인 모달 표시
   const handleEditProfile = () => {
     setShowConfirmModal(true);
   };
 
+  // 프로필 수정 확인 시 비밀번호 모달 표시
   const handleConfirmEdit = () => {
     setShowConfirmModal(false);
     setShowPasswordModal(true);
     setPasswordError('');
   };
 
+  // 프로필 수정 취소
   const handleCancelEdit = () => {
     setShowConfirmModal(false);
   };
 
+  // 비밀번호 확인 및 프로필 수정 페이지 이동
   const handlePasswordConfirm = async (password) => {
     setPasswordLoading(true);
     setPasswordError('');
 
-    console.log('비밀번호 확인 시도:', { 
-      password, 
-      userId: user.userId, 
-      userInfo: user 
-    });
-
     try {
       const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
-      console.log('API 호출 URL:', `${apiUrl}/api/user/verify-password`);
       
       const requestBody = {
         userId: user.userId,
         password: password
       };
-      console.log('요청 본문:', requestBody);
 
-      const response = await fetch(`${apiUrl}/api/user/verify-password`, {
-        method: 'POST',
+      const response = await axios.post(`${apiUrl}/api/user/verify-password`, requestBody, {
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        credentials: 'include',
-        body: JSON.stringify(requestBody),
+        timeout: 10000
       });
 
-      console.log('응답 상태:', response.status, response.statusText);
-
-      const data = await response.json();
-      console.log('응답 데이터:', data);
-
-      if (response.ok && data.success) {
-        console.log('비밀번호 확인 성공');
+      if (response.status === 200 && response.data.success) {
         setShowPasswordModal(false);
         navigate('/myedit');
       } else {
-        console.log('비밀번호 확인 실패:', data);
-        setPasswordError(data.message || '비밀번호가 일치하지 않습니다.');
+        setPasswordError(response.data.message || '비밀번호가 일치하지 않습니다.');
       }
     } catch (error) {
-      console.error('비밀번호 확인 오류:', error);
-      setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
+      if (error.response && error.response.data) {
+        setPasswordError(error.response.data.message || '비밀번호가 일치하지 않습니다.');
+      } else {
+        setPasswordError('비밀번호 확인 중 오류가 발생했습니다.');
+      }
     } finally {
       setPasswordLoading(false);
     }
   };
 
+  // 비밀번호 모달 취소
   const handlePasswordCancel = () => {
     setShowPasswordModal(false);
     setPasswordError('');
   };
 
+  // 스터디 카드 선택 핸들러
   const handleCardSelect = (id) => {
     setSelectedCard(selectedCard === id ? null : id);
   };
 
+  // 북마크 카드 선택 핸들러
   const handleBookmarkCardSelect = (id) => {
     setSelectedBookmarkCard(selectedBookmarkCard === id ? null : id);
   };
 
+  // 스터디 필터 변경 시 필터링 실행
   useEffect(() => {
     filterStudies(activeStudyFilter);
   }, [myStudies, user?.id]);
 
+  // 사용자의 활성 스터디 목록 가져오기
   useEffect(() => {
     const fetchMyActiveStudies = async () => {
       if (!isAuthenticated || !user?.id) {
@@ -454,35 +465,30 @@ function MyPage() {
         setStudyError(null);
 
         const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
-        const url = `${apiUrl}/api/study/user/${user.id}/active`;
-
-        const response = await fetch(url, {
-          method: 'GET',
+        
+        const response = await axios.get(`${apiUrl}/api/study/user/${user.id}/active`, {
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          credentials: 'include',
+          timeout: 10000
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.data)) {
-          const sortedStudies = data.data.sort((a, b) => {
+        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
+          // 최신순으로 정렬
+          const sortedStudies = response.data.data.sort((a, b) => {
             const dateA = new Date(a.createdAt);
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
           setMyStudies(sortedStudies);
         } else {
-          throw new Error(data.message || '데이터 형식이 올바르지 않습니다.');
+          throw new Error(response.data.message || '데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        setStudyError(`스터디 데이터를 불러올 수 없습니다: ${error.message}`);
+        const errorMessage = error.response?.data?.message || error.message || '스터디 데이터를 불러올 수 없습니다.';
+        setStudyError(`스터디 데이터를 불러올 수 없습니다: ${errorMessage}`);
         setMyStudies([]);
       } finally {
         setStudyLoading(false);
@@ -492,6 +498,7 @@ function MyPage() {
     fetchMyActiveStudies();
   }, [isAuthenticated, user?.id]);
 
+  // 사용자의 북마크 목록 가져오기
   useEffect(() => {
     const fetchMyBookmarks = async () => {
       if (!isAuthenticated || !user?.id) {
@@ -504,35 +511,30 @@ function MyPage() {
         setBookmarkError(null);
 
         const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
-        const url = `${apiUrl}/api/bookmark/user/${user.id}`;
-
-        const response = await fetch(url, {
-          method: 'GET',
+        
+        const response = await axios.get(`${apiUrl}/api/bookmark/user/${user.id}`, {
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          credentials: 'include',
+          timeout: 10000
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.data)) {
-          const sortedBookmarks = data.data.sort((a, b) => {
+        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
+          // 최신순으로 정렬
+          const sortedBookmarks = response.data.data.sort((a, b) => {
             const dateA = new Date(a.createdAt);
             const dateB = new Date(b.createdAt);
             return dateB - dateA;
           });
           setMyBookmarks(sortedBookmarks);
         } else {
-          throw new Error(data.message || '북마크 데이터 형식이 올바르지 않습니다.');
+          throw new Error(response.data.message || '북마크 데이터 형식이 올바르지 않습니다.');
         }
       } catch (error) {
-        setBookmarkError(`북마크 데이터를 불러올 수 없습니다: ${error.message}`);
+        const errorMessage = error.response?.data?.message || error.message || '북마크 데이터를 불러올 수 없습니다.';
+        setBookmarkError(`북마크 데이터를 불러올 수 없습니다: ${errorMessage}`);
         setMyBookmarks([]);
       } finally {
         setBookmarkLoading(false);
@@ -542,6 +544,7 @@ function MyPage() {
     fetchMyBookmarks();
   }, [isAuthenticated, user?.id]);
 
+  // 로딩 중일 때
   if (isLoading) {
     return (
       <div className="mypage-container">
@@ -550,6 +553,7 @@ function MyPage() {
     );
   }
 
+  // 인증되지 않은 사용자
   if (!isAuthenticated) {
     return (
       <div className="mypage-container">
@@ -563,6 +567,7 @@ function MyPage() {
       <div className="mypage-top-background"></div>
 
       <div className="mypage-main-content">
+        {/* 프로필 섹션 */}
         <div className="mypage-profile-section">
           <div className="mypage-profile-image-wrapper">
             <div className="mypage-profile-image">
@@ -587,12 +592,11 @@ function MyPage() {
           </div>
         </div>
 
-        {/* 통계와 캘린더를 나란히 배치 */}
+        {/* 통계와 캘린더 섹션 */}
         <div className="mypage-section-card">
           <div className="mypage-analytics-calendar-wrapper">
             <div className="mypage-analytics-section">
               <div className="mypage-analytics-content">
-                {/* 통계 컨텐츠는 추후 개발 예정 */}
                 <div className="mypage-analytics-placeholder">
                   통계 데이터가 여기에 표시됩니다.
                 </div>
@@ -606,6 +610,7 @@ function MyPage() {
           </div>
         </div>
 
+        {/* 카테고리 그리드 섹션 (To-Do, Daily Habits, Achievement) */}
         <div className="mypage-categories-grid">
           <div className="mypage-category-card">
             <div className="mypage-category-header">
@@ -650,11 +655,13 @@ function MyPage() {
           </div>
         </div>
 
+        {/* 스터디 섹션 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">스터디</h3>
               
+              {/* 스터디 페이지네이션 버튼 */}
               {filteredStudies.length > 0 && (
                 <div className="mypage-header-pagination">
                   <button 
@@ -675,6 +682,7 @@ function MyPage() {
               )}
             </div>
             
+            {/* 스터디 필터 탭 */}
             <div className="mypage-study-filter-tabs">
               {studyFilterOptions.map(option => (
                 <button
@@ -688,6 +696,7 @@ function MyPage() {
             </div>
           </div>
 
+          {/* 스터디 목록 렌더링 */}
           <div className="mypage-studies-section-wrapper">
             {studyLoading ? (
               <div className="mypage-study-loading">
@@ -706,6 +715,7 @@ function MyPage() {
               </div>
             ) : (
               <>
+                {/* 스터디 카드들 */}
                 <div className="mypage-studies-cards-container">
                   {getCurrentStudyItems().map((study) => (
                     <StudyCard
@@ -728,6 +738,7 @@ function MyPage() {
                   ))}
                 </div>
 
+                {/* 스터디 페이지 인디케이터 */}
                 <div className="mypage-page-indicator">
                   {getStudyPages() > 1 && (
                     <span>
@@ -740,11 +751,13 @@ function MyPage() {
           </div>
         </div>
 
+        {/* 북마크 섹션 */}
         <div className="mypage-section-card">
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">북마크</h3>
               
+              {/* 북마크 페이지네이션 버튼 */}
               {myBookmarks.length > 0 && (
                 <div className="mypage-header-pagination">
                   <button 
@@ -766,6 +779,7 @@ function MyPage() {
             </div>
           </div>
 
+          {/* 북마크 목록 렌더링 */}
           <div className="mypage-studies-section-wrapper">
             {bookmarkLoading ? (
               <div className="mypage-study-loading">
@@ -781,6 +795,7 @@ function MyPage() {
               </div>
             ) : (
               <>
+                {/* 북마크 카드들 */}
                 <div className="mypage-studies-cards-container">
                   {getCurrentBookmarkItems().map((bookmark) => (
                     <BookmarkCard
@@ -804,6 +819,7 @@ function MyPage() {
                   ))}
                 </div>
 
+                {/* 북마크 페이지 인디케이터 */}
                 <div className="mypage-page-indicator">
                   {getBookmarkPages() > 1 && (
                     <span>
@@ -817,6 +833,7 @@ function MyPage() {
         </div>
       </div>
 
+      {/* 프로필 수정 확인 모달 */}
       <ConfirmModal
         isOpen={showConfirmModal}
         onCancel={handleCancelEdit}
@@ -826,6 +843,7 @@ function MyPage() {
         profileImage={profileImage || defaultProfileImageSrc}
       />
 
+      {/* 비밀번호 입력 모달 */}
       <PasswordModal
         isOpen={showPasswordModal}
         onCancel={handlePasswordCancel}

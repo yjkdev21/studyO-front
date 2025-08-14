@@ -11,6 +11,7 @@ function PasswordModal({
 }) {
     const [password, setPassword] = useState('');
 
+    // 모달 열림/닫힘 시 body 스크롤 제어 & 비밀번호 초기화
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -23,8 +24,9 @@ function PasswordModal({
         };
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen) return null; // 모달이 닫혀있으면 렌더링 안 함
 
+    // 확인 버튼 클릭 처리
     const handleSubmit = (e) => {
         e.preventDefault();
         if (password.trim() && !loading) {
@@ -32,6 +34,7 @@ function PasswordModal({
         }
     };
 
+    // 비밀번호 입력값 변경 처리
     const handleInputChange = (e) => {
         setPassword(e.target.value);
     };
