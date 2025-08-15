@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useStudy } from '../../contexts/StudyContext';
 import { useParams } from "react-router-dom";
 import ConfirmModal from '../../users/modal/ConfirmModal';
-import {getProfileImageSrc} from "../../utils/imageUtils";
+import { getProfileImageSrc } from "../../utils/imageUtils";
 
 import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname } from "./studyMemberApi";
 

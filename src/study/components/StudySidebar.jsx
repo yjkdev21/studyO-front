@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import './StudySideBar.css';
+import './StudySidebar.css';
 import { useStudy } from '../../contexts/StudyContext';
-// import { studySidebarApi } from './StudySidebarApi';
 
 
 export default function StudySidebar({
-  groupId,
   initialTab = '', //기본 활성화 탭
   onMenuClick
 }) {
   
-  // useStudy 사용
-  const { studyInfo, isLoading: loading, error } = useStudy();
+  // StudyContext에서 필요한 데이터만 가져오기
+  const { studyInfo, isLoading: loading } = useStudy();
   
   // 사이드 바 접기, 펼치기
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,12 +27,8 @@ export default function StudySidebar({
 
   //메뉴 클릭 처리 함수
   const handleMenuClick = (tabId) => {
-    console.log(`${tabId} 탭 클릭됨`); // 디버깅용 로그
-
-    // 내부 상태 업데이트
     setCurrentTab(tabId);
 
-    // 부모 컴포넌트에게 알림
     if (onMenuClick) {
       onMenuClick(tabId);
     }

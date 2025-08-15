@@ -8,48 +8,25 @@ import './StudyMain.css';
 import WeeklyCalendar from './WeeklyCalendar';
 
 export default function StudyMain() {
-  const { groupId } = useParams(); // URL 파라미터로부터 studyId 추출
-  const { user } = useAuth(); // 현재 로그인한 사용자 정보
+  /********* 상태 선언 **********/
+  const { groupId } = useParams();
+  const { user } = useAuth();
+  const { studyInfo, isLoading: studyLoading, error, getProfileImageUrl, getPostWriterNickname } = useStudy();
   
-  // StudyContext에서 필요한 함수 가져오기
-  const {
-    studyInfo, 
-    isLoading: studyLoading, 
-    error,
-    getProfileImageUrl,
-    getPostWriterNickname,
-    studyMembers,
-    memberNicknames
-  }= useStudy();
-
-  // const { studyInfo, isLoading: studyLoading, error } = useStudy(); // 스터디 정보 context 사용
-  const [isNotice, setIsNotice] = useState(false); // 공지 여부 체크박스 상태
-  const [allNotices, setAllNotices] = useState([]); // 공지 목록
-  const [allPosts, setAllPosts] = useState([]); // 일반 글 목록
-
-  const [weekCalendar, setWeekCalendar] = useState(); // 주간 캘린더
-
-  // 글 작성 입력값 상태
+  const [isNotice, setIsNotice] = useState(false);
+  const [allNotices, setAllNotices] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
   const [postTitle, setPostTitle] = useState('');
   const [postContent, setPostContent] = useState('');
-  const [message, setMessage] = useState(''); // 글 작성 완료 메시지
-
-  // 수정
+  const [message, setMessage] = useState('');
   const [editingPostId, setEditingPostId] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
-
-  const [showAllNotices, setShowAllNotices] = useState(false); // 공지 더보기 상태
+  const [showAllNotices, setShowAllNotices] = useState(false);
 
   const host = import.meta.env.VITE_AWS_API_HOST;
 
-  // 이미지 로드 에러 처리 함수
-  const handleImageError = (e) => {
-    console.log('이미지 로드 실패:', e.target.src);
-    e.target.src = getProfileImageSrc(null);
-  };
-
-  // 공지 및 일반글 가져오기
+  /********** API 호출 함수들 **********/
   const fetchPosts = async () => {
     try {
       const [noticeRes, postRes] = await Promise.all([
@@ -63,11 +40,7 @@ export default function StudyMain() {
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [groupId]);
-
-  // 글 작성 핸들러
+  /********** 글 작성 관련 **********/
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!postTitle.trim() || !postContent.trim()) {
@@ -83,13 +56,10 @@ export default function StudyMain() {
         dashboardPostText: postContent,
         isNotice: isNotice ? 'Y' : 'N'
       }, {
-        headers: {
-          'X-USER-ID': user.id
-        }
+        headers: { 'X-USER-ID': user.id }
       });
 
-      await fetchPosts(); // 작성한 글 화면에 바로 반영됨
-
+      await fetchPosts();
       setMessage('작성 완료');
       setPostTitle('');
       setPostContent('');
@@ -102,6 +72,7 @@ export default function StudyMain() {
     setTimeout(() => setMessage(''), 2000);
   };
 
+  // 수정
   const handleStartEdit = (post) => {
     setEditingPostId(post.id);
     setEditedTitle(post.dashboardPostTitle);
@@ -114,10 +85,8 @@ export default function StudyMain() {
     setEditedContent('');
   };
 
-  // 글 수정
   const handleConfirmEdit = async () => {
     try {
-      // 현재 수정 중인 게시글 찾기
       const currentPost = [...allNotices, ...allPosts].find(post => post.id === editingPostId);
 
       await axios.put(`${host}/api/study/board`, {
@@ -126,14 +95,12 @@ export default function StudyMain() {
         groupId: groupId,
         dashboardPostTitle: editedTitle,
         dashboardPostText: editedContent,
-        isNotice: currentPost.isNotice // 원래 isNotice 값 유지
+        isNotice: currentPost.isNotice
       }, {
-        headers: {
-          'X-USER-ID': user.id
-        }
+        headers: { 'X-USER-ID': user.id }
       });
 
-      // 상태 직접 업데이트
+      // 상태 업데이트
       setAllNotices(prev => prev.map(post =>
         post.id === editingPostId
           ? { ...post, dashboardPostTitle: editedTitle, dashboardPostText: editedContent }
@@ -146,26 +113,20 @@ export default function StudyMain() {
           : post
       ));
 
-      // 편집 상태 해제 handleCancelEdit() 호출
       handleCancelEdit();
-
     } catch (error) {
       console.log('수정 오류', error)
     }
   };
 
-  // 글 삭제
+  // 삭제
   const handleDelete = async (postId) => {
-    if (!window.confirm('정말 삭제하시겠습니까?'))
-      return;
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
 
     try {
       await axios.delete(`${host}/api/study/board/${postId}`, {
-        headers: {
-          'X-USER-ID': user.id
-        }
+        headers: { 'X-USER-ID': user.id }
       });
-
       await fetchPosts();
     } catch (error) {
       console.error('삭제 실패', error);
@@ -173,6 +134,19 @@ export default function StudyMain() {
     }
   };
 
+  // 
+  const handleImageError = (e) => {
+    console.log('이미지 로드 실패:', e.target.src);
+    e.target.src = getProfileImageSrc(null);
+  };
+
+  // 
+  useEffect(() => {
+    if (groupId) {
+      fetchPosts();
+    }
+  }, [groupId]);
+  
   return (
     <div className='study-main-container'>
       {/* 스터디 정보 + 공지 + 최신글 */}
@@ -284,13 +258,13 @@ export default function StudyMain() {
               {/* 왼쪽: 프로필 이미지 + 닉네임 */}
               <div className='post-left'>
                 <img
-                  src={getProfileImageUrl(post, user)}
+                  src={getProfileImageUrl(post)}
                   alt='프로필'
                   className='profile-img'
                   onError={handleImageError}
                 />
                 <div className='nickname'>
-                  {getPostWriterNickname(post, user)}
+                  {getPostWriterNickname(post)}
                 </div>
               </div>
 
@@ -361,13 +335,13 @@ export default function StudyMain() {
             <div className='post-layout'>
               <div className='post-left'>
                 <img
-                  src={getProfileImageUrl(post, user)}
+                  src={getProfileImageUrl(post)}
                   alt='프로필'
                   className='profile-img'
                   onError={handleImageError}
                 />
                 <div className='nickname'>
-                  {getPostWriterNickname(post, user)}
+                  {getPostWriterNickname(post)}
                 </div>
               </div>
 
