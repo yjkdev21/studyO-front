@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useParams } from "react-router-dom";
@@ -14,26 +13,25 @@ import { useStudy } from '../../contexts/StudyContext';
 import './StudyCalendar.css';
 
 export default function StudyCalendar() {
+  /********** 상태 선언 **********/
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-
-  const { studyInfo, isLoading: studyLoading, error } = useStudy();
-  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-
+  
+  /********** Context & Hooks **********/  
   const { user } = useAuth();
-  const userId = user?.id;
   const { groupId: groupIdParam } = useParams();
+  const { studyInfo, host } = useStudy();
+  
+  const userId = user?.id;
   const groupId = Number(groupIdParam);
-
   const isHost = useMemo(() => {
     return !!(user?.id && studyInfo?.groupOwnerId && user.id === studyInfo.groupOwnerId);
   }, [user?.id, studyInfo?.groupOwnerId]);
-
-
-  // 일정 목록 조회
+  
+  /********** API & 데이터 로딩 **********/
   useEffect(() => {
     axios.get(`${host}/api/study/calendar/study/${groupId}`).then((res) => {
       const fetched = res.data.map((e) => ({
@@ -51,8 +49,8 @@ export default function StudyCalendar() {
       setEvents(fetched);
     });
   }, [groupId]);
-
-
+  
+  /********** 이벤트 핸들러 **********/
   // 일정 등록
   const handleSelect = async (info) => {
     if (!isHost) return; // 스터디장만 등록 가능
@@ -73,19 +71,10 @@ export default function StudyCalendar() {
 
     try {
       const res = await axios.post(`${host}/api/study/calendar`, newEvent, {
-        headers: {
-          'X-USER-ID': userId
-        }
+        headers: { 'X-USER-ID': userId }
       });
 
-      // 전체 응답 구조를 확인
-  console.log('전체 응답 객체:', res);
-  console.log('응답 status:', res.status);
-  console.log('응답 headers:', res.headers);
-  console.log('응답 data:', res.data);
-  console.log('res.data의 타입:', typeof res.data);
       const saved = res.data;
-      // 화면에 바로 반영
       setEvents((prev) => [
         ...prev,
         {
@@ -99,26 +88,15 @@ export default function StudyCalendar() {
           extendedProps: { content: saved.content },
         },
       ]);
-      
-      console.log('백엔드 응답:', saved);
-      console.log('추가하려는 이벤트:', {
-        id: saved.id,
-        title: saved.title,
-        start: saved.startDate,
-        end: saved.endDate,
-        backgroundColor: saved.bgColor,
-        textColor: saved.textColor,
-        extendedProps: { content: saved.content },
-      });
+
       alert('등록 완료');
     } catch (err) {
       console.error("등록 실패:", err);
       alert('등록 실패');
     }
-    
   };
 
-  // 일정 클릭(모달 열기)
+  // 일정 클릭(모달 열기, 상세보기)
   const handleEventClick = (clickInfo) => {
     setSelectedEvent(clickInfo.event);
     setNewTitle(clickInfo.event.title);
@@ -126,7 +104,7 @@ export default function StudyCalendar() {
     setShowModal(true);
   };
 
-  // 일정 수정(PUT)
+  // 일정 수정
   const handleUpdate = async () => {
     try {
       await axios.put(`${host}/api/study/calendar`, {
@@ -135,9 +113,7 @@ export default function StudyCalendar() {
         content: newContent,
         groupId: groupId,
       }, {
-        headers: {
-          'X-USER-ID': userId
-        }
+        headers: { 'X-USER-ID': userId }
       });
 
       selectedEvent.setProp('title', newTitle);
@@ -145,7 +121,7 @@ export default function StudyCalendar() {
       alert('수정 완료');
       setShowModal(false);
     } catch (err) {
-      console.error(err);
+      console.error('수정 실패:', err);
       alert('수정 실패');
     }
   };
@@ -156,14 +132,13 @@ export default function StudyCalendar() {
 
     try {
       await axios.delete(`${host}/api/study/calendar/${selectedEvent.id}`, {
-        headers: {
-          'X-USER-ID': userId
-        }
+        headers: { 'X-USER-ID': userId }
       });
       selectedEvent.remove();
       alert('삭제 완료');
       setShowModal(false);
-    } catch {
+    } catch (err) {
+      console.error('삭제 실패:', err);
       alert('삭제 실패');
     }
   };
@@ -175,7 +150,6 @@ export default function StudyCalendar() {
         initialView="dayGridMonth"
         selectable={isHost}
         select={handleSelect}
-        // selectMirror={true}
         events={events}
         eventClick={handleEventClick}
       />
