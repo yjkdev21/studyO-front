@@ -1,5 +1,25 @@
 /* ========== 공용 ========== */
 
+.auth-container h2 {
+    font-size: 40px;
+}
+
+.auth-container .error-text {
+    margin: 5px 0;
+    color: #ff2525;
+    font-size: 14px;
+    opacity: .7;
+}
+
+.auth-container .result-text {
+    margin: 0 20px;
+    font-weight: bold;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+}
 
 .auth-container .auth-form {
     padding: 0 20px;
@@ -26,7 +46,7 @@
     transition: border-color .3s;
 }
 
-.form-fieldinput.error {
+.form-field input.error {
     border-color: #ff2525;
 }
 
@@ -34,10 +54,11 @@
     border-color: var(--main-color);
 }
 
-.password-input-container {
+.form-field .password-container {
     position: relative;
-    
+
 }
+
 .password-toggle-btn {
     position: absolute;
     top: 2px;
@@ -53,16 +74,28 @@
 
 }
 
-.auth-btn-wrap .auth-btn {
+.auth-container .auth-btn {
     width: 100%;
     padding: 10px;
     border-radius: 5px;
+    background-color: var(--main-color);
+    transition: .3s opacity;
+}
+
+.auth-container .auth-btn.sub {
     background-color: #eee;
 }
 
+.auth-container .auth-btn:hover {
+    opacity: .9;
+}
 
 /* 모바일 - 화면 767px 이하 */
 @media (max-width: 767px) {
+    .auth-container h2 {
+        font-size: 24px;
+    }
+
     .auth-form .auth-btn-wrap {
         flex-wrap: wrap;
     }
