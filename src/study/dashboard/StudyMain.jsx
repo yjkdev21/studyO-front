@@ -29,7 +29,7 @@ export default function StudyMain() {
   /********** API 호출 함수들 **********/
   const fetchPosts = async () => {
     try {
-      const [noticeRes, postRes] = await Promise.all([
+      const [noticeRes, postRes] = await Promise.all([ // Promise.all로 공지/일반글 동시 조회
         axios.get(`${host}/api/study/board/group/${groupId}/notice`),
         axios.get(`${host}/api/study/board/group/${groupId}/normal`)
       ]);
