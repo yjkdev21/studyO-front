@@ -412,15 +412,11 @@
 .g-loading-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 200px;
   width: 100%;
-  min-height: 900px;
+  min-height: 700px;
   position: relative;
-}
-
-/* 전체 화면에서 로딩 중일 때만 로딩 아이콘의 위치를 아래로 내립니다. */
-.g-loading-container.is-loading-all {
-  margin-top: 200px;
 }
 
 /* 로딩 스피너 스타일 */

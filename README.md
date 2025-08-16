@@ -13,20 +13,21 @@ If you are developing a production application, we recommend using TypeScript wi
 
 # react-study-o
 
-npm install
-npm install bootstrap
-npm install react-bootstrap
-npm install bootstrap-icons
-npm install react-bootstrap-icons
-npm install axios
-npm install --save-dev @types/axios
-npm install @reduxjs/toolkit react-redux
-npm install --save-dev @types/react-redux
-npm install redux-persist @types/redux-persist
-npm install react-router-dom --save
-npm install gh-pages
-npm install quill-blot-formatter@^1.0.5
-npm install react-quill@^2.0.0
-npm install quill@^1.3.7
-npm install -D tailwindcss @tailwindcss/vite
-npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
+npm install <br>
+npm install bootstrap <br>
+npm install react-bootstrap <br>
+npm install bootstrap-icons <br>
+npm install react-bootstrap-icons <br>
+npm install axios <br>
+npm install --save-dev @types/axios <br>
+npm install @reduxjs/toolkit react-redux <br>
+npm install --save-dev @types/react-redux <br>
+npm install redux-persist @types/redux-persist <br>
+npm install react-router-dom --save <br>
+npm install gh-pages <br>
+npm install quill-blot-formatter@^1.0.5 <br>
+npm install react-quill@^2.0.0 <br>
+npm install quill@^1.3.7 <br>
+npm install -D tailwindcss @tailwindcss/vite <br>
+npm install @fullcalendar/react @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction <br>
+npm install recharts

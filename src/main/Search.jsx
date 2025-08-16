@@ -88,12 +88,13 @@ function Search() {
 
   const initialCategoryFromHeader = location.state?.category || "전체";
 
-  const [filters, setFilters] = useState({
+  // 🚨 상태 분리: 검색어와 기타 필터를 별도로 관리
+  const [searchQuery, setSearchQuery] = useState("");
+  const [otherFilters, setOtherFilters] = useState({
     category:
       initialCategoryFromHeader === "전체" ? "" : initialCategoryFromHeader,
     studyMode: "",
     region: "",
-    search: "",
     recruitmentCount: "",
     recruitingOnly: true,
   });
@@ -104,7 +105,9 @@ function Search() {
   const [countsData, setCountsData] = useState({});
   const [userBookmarks, setUserBookmarks] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  // 🚨 로딩 상태 분리: 메인 검색 로딩과 초기 전체 페이지 로딩을 구분
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isMainLoading, setIsMainLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const DEFAULT_THUMBNAIL_URL = "/images/default-thumbnail.png";
@@ -162,7 +165,7 @@ function Search() {
   useEffect(() => {
     const newCategory = location.state?.category;
     if (newCategory !== undefined) {
-      setFilters((prev) => ({
+      setOtherFilters((prev) => ({
         ...prev,
         category: newCategory === "전체" ? "" : newCategory,
       }));
@@ -243,8 +246,6 @@ function Search() {
         setCountsData({});
       }
 
-      // 🚨 이 부분을 수정합니다.
-      // userBookmarksRes가 존재하고, data 속성도 존재하며, data.data가 배열인지 확인
       if (
         userBookmarksRes?.data?.success &&
         Array.isArray(userBookmarksRes.data.data)
@@ -281,70 +282,112 @@ function Search() {
         const payload = { userId: user.id, groupId };
         await axios.post(`${host}/api/bookmark`, payload);
       }
-      await fetchAllData(filters);
+      setUserBookmarks((prev) =>
+        prev.includes(groupId)
+          ? prev.filter((id) => id !== groupId)
+          : [...prev, groupId]
+      );
+      setCountsData((prev) => {
+        const newCounts = { ...prev };
+        if (newCounts[groupId]) {
+          newCounts[groupId].bookmarkCount = prev.includes(groupId)
+            ? newCounts[groupId].bookmarkCount - 1
+            : newCounts[groupId].bookmarkCount + 1;
+        }
+        return newCounts;
+      });
     } catch (error) {
       console.error("북마크 토글 실패", error);
       alert("북마크 처리 중 오류가 발생했습니다.");
     }
   };
 
+  // 🚨 handleFilterChange 함수 수정
   const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    if (key === "search") {
+      setSearchQuery(value);
+    } else {
+      setOtherFilters((prev) => ({ ...prev, [key]: value }));
+    }
   };
 
+  // 🚨 Effect 1: 초기 로딩 및 다른 필터 변경 시 실행
   useEffect(() => {
     scrollPositionRef.current = window.scrollY;
-
-    setIsLoading(true);
+    setIsMainLoading(true);
     setError(null);
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    debounceTimer.current = setTimeout(async () => {
+    const combinedFilters = {
+      ...otherFilters,
+      search: searchQuery,
+    };
+
+    const fetchDataWithDelay = async () => {
       try {
-        await fetchAllData(filters);
+        // 🚨 API 호출 전에 500ms 지연 추가
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        await fetchAllData(combinedFilters);
+        setIsMainLoading(false);
+        setIsInitialLoading(false);
+        window.scrollTo(0, scrollPositionRef.current);
+        setCurrentPage(1);
       } catch (err) {
         setError("데이터를 불러오는 데 실패했습니다.");
+        setIsMainLoading(false);
+        setIsInitialLoading(false);
         console.error("데이터 불러오기 실패:", err);
-      } finally {
-        setIsLoading(false);
-        window.scrollTo(0, scrollPositionRef.current);
       }
-      setCurrentPage(1);
-    }, 300);
-
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
-  }, [filters, isAuthenticated, user?.id, isShowingAll]);
 
+    fetchDataWithDelay();
+  }, [otherFilters, isAuthenticated, user?.id, isShowingAll]);
+
+  // 🚨 Effect 2: 검색어(searchQuery)만 디바운싱 적용
   useEffect(() => {
-    checkScrollPosition(popularRef, setShowPopularLeft, setShowPopularRight);
-    checkScrollPosition(urgentRef, setShowUrgentLeft, setShowUrgentRight);
-
-    const popularElement = popularRef.current;
-    const urgentElement = urgentRef.current;
-
-    const handlePopularScroll = () =>
-      checkScrollPosition(popularRef, setShowPopularLeft, setShowPopularRight);
-    const handleUrgentScroll = () =>
-      checkScrollPosition(urgentRef, setShowUrgentLeft, setShowUrgentRight);
-
-    if (popularElement) {
-      popularElement.addEventListener("scroll", handlePopularScroll);
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
     }
-    if (urgentElement) {
-      urgentElement.addEventListener("scroll", handleUrgentScroll);
+
+    if (searchQuery.trim() === "") {
+      return;
     }
+
+    setIsMainLoading(true);
+
+    debounceTimer.current = setTimeout(() => {
+      scrollPositionRef.current = window.scrollY;
+      setError(null);
+      const combinedFilters = {
+        ...otherFilters,
+        search: searchQuery,
+      };
+
+      const fetchDataWithDelay = async () => {
+        try {
+          // 🚨 API 호출 전에 500ms 지연 추가
+          await new Promise((resolve) => setTimeout(resolve, 300));
+
+          await fetchAllData(combinedFilters);
+          setIsMainLoading(false);
+          window.scrollTo(0, scrollPositionRef.current);
+          setCurrentPage(1);
+        } catch (err) {
+          setError("데이터를 불러오는 데 실패했습니다.");
+          setIsMainLoading(false);
+          console.error("데이터 불러오기 실패:", err);
+        }
+      };
+
+      fetchDataWithDelay();
+    }, 300); // 500ms 디바운스
 
     return () => {
-      if (popularElement) {
-        popularElement.removeEventListener("scroll", handlePopularScroll);
-      }
-      if (urgentElement) {
-        urgentElement.removeEventListener("scroll", handleUrgentScroll);
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
       }
     };
-  }, [popularStudies, urgentStudies]);
+  }, [searchQuery]);
 
   const mergedPosts = posts.map((post) => {
     const counts = countsData[post.groupId] || {
@@ -625,8 +668,15 @@ function Search() {
 
   return (
     <div className="g-search-filter">
-      {/* isShowingAll이 true이고 로딩 중일 때는 이 부분을 숨깁니다. */}
-      {!(isShowingAll && isLoading) && (
+      {/* 🚨 isInitialLoading 상태로 초기 로딩을 관리 */}
+      {isInitialLoading && isShowingAll && (
+        <div className="g-loading-container is-loading-all">
+          <div className="g-loading-spinner"></div>
+        </div>
+      )}
+
+      {/* 🚨 초기 로딩 중에는 다른 UI를 렌더링하지 않음 */}
+      {!isInitialLoading && (
         <>
           <div className="g-top-buttons">
             <div className="g-write-button-wrapper">
@@ -755,19 +805,19 @@ function Search() {
             <div className="g-filter-controls">
               <Dropdown
                 options={studyModeOptions}
-                value={filters.studyMode}
+                value={otherFilters.studyMode}
                 onChange={(value) => handleFilterChange("studyMode", value)}
                 placeholder="진행방식"
               />
               <Dropdown
                 options={regionOptions}
-                value={filters.region}
+                value={otherFilters.region}
                 onChange={(value) => handleFilterChange("region", value)}
                 placeholder="지역"
               />
               <Dropdown
                 options={recruitmentCountOptions}
-                value={filters.recruitmentCount}
+                value={otherFilters.recruitmentCount}
                 onChange={(value) =>
                   handleFilterChange("recruitmentCount", value)
                 }
@@ -777,10 +827,13 @@ function Search() {
               <button
                 type="button"
                 className={`g-recruiting-btn ${
-                  filters.recruitingOnly ? "g-active" : ""
+                  otherFilters.recruitingOnly ? "g-active" : ""
                 }`}
                 onClick={() =>
-                  handleFilterChange("recruitingOnly", !filters.recruitingOnly)
+                  handleFilterChange(
+                    "recruitingOnly",
+                    !otherFilters.recruitingOnly
+                  )
                 }
               >
                 모집중만 보기
@@ -793,100 +846,99 @@ function Search() {
                 name="search"
                 placeholder="제목, 해시태그 검색해보세요"
                 className="g-search-input"
-                value={filters.search}
+                value={searchQuery}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
               />
             </div>
           </div>
-        </>
-      )}
 
-      {isLoading ? (
-        <div
-          className={`g-loading-container ${
-            isShowingAll ? "is-loading-all" : ""
-          }`}
-        >
-          <div className="g-loading-spinner"></div>
-        </div>
-      ) : error ? (
-        <div className="g-error-message">
-          <p>{error}</p>
-        </div>
-      ) : !isAuthenticated ? (
-        <div className="g-login-required">
-          <div className="g-login-message-container">
-            <p>로그인해야 게시물을 볼 수 있습니다.</p>
-            <p>
-              로그인 페이지로 이동하시려면 <Link to="/login">여기</Link>를
-              클릭하세요.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="g-main-content">
-          {mergedPosts.length === 0 ? (
-            <p className="g-no-results">검색 결과가 없습니다.</p>
+          {/* 🚨 isMainLoading 상태로 검색 결과 로딩만 관리 */}
+          {isMainLoading ? (
+            <div className="g-loading-container">
+              <div className="g-loading-spinner"></div>
+            </div>
+          ) : error ? (
+            <div className="g-error-message">
+              <p>{error}</p>
+            </div>
+          ) : !isAuthenticated ? (
+            <div className="g-login-required">
+              <div className="g-login-message-container">
+                <p>로그인해야 게시물을 볼 수 있습니다.</p>
+                <p>
+                  로그인 페이지로 이동하시려면 <Link to="/login">여기</Link>를
+                  클릭하세요.
+                </p>
+              </div>
+            </div>
           ) : (
-            <>{currentPosts.map(renderStudyCard)}</>
-          )}
+            <div className="g-main-content">
+              {mergedPosts.length === 0 ? (
+                <p className="g-no-results">검색 결과가 없습니다.</p>
+              ) : (
+                <>{currentPosts.map(renderStudyCard)}</>
+              )}
 
-          {mergedPosts.length === 0 ? (
-            ""
-          ) : (
-            <div className="g-pagination-controls">
-              <button
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-                className="g-pagination-btn"
-              >
-                &laquo;
-              </button>
-              <button
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="g-pagination-btn"
-              >
-                &lt;
-              </button>
-              {[...Array(5)].map((_, i) => {
-                const startPage = Math.max(
-                  1,
-                  Math.min(currentPage - 2, totalPages - 4)
-                );
-                const pageNumber = startPage + i;
-                if (pageNumber > totalPages) return null;
-                return (
+              {mergedPosts.length === 0 ? (
+                ""
+              ) : (
+                <div className="g-pagination-controls">
                   <button
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber)}
-                    className={`g-pagination-btn ${
-                      pageNumber === currentPage ? "g-active" : ""
-                    }`}
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    className="g-pagination-btn"
                   >
-                    {pageNumber}
+                    &laquo;
                   </button>
-                );
-              })}
-              <button
-                onClick={() =>
-                  handlePageChange(Math.min(totalPages, currentPage + 1))
-                }
-                disabled={currentPage === totalPages}
-                className="g-pagination-btn"
-              >
-                &gt;
-              </button>
-              <button
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage === totalPages}
-                className="g-pagination-btn"
-              >
-                &raquo;
-              </button>
+                  <button
+                    onClick={() =>
+                      handlePageChange(Math.max(1, currentPage - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="g-pagination-btn"
+                  >
+                    &lt;
+                  </button>
+                  {[...Array(5)].map((_, i) => {
+                    const startPage = Math.max(
+                      1,
+                      Math.min(currentPage - 2, totalPages - 4)
+                    );
+                    const pageNumber = startPage + i;
+                    if (pageNumber > totalPages) return null;
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`g-pagination-btn ${
+                          pageNumber === currentPage ? "g-active" : ""
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() =>
+                      handlePageChange(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="g-pagination-btn"
+                  >
+                    &gt;
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="g-pagination-btn"
+                  >
+                    &raquo;
+                  </button>
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
