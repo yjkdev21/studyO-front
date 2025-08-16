@@ -16,9 +16,11 @@ export default function GroupDetail() {
     const [profileImage, setProfileImage] = useState(null);
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading } = useAuth();
+    
 
     const loadUserProfileImage = async (userId) => {
-        if (!userId) return defaultProfileImageSrc;
+        // 주석주석 수정수정
+        // if (!userId) return defaultProfileImageSrc;
 
         try {
             const apiUrl = host || 'http://localhost:8081';
