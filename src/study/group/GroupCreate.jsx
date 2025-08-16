@@ -4,7 +4,7 @@ import axios from 'axios';
 import './group.css';
 import StudyForm from './StudyForm';
 import { useAuth } from '../../contexts/AuthContext';
-import ConfirmModal from '../../users/modal/ConfirmModal'; // 모달 import
+import ConfirmModal from '../../users/modal/ConfirmModal';
 
 // 작성 기본값 초기화 
 const RESET_FORM = {
@@ -74,7 +74,6 @@ function GroupCreate() {
     // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
     const handleModalCancel = () => {
         setIsCreateModalOpen(false);
-        // 폼 데이터는 그대로 유지
     };
 
     const checkGroupNameDuplicate = async (groupName) => {
@@ -86,6 +85,16 @@ function GroupCreate() {
             return false;
         }
     };
+
+    const checkNicknameDuplicate = async (nickname) => {
+    try {
+        const res = await axios.get(`${host}/api/study/check-nickname/${encodeURIComponent(nickname)}`);
+        return res.data.isDuplicate;
+    } catch (err) {
+        console.error('닉네임 중복 확인 오류:', err);
+        return false;
+    }
+};
 
     useEffect(() => {
         if (isAuthenticated && user) {
@@ -163,21 +172,31 @@ function GroupCreate() {
     };
 
     // 작성하기 버튼 클릭 → 확인 모달 띄우기
-    const handleCreateClick = async (e) => {
-        e.preventDefault();
-        const validationError = validateRequiredFields();
-        if (validationError) {
-            setSubmitMessage(validationError);
-            return;
-        }
-        const isDuplicate = await checkGroupNameDuplicate(formData.groupName);
-        if (isDuplicate) {
-            setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
-            return;
-        }
-        // 확인 모달 띄우기
-        setIsCreateModalOpen(true);
-    };
+const handleCreateClick = async (e) => {
+    e.preventDefault();
+    const validationError = validateRequiredFields();
+    if (validationError) {
+        setSubmitMessage(validationError);
+        return;
+    }
+    
+    // 그룹명 중복 검사
+    const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
+    if (isGroupNameDuplicate) {
+        setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
+        return;
+    }
+    
+    // 닉네임 중복 검사 추가
+    const isNicknameDuplicate = await checkNicknameDuplicate(formData.nickname);
+    if (isNicknameDuplicate) {
+        setSubmitMessage("이미 사용 중인 닉네임입니다.");
+        return;
+    }
+    
+    // 확인 모달 띄우기
+    setIsCreateModalOpen(true);
+};
 
     // 실제 생성 처리
     const handleFormSubmit = async () => {
