@@ -170,10 +170,9 @@ function Search() {
   }, [location.state]);
 
   const getMinMaxMembers = (recruitmentCount) => {
-    if (recruitmentCount === "1~5") return { minMembers: 1, maxMembers: 4 };
-    if (recruitmentCount === "5~10") return { minMembers: 5, maxMembers: 10 };
-    if (recruitmentCount === "10이상")
-      return { minMembers: 10, maxMembers: null };
+    if (recruitmentCount === "2~4") return { minMembers: 2, maxMembers: 4 };
+    if (recruitmentCount === "5~7") return { minMembers: 5, maxMembers: 7 };
+    if (recruitmentCount === "8~10") return { minMembers: 8, maxMembers: 10 };
     return { minMembers: null, maxMembers: null };
   };
 
@@ -679,9 +678,9 @@ function Search() {
     { label: "제주", value: "제주" },
   ];
   const recruitmentCountOptions = [
-    { label: "1~5", value: "1~5" },
-    { label: "5~10", value: "5~10" },
-    { label: "10이상", value: "10이상" },
+    { label: "2~4", value: "2~4" },
+    { label: "5~7", value: "5~7" },
+    { label: "8~10", value: "8~10" },
   ];
 
   return (
