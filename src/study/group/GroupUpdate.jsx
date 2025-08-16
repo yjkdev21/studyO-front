@@ -212,7 +212,7 @@ function GroupUpdate() {
     };
 
     // 실제 수정 처리 함수
-    const handleFormSubmit = async () => {
+const handleFormSubmit = async () => {
     setIsSubmitting(true);
     setSubmitMessage('');
 
@@ -226,9 +226,22 @@ function GroupUpdate() {
             contact: formData.contact,
             groupIntroduction: formData.groupIntroduction,
             groupOwnerId: formData.groupOwnerId,
-            nickname: formData.nickname,
-            thumbnail: (!formData.thumbnail || formData.thumbnail === '') ? 'default' : null
+            nickname: formData.nickname
         };
+
+        // 썸네일 처리 로직
+        if (formData.thumbnail instanceof File) {
+            // 새로운 이미지 파일이 선택된 경우 - 아무것도 설정하지 않음 (서버에서 업로드 처리)
+            groupDto.thumbnail = null;
+        } else if (!formData.thumbnail || 
+                   formData.thumbnail === '' || 
+                   formData.thumbnail === '/images/default-thumbnail.png') {
+            // 이미지가 없거나 기본 이미지인 경우 - 기본 이미지로 설정
+            groupDto.thumbnail = 'default';
+        } else {
+            // 기존 이미지를 유지하는 경우 - null로 설정 (서버에서 기존값 유지)
+            groupDto.thumbnail = null;
+        }
 
         const formPayload = new FormData();
         formPayload.append('groupDto', new Blob([JSON.stringify(groupDto)], { type: 'application/json' }));
