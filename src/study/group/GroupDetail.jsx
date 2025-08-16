@@ -16,6 +16,7 @@ export default function GroupDetail() {
     const [profileImage, setProfileImage] = useState(null);
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading } = useAuth();
+    const defaultProfileImageSrc = "/images/default-profile.png";
 
     const loadUserProfileImage = async (userId) => {
         if (!userId) return defaultProfileImageSrc;
