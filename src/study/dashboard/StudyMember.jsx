@@ -329,7 +329,7 @@ export default function StudyMember() {
                         setSelectedRequest(req);
                         setIsAcceptModalOpen(true);
                       }}>수락</button>
-                    <button type="button" className="member-btn"
+                    <button type="button" className="member-btn rejected"
                       onClick={() => {
                         setSelectedRequest(req);
                         setIsRejectModalOpen(true);
@@ -386,7 +386,7 @@ export default function StudyMember() {
         onConfirm={handleModalConfirm}
         type="accept"
         userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
-        profileImage={selectedRequest?.profileImage}
+        profileImage={getProfileImageSrc(selectedRequest?.profileImage)}
         customText={{
           title: "",
           description: selectedRequest?.applicationMessage
@@ -399,7 +399,7 @@ export default function StudyMember() {
         onConfirm={handleModalConfirm}
         type="kick"
         userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
-        profileImage={selectedRequest?.profileImage}
+        profileImage={getProfileImageSrc(selectedRequest?.profileImage)}
         customText={{
           title: "",
           description: selectedRequest?.applicationMessage,
