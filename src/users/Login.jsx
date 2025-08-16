@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import "./Auth.css";
 
 export default function Login() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    userId: '',
+    userId: location.state?.userId || '',
     password: ''
   });
+
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [hasLoginError, setHasLoginError] = useState(false);
 
   const { user, isAuthenticated, isLoading, login, logout, deleteAccount } = useAuth();
+
+
 
   // 입력값 변경 처리
   const handleInputChange = (e) => {
@@ -47,6 +53,7 @@ export default function Login() {
     if (result.success) {
       setFormData({ userId: '', password: '' });
       setHasLoginError(false);
+      navigate("/");
     } else {
       setHasLoginError(true);
     }
@@ -54,6 +61,13 @@ export default function Login() {
     setMessage(result.message);
     setIsSubmitting(false);
   };
+
+  // 페이지 로드 후 초기화
+  useEffect(() => {
+    if (location.state?.fromSignup) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   // 로그아웃 핸들
   const handleLogout = async () => {
@@ -87,7 +101,7 @@ export default function Login() {
     <main>
       <div className="main-center auth-container">
 
-        <h2 className="text-5xl">로그인</h2>
+        <h2>로그인</h2>
         <p className="text-base !my-5 text-[#666]">모든 스터디의 시작 StudyO</p>
         {/* 메시지 표시 */}
         {message && (
@@ -151,23 +165,25 @@ export default function Login() {
                   name="userId"
                   value={formData.userId}
                   onChange={handleInputChange}
-                  // required
+                  required
                   disabled={isSubmitting}
                   className={hasLoginError ? "error" : ""}
+                  autoComplete="username"
                 />
               </div>
               <div className="form-field !mt-10">
                 <label htmlFor="password" className={hasLoginError ? "error" : ""}>Password</label>
-                <div className="password-input-container">
+                <div className="password-container">
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    // required
+                    required
                     disabled={isSubmitting}
                     className={hasLoginError ? "error" : ""}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -179,12 +195,13 @@ export default function Login() {
                   </button>
                 </div>
               </div>
-              <div className="auth-btn-wrap">
+              <div className="auth-btn-wrap !mt-10">
                 <button type="submit" className="auth-btn">로그인</button>
-                <Link to="/join" className="auth-btn">회원가입</Link>
+                <Link to="/join" className="auth-btn sub">회원가입</Link>
               </div>
               <div className="text-[#999] text-sm !my-4">
-                <Link to="/findId" className="">아이디/</Link>
+                <Link to="/findId" className="">아이디 찾기</Link>
+                <span className="!px-2">|</span>
                 <Link to="/findPw" className="">비밀번호 찾기</Link>
               </div>
             </form>
