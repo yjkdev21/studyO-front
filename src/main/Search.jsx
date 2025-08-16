@@ -803,7 +803,7 @@ function Search() {
                   </div>
                 ) : (
                   <p className="g-no-special-results">
-                    관련 스터디 데이터가 없습니다.
+                    관련 스터디가 없습니다.
                   </p>
                 )}
               </div>
@@ -873,15 +873,9 @@ function Search() {
         <div className="g-error-message">
           <p>{error}</p>
         </div>
-      ) : !isAuthenticated ? (
-        <div className="g-login-required">
-          <div className="g-login-message-container">
-            <p>로그인해야 게시물을 볼 수 있습니다.</p>
-            <p>
-              로그인 페이지로 이동하시려면 <Link to="/login">여기</Link>를
-              클릭하세요.
-            </p>
-          </div>
+      ) : error ? (
+        <div className="g-error-message">
+                    <p>{error}</p>       {" "}
         </div>
       ) : (
         <div className="g-main-content">
