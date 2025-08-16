@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 
 function FindId() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -61,72 +64,58 @@ function FindId() {
   return (
     <main>
       <div className="main-center auth-container">
-        <h2 className="text-5xl">아이디 찾기</h2>
-        <p className="text-base !my-5 text-[#666]">가입 시 사용한 이메일 주소를 입력해주세요</p>
-
-        {!result ? (
-          <div className="auth-form">
-            <form onSubmit={handleSubmit}>
-              <div className="form-field">
-                {/* <label htmlFor="email">이메일 주소</label> */}
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  placeholder="example@email.com"
-                  disabled={isLoading}
-                />
-                {errors.email && (
-                  <p style={{ color: 'red', fontSize: '0.9rem' }}>{errors.email}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                style={{
-                  marginTop: '1rem',
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: '#444',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                {isLoading ? '찾는 중...' : '아이디 찾기'}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-            {result.success ? (
-              <>
-                <p>아이디 찾기 성공</p>
-                <p>
-                  <strong>{result.userId}</strong>
-                </p>
-                <button onClick={() => window.location.href = '/login'}>
-                  로그인하기
-                </button>
-              </>
-            ) : (
-              <>
-                <p style={{ color: 'red' }}>아이디를 찾을 수 없습니다.</p>
-                <p>{result.message}</p>
-                <button onClick={handleReset}>다시 시도하기</button>
-              </>
-            )}
-          </div>
-        )}
-
-        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <button onClick={() => window.location.href = '/FindPw'}>
+        <h2>아이디 찾기</h2>
+        <div className="auth-form">
+          {!result ? (
+            <>
+              <p className="text-base !my-5 text-[#666]">가입 시 사용한 이메일 주소를 입력해주세요</p>
+              <form onSubmit={handleSubmit}>
+                <div className="form-field">
+                  <input
+                  name="email"
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="example@email.com"
+                    disabled={isLoading}
+                    className={errors.email && "error"}
+                  />
+                  {errors.email && (
+                    <p className="error-text">{errors.email}</p>
+                  )}
+                </div>
+                <button type="submit" className="auth-btn !mt-5">아이디 찾기</button>
+              </form>
+            </>
+          ) : (
+            <div>
+              {result.success ? (
+                <>
+                  <p className="text-base !my-5 text-[#666]">해당하는 아이디를 찾았습니다!</p>
+                  <p className="result-text">{result.userId}</p>
+                  <button 
+                  onClick={() => navigate('/login')}
+                  className="auth-btn !mt-5"
+                  >
+                    로그인
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-base !my-5 text-[#666]">아이디를 찾을 수 없습니다</p>
+                  <p className="error-text">{result.message}</p>
+                  <button onClick={handleReset} className="auth-btn sub !mt-5">다시 시도하기</button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="text-[#666] text-sm !my-4">
+          <button onClick={() => navigate('/findPw')}>
             비밀번호 찾기
           </button>
-          <span style={{ margin: '0 8px' }}>|</span>
-          <button onClick={() => window.location.href = '/login'}>
+          <span className="!px-2">|</span>
+          <button onClick={() => navigate('/login')}>
             로그인으로 돌아가기
           </button>
         </div>

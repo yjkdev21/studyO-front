@@ -348,8 +348,13 @@ function Join() {
 
       if (res.data === "success") {
         alert("회원가입이 완료되었습니다!");
-        // ⚠️ 3. 회원가입 성공 후 로그인 페이지로 이동
-        navigate("/login");
+        // 회원가입 성공 시 아이디 파라미터 로그인 페이지에 전송
+        navigate("/login", {
+          state: {
+            userId: form.userId,
+            fromSignup: true
+          }
+        });
       } else {
         alert("회원가입 실패: " + res.data);
       }

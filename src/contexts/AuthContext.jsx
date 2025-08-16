@@ -6,9 +6,9 @@ const AuthContext = createContext();
 // AuthProvider 컴포넌트
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // 처음에 true로 시작
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
+  const host = import.meta.env.VITE_AWS_API_HOST;
 
   const [skipAuthCheck, setSkipAuthCheck] = useState(false);
 
@@ -114,10 +114,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // 비밀번호 찾기 - 비밀번호 변경
+  // 비밀번호 찾기 - 1단계: 계정 검증
+  const verifyAccount = async (userId, email) => {
+    try {
+      const response = await authApi.post("/verify-account", {
+        userId,
+        email
+      });
+      return response.data;
+    } catch (error) {
+      console.error("계정 검증 오류:", error);
+      const message =
+        error.response?.data?.message || "네트워크 오류가 발생했습니다.";
+      return { success: false, message };
+    }
+  };
+
+  // 비밀번호 찾기 - 2단계: 비밀번호 재설정
   const resetPassword = async (userId, email, newPassword) => {
     try {
-      const response = await authApi.post("/find-password", {
+      const response = await authApi.post("/reset-password", {
         userId,
         email,
         newPassword
@@ -125,12 +141,30 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error("비밀번호 변경 오류:", error);
-      // 서버에서 내려준 message가 있다면 사용하고, 없으면 기본 메시지 사용
       const message =
         error.response?.data?.message || "네트워크 오류가 발생했습니다.";
       return { success: false, message };
     }
   };
+
+  // 비밀번호 찾기 - 비밀번호 변경
+  // const resetPassword = async (userId, email, newPassword) => {
+  //   try {
+  //     const response = await authApi.post("/find-password", {
+  //       userId,
+  //       email,
+  //       newPassword
+  //     });
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error("비밀번호 변경 오류:", error);
+  //     // 서버에서 내려준 message가 있다면 사용하고, 없으면 기본 메시지 사용
+  //     const message =
+  //       error.response?.data?.message || "네트워크 오류가 발생했습니다.";
+  //     return { success: false, message };
+  //   }
+  // };
+  
   // 회원 탈퇴
   const deleteAccount = async () => {
     try {
@@ -171,7 +205,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     deleteAccount,
     findUserId,
-    resetPassword,
+    verifyAccount,    // 추가: 1단계 계정 검증
+    resetPassword,    // 수정: 2단계 비밀번호 재설정
     skipAuthCheck,
     clearAuthCheck,
   };
