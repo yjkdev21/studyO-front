@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../contexts/AuthContext"; // 사용자 인증 정보를 가져오는 커스텀 훅
+import axios from "axios";
+import { useAuth } from "../../contexts/AuthContext"; // 사용자 인증 정보
 import { useNavigate } from "react-router-dom";
 
 import StudyCard from "../post/components/StudyCard";
-import "../../users/MyEdit.css"; // 스타일 파일
+import "../../users/MyEdit.css";
 
 export default function DashboardList() {
-  // === 인증 정보 가져오기 ===
-  // useAuth 커스텀 훅에서 사용자 정보와 인증 상태 가져오기
-  const { user, isAuthenticated, isLoading } = useAuth();
+  // useAuth에서 사용자 정보와 인증 상태 가져오기
+  const { user, isAuthenticated } = useAuth();
+
   const [myStudies, setMyStudies] = useState([]); // 참여 중인 스터디 목록
   const [studyLoading, setStudyLoading] = useState(true); // 스터디 로딩 상태
   const [studyError, setStudyError] = useState(null); // 스터디 에러 메시지
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState(null);
+  
+  const host = import.meta.env.VITE_AWS_API_HOST;
+
   const handleCardSelect = (groupId) => {
     setSelectedCard(groupId); // 선택 저장
     navigate(`/study/${groupId}/dashboard`); // 해당 스터디의 대시보드로 이동
@@ -32,68 +36,33 @@ export default function DashboardList() {
         setStudyLoading(true);
         setStudyError(null);
 
-        // API URL 설정 (환경변수 또는 기본값)
-        const apiUrl = window.REACT_APP_API_URL || "http://localhost:8081";
-        const url = `${apiUrl}/api/study/user/${user.id}/active`;
-
-        // 서버에 스터디 목록 요청
-        const response = await fetch(url, {
-          method: "GET",
+        // axios로 서버에 스터디 목록 요청
+        const response = await axios.get(`${host}/api/study/user/${user.id}/active`, {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          credentials: "include", // 쿠키 포함
+          withCredentials: true, // 세션 ID 쿠키(JSESSIONID) 자동 포함
         });
 
-        // HTTP 상태 코드별 에러 처리
-        if (response.status === 403) {
-          throw new Error(
-            "서버 접근 권한이 없습니다. CORS 설정을 확인해주세요."
-          );
-        }
-
-        if (response.status === 404) {
-          throw new Error("API 엔드포인트를 찾을 수 없습니다.");
-        }
-
-        // 응답 헤더 확인 - JSON 형태인지 체크
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("서버에서 올바른 JSON 응답을 받지 못했습니다.");
-        }
-
-        // HTTP 상태가 성공이 아닌 경우
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || `HTTP error! status: ${response.status}`
-          );
-        }
-
-        // 응답 데이터 파싱
-        const data = await response.json();
-
-        console.log("스터디 데이터:", data); // 디버깅용 로그
+        const data = response.data; // axios는 자동으로 JSON 파싱하고 response.data에 저장
 
         // 데이터 구조 검증 및 처리
         if (data.success && Array.isArray(data.data)) {
-          // 최신 순으로 정렬 (생성일 기준 내림차순)
+          // 내가 가입한 날짜 기준 내림차순
           const sortedStudies = data.data.sort((a, b) => {
-            const dateA = new Date(a.createdAt);
-            const dateB = new Date(b.createdAt);
-            return dateB - dateA; // 최신이 먼저 오도록
+            const dateA = new Date(a.joinedAt || a.createdAt); // 가입일 우선, 없으면 생성일
+            const dateB = new Date(b.joinedAt || b.createdAt);
+            return dateB - dateA; // 최근 가입한 스터디가 먼저 오도록
           });
-
           setMyStudies(sortedStudies);
         } else {
           throw new Error(data.message || "데이터 형식이 올바르지 않습니다.");
         }
       } catch (error) {
-        // 에러 로깅 및 사용자에게 표시할 에러 메시지 설정
         console.error("스터디 데이터 조회 실패:", error);
-        setStudyError(`스터디 데이터를 불러올 수 없습니다: ${error.message}`);
-        setMyStudies([]); // 에러 시 빈 배열로 초기화
+        setStudyError("스터디 목록을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+        setMyStudies([]);
       } finally {
         // 성공/실패 관계없이 로딩 상태 해제
         setStudyLoading(false);
@@ -135,23 +104,12 @@ export default function DashboardList() {
             <StudyCard
               key={`study-${study.groupId}-${study.groupName || "unknown"}`}
               studyGroup={study}
-              // id={study.groupId}
-              // category={study.category}
-              // name={study.groupName}
-              // description={study.groupIntroduction}
-              // author={study.groupOwnerId}
-              // dueDate={study.createdAt}
-              // members={study.maxMembers}
-              // isOffline={study.studyMode === "오프라인"}
-              // location={study.region}
-              // contact={study.contact} // StudyCard에서 사용하지 않으면 생략 가능
-              // thumbnail={study.thumbnail}
               isSelected={selectedCard === study.groupId}
               onSelect={handleCardSelect}
             />
           ))
         )}
-      </div>
+      </div>x
     </div>
   );
 }
