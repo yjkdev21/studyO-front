@@ -31,10 +31,10 @@ const DISABLED_FIELDS = ['category', 'studyMode', 'region'];
 function GroupUpdate() {
     const navigate = useNavigate();
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-    
+
     const { groupId } = useParams();
     const host = import.meta.env.VITE_AWS_API_HOST;
-    
+
 
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,16 +51,16 @@ function GroupUpdate() {
     // 로그인하지 않은 경우 로그인 페이지로 리다이렉트 또는 메시지 표시
     if (!isAuthenticated) {
         return (
-            <div style={{ 
-                display: 'flex', 
+            <div style={{
+                display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh' 
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh'
             }}>
                 <h2>로그인이 필요합니다</h2>
                 <p>스터디 그룹을 수정하려면 먼저 로그인해주세요.</p>
-                <button 
+                <button
                     onClick={() => navigate('/login')}
                     style={{
                         padding: '10px 20px',
@@ -83,7 +83,7 @@ function GroupUpdate() {
             const fetchStudyData = async () => {
                 try {
                     setIsLoading(true);
-                    
+
                     // 로컬 하고 서버 올라갔을때 host 주소가 변경
                     const response = await axios.get(`${host}/api/study/${groupId}`, {
                         withCredentials: true, // 자격 증명(쿠키 등)을 요청에 포함
@@ -91,7 +91,7 @@ function GroupUpdate() {
 
                     if (response.data.success && response.data.data) {
                         const data = response.data.data;
-                        
+
                         // 현재 로그인한 사용자가 그룹의 소유자인지 확인
                         const userId = user.id || user.userId;
                         if (data.groupOwnerId !== userId) {
@@ -99,7 +99,7 @@ function GroupUpdate() {
                             setTimeout(() => navigate(`/group/${groupId}`), 2000);
                             return;
                         }
-                        
+
                         setFormData({
                             groupName: data.groupName || '',
                             category: data.category || '',
@@ -113,7 +113,7 @@ function GroupUpdate() {
                             nickname: data.nickname || ''
                         });
                         setUserNickname(data.nickname || '');
-                        
+
                         setMemberCount(data.memberCount || 1);
                     } else {
                         setSubmitMessage('데이터를 불러올 수 없습니다.');
@@ -125,7 +125,7 @@ function GroupUpdate() {
                     setIsLoading(false);
                 }
             };
-            
+
             fetchStudyData();
         }
     }, [groupId, host, isAuthenticated, user, navigate]);
@@ -135,28 +135,45 @@ function GroupUpdate() {
 
         setFormData((prev) => {
             const newData = { ...prev, [name]: value };
-            
+
             // 온라인 모드 선택 시 지역 필드 초기화 (수정 모드에서는 disabled이지만 혹시 모르니)
             if (name === 'studyMode' && value === '온라인') {
                 newData.region = '';
             }
-            
+
             return newData;
         });
     };
 
     // 파일 입력 처리를 위한 별도 핸들러 추가
     const handleFileInputChange = (file) => {
-        setFormData((prev) => ({
-            ...prev,
-            thumbnail: file,
-        }));
+        if (file) {
+            // 파일 크기 검증 (1MB 제한)
+            if (file.size > 1 * 1024 * 1024) {
+                setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
+                return;
+            }
+
+            // 이미지 파일 형식 검증
+            if (!file.type.startsWith('image/')) {
+                setSubmitMessage('이미지 파일만 업로드할 수 있습니다.');
+                return;
+            }
+
+            // 에러 메시지 초기화
+            setSubmitMessage('');
+
+            setFormData((prev) => ({
+                ...prev,
+                thumbnail: file,
+            }));
+        }
     };
 
     const validateRequiredFields = () => {
         console.log('=== 필수 필드 검증 시작 ===');
         console.log('전체 formData:', formData);
-        
+
         for (const field of REQUIRED_FIELDS) {
             // 온라인 모드일 때는 region 필드 검증 스킵
             if (field === 'region' && formData.studyMode === '온라인') {
@@ -165,20 +182,20 @@ function GroupUpdate() {
 
             const value = formData[field];
             const isEmpty = !value || value.toString().trim() === '';
-            
+
             console.log(`필드: ${field}, 값: "${value}", 비어있음: ${isEmpty}`);
-            
+
             if (isEmpty) {
                 return `${getFieldDisplayName(field)} 필드를 입력해주세요.`;
             }
         }
 
         // 오프라인/온오프 모드일 때 region 필수 검증
-        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') && 
+        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') &&
             (!formData.region || formData.region.trim() === '')) {
             return '오프라인 또는 온오프 모드에서는 지역 정보가 필요합니다.';
         }
-        
+
         console.log('=== 모든 필수 필드 검증 통과 ===');
         return null;
     };
@@ -200,7 +217,7 @@ function GroupUpdate() {
     // 수정 버튼 클릭 핸들러 (모달 열기)
     const handleEditClick = (e) => {
         e.preventDefault();
-        
+
         // 필수 필드 검증
         const validationError = validateRequiredFields();
         if (validationError) {
@@ -212,63 +229,63 @@ function GroupUpdate() {
     };
 
     // 실제 수정 처리 함수
-const handleFormSubmit = async () => {
-    setIsSubmitting(true);
-    setSubmitMessage('');
+    const handleFormSubmit = async () => {
+        setIsSubmitting(true);
+        setSubmitMessage('');
 
-    try {
-        const groupDto = {
-            groupName: formData.groupName,
-            category: formData.category,
-            maxMembers: parseInt(formData.maxMembers),
-            studyMode: formData.studyMode,
-            region: formData.studyMode === '온라인' ? null : formData.region,
-            contact: formData.contact,
-            groupIntroduction: formData.groupIntroduction,
-            groupOwnerId: formData.groupOwnerId,
-            nickname: formData.nickname
-        };
+        try {
+            const groupDto = {
+                groupName: formData.groupName,
+                category: formData.category,
+                maxMembers: parseInt(formData.maxMembers),
+                studyMode: formData.studyMode,
+                region: formData.studyMode === '온라인' ? null : formData.region,
+                contact: formData.contact,
+                groupIntroduction: formData.groupIntroduction,
+                groupOwnerId: formData.groupOwnerId,
+                nickname: formData.nickname
+            };
 
-        // 썸네일 처리 로직
-        if (formData.thumbnail instanceof File) {
-            // 새로운 이미지 파일이 선택된 경우 - 아무것도 설정하지 않음 (서버에서 업로드 처리)
-            groupDto.thumbnail = null;
-        } else if (!formData.thumbnail || 
-                   formData.thumbnail === '' || 
-                   formData.thumbnail === '/images/default-thumbnail.png') {
-            // 이미지가 없거나 기본 이미지인 경우 - 기본 이미지로 설정
-            groupDto.thumbnail = 'default';
-        } else {
-            // 기존 이미지를 유지하는 경우 - null로 설정 (서버에서 기존값 유지)
-            groupDto.thumbnail = null;
+            // 썸네일 처리 로직
+            if (formData.thumbnail instanceof File) {
+                // 새로운 이미지 파일이 선택된 경우 - 아무것도 설정하지 않음 (서버에서 업로드 처리)
+                groupDto.thumbnail = null;
+            } else if (!formData.thumbnail ||
+                formData.thumbnail === '' ||
+                formData.thumbnail === '/images/default-thumbnail.png') {
+                // 이미지가 없거나 기본 이미지인 경우 - 기본 이미지로 설정
+                groupDto.thumbnail = 'default';
+            } else {
+                // 기존 이미지를 유지하는 경우 - null로 설정 (서버에서 기존값 유지)
+                groupDto.thumbnail = null;
+            }
+
+            const formPayload = new FormData();
+            formPayload.append('groupDto', new Blob([JSON.stringify(groupDto)], { type: 'application/json' }));
+
+            // 새 이미지가 File 객체면 추가
+            if (formData.thumbnail && formData.thumbnail instanceof File) {
+                formPayload.append('thumbnail', formData.thumbnail);
+            }
+
+            const response = await axios.put(`${host}/api/study/${groupId}`, formPayload, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                setIsEditModalOpen(false);
+                navigate(`/group/${groupId}`);
+            } else {
+                alert(response.data.message || '수정에 실패했습니다.');
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || '알 수 없는 오류가 발생했습니다.';
+            alert(`수정 실패: ${errorMessage}`);
+        } finally {
+            setIsSubmitting(false);
         }
-
-        const formPayload = new FormData();
-        formPayload.append('groupDto', new Blob([JSON.stringify(groupDto)], { type: 'application/json' }));
-
-        // 새 이미지가 File 객체면 추가
-        if (formData.thumbnail && formData.thumbnail instanceof File) {
-            formPayload.append('thumbnail', formData.thumbnail);
-        }
-
-        const response = await axios.put(`${host}/api/study/${groupId}`, formPayload, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true,
-        });
-
-        if (response.data.success) {
-            setIsEditModalOpen(false);
-            navigate(`/group/${groupId}`);
-        } else {
-            alert(response.data.message || '수정에 실패했습니다.');
-        }
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || '알 수 없는 오류가 발생했습니다.';
-        alert(`수정 실패: ${errorMessage}`);
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+    };
 
 
 

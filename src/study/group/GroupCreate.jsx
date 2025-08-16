@@ -29,7 +29,7 @@ function GroupCreate() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const host = import.meta.env.VITE_AWS_API_HOST;
-    
+
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
@@ -40,16 +40,16 @@ function GroupCreate() {
 
     if (!isAuthenticated) {
         return (
-            <div style={{ 
-                display: 'flex', 
+            <div style={{
+                display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh' 
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh'
             }}>
                 <h2>로그인이 필요합니다</h2>
                 <p>스터디 그룹을 생성하려면 먼저 로그인해주세요.</p>
-                <button 
+                <button
                     onClick={() => navigate('/login')}
                     style={{
                         padding: '10px 20px',
@@ -87,14 +87,14 @@ function GroupCreate() {
     };
 
     const checkNicknameDuplicate = async (nickname) => {
-    try {
-        const res = await axios.get(`${host}/api/study/check-nickname/${encodeURIComponent(nickname)}`);
-        return res.data.isDuplicate;
-    } catch (err) {
-        console.error('닉네임 중복 확인 오류:', err);
-        return false;
-    }
-};
+        try {
+            const res = await axios.get(`${host}/api/study/check-nickname/${encodeURIComponent(nickname)}`);
+            return res.data.isDuplicate;
+        } catch (err) {
+            console.error('닉네임 중복 확인 오류:', err);
+            return false;
+        }
+    };
 
     useEffect(() => {
         if (isAuthenticated && user) {
@@ -104,7 +104,7 @@ function GroupCreate() {
                     const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
                         withCredentials: true,
                     });
-                    
+
                     if (res.data.success) {
                         const nickname = res.data.nickname;
                         setUserNickname(nickname || '');
@@ -134,10 +134,26 @@ function GroupCreate() {
     };
 
     const handleFileInputChange = (file) => {
-        setFormData((prev) => ({
-            ...prev,
-            thumbnail: file,
-        }));
+        if (file) {
+            // 파일 크기 검증 (1MB 제한)
+            if (file.size > 1 * 1024 * 1024) {
+                setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
+                return;
+            }
+
+            // 이미지 파일 형식 검증
+            if (!file.type.startsWith('image/')) {
+                setSubmitMessage('이미지 파일만 업로드할 수 있습니다.');
+                return;
+            }
+
+            setSubmitMessage('');
+
+            setFormData((prev) => ({
+                ...prev,
+                thumbnail: file,
+            }));
+        }
     };
 
     const validateRequiredFields = () => {
@@ -150,7 +166,7 @@ function GroupCreate() {
                 return `${getFieldDisplayName(field)} 필드를 입력해주세요.`;
             }
         }
-        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') && 
+        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') &&
             (!formData.region || formData.region.trim() === '')) {
             return '오프라인 또는 온오프 모드에서는 지역 정보가 필요합니다.';
         }
@@ -172,31 +188,31 @@ function GroupCreate() {
     };
 
     // 작성하기 버튼 클릭 → 확인 모달 띄우기
-const handleCreateClick = async (e) => {
-    e.preventDefault();
-    const validationError = validateRequiredFields();
-    if (validationError) {
-        setSubmitMessage(validationError);
-        return;
-    }
-    
-    // 그룹명 중복 검사
-    const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
-    if (isGroupNameDuplicate) {
-        setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
-        return;
-    }
-    
-    // 닉네임 중복 검사 추가
-    const isNicknameDuplicate = await checkNicknameDuplicate(formData.nickname);
-    if (isNicknameDuplicate) {
-        setSubmitMessage("이미 사용 중인 닉네임입니다.");
-        return;
-    }
-    
-    // 확인 모달 띄우기
-    setIsCreateModalOpen(true);
-};
+    const handleCreateClick = async (e) => {
+        e.preventDefault();
+        const validationError = validateRequiredFields();
+        if (validationError) {
+            setSubmitMessage(validationError);
+            return;
+        }
+
+        // 그룹명 중복 검사
+        const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
+        if (isGroupNameDuplicate) {
+            setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
+            return;
+        }
+
+        // 닉네임 중복 검사 추가
+        const isNicknameDuplicate = await checkNicknameDuplicate(formData.nickname);
+        if (isNicknameDuplicate) {
+            setSubmitMessage("이미 사용 중인 닉네임입니다.");
+            return;
+        }
+
+        // 확인 모달 띄우기
+        setIsCreateModalOpen(true);
+    };
 
     // 실제 생성 처리
     const handleFormSubmit = async () => {
