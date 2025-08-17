@@ -131,6 +131,7 @@ const StudyForm = ({
                             onChange={onChange}
                             disabled={isFieldDisabled('groupName')}
                             placeholder="6글자 이내"
+                            maxLength={6}
                             required
                         />
                     </div>
@@ -146,6 +147,7 @@ const StudyForm = ({
                             onChange={onChange}
                             disabled={isFieldDisabled('nickname')}
                             placeholder="스터디에서 사용할 닉네임을 6글자 이내로 입력하세요."
+                            maxLength={6}
                             required
                         />
                         {/* 원본 닉네임과 다를 때만 표시 */}

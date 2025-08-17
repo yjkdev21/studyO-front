@@ -38,34 +38,6 @@ function GroupCreate() {
     // 모달 관련 상태
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    if (!isAuthenticated) {
-        return (
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                <h2>로그인이 필요합니다</h2>
-                <p>스터디 그룹을 생성하려면 먼저 로그인해주세요.</p>
-                <button
-                    onClick={() => navigate('/login')}
-                    style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    로그인하러 가기
-                </button>
-            </div>
-        );
-    }
-
     // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
     const handleModalConfirm = async () => {
         await handleFormSubmit();
@@ -124,6 +96,7 @@ function GroupCreate() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
         setFormData((prev) => {
             const newData = { ...prev, [name]: value };
             if (name === 'studyMode' && value === '온라인') {
@@ -137,13 +110,8 @@ function GroupCreate() {
         if (file) {
             // 파일 크기 검증 (1MB 제한)
             if (file.size > 1 * 1024 * 1024) {
+                alert('파일 크기는 1MB 이하여야 합니다.');
                 setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
-                return;
-            }
-
-            // 이미지 파일 형식 검증
-            if (!file.type.startsWith('image/')) {
-                setSubmitMessage('이미지 파일만 업로드할 수 있습니다.');
                 return;
             }
 
@@ -157,6 +125,16 @@ function GroupCreate() {
     };
 
     const validateRequiredFields = () => {
+        // 스터디 이름 길이 체크
+        if (formData.groupName && formData.groupName.length > 6) {
+            return '스터디 이름은 6글자 이내로 입력해주세요.';
+        }
+
+        // 닉네임 길이 체크 추가
+        if (formData.nickname && formData.nickname.length > 6) {
+            return '닉네임은 6글자 이내로 입력해주세요.';
+        }
+
         for (const field of REQUIRED_FIELDS) {
             if (field === 'region' && formData.studyMode === '온라인') {
                 continue;
@@ -200,13 +178,6 @@ function GroupCreate() {
         const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
         if (isGroupNameDuplicate) {
             setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
-            return;
-        }
-
-        // 닉네임 중복 검사 추가
-        const isNicknameDuplicate = await checkNicknameDuplicate(formData.nickname);
-        if (isNicknameDuplicate) {
-            setSubmitMessage("이미 사용 중인 닉네임입니다.");
             return;
         }
 
