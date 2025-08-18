@@ -70,3 +70,23 @@ export const updateNickname = async (groupId, nickname) => {
     throw error;
   }
 };
+
+
+// 스터디 그룹 내 닉네임 수정
+export const leaveGroup = async (groupId) => {
+  try {
+    const response = await axios.delete(`${host}/api/membership/leave`, {
+      data: {
+        groupId: groupId.toString()
+      },
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("그룹 탈퇴 에러:", error);
+    throw error;
+  }
+};

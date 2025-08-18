@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import axios from 'axios';
@@ -8,6 +8,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // 프로필 이미지 상태 추가
   const [profileImage, setProfileImage] = useState(null);
@@ -125,10 +126,12 @@ export default function Header() {
     const confirmed = window.confirm("로그아웃 하시겠습니까?");
     if (!confirmed) return;
 
+    alert("로그아웃되었습니다.");
+    
     window.location.href = "/";
-
     const result = await logout();
     alert(result.message);
+
   };
 
   return (
@@ -219,7 +222,7 @@ export default function Header() {
                             <Link to="/myPage">마이페이지</Link>
                           </li>
                           <li>
-                            <Link to="/myHistory">내 북마크</Link>
+                            <Link to="/study/postMain">스터디 관리</Link>
                           </li>
                           <li>
                             <button type="button" onClick={handleLogout}>

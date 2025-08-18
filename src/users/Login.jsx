@@ -17,8 +17,20 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [hasLoginError, setHasLoginError] = useState(false);
 
-  const { user, isAuthenticated, isLoading, login, logout, deleteAccount } = useAuth();
+  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
 
+  // 로그인된 사용자 리다이렉트 처리
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      // 로그인된 상태면 메인 페이지로 리다이렉트
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // 로딩 중이거나 이미 로그인된 상태라면 아무것도 렌더링하지 않음
+  if (isLoading || isAuthenticated) {
+    return null; // 또는 로딩 스피너
+  }
 
 
   // 입력값 변경 처리
@@ -74,27 +86,9 @@ export default function Login() {
     const confirmed = window.confirm("로그아웃 하시겠습니까?");
     if (!confirmed) return;
 
+    alert("로그아웃되었습니다.");
     const result = await logout();
     setMessage(result.message);
-    alert("로그아웃되었습니다.");
-  };
-
-  // 회원 탈퇴 요청
-  const handleDeleteAccount = async () => {
-    // 확인 창 추가
-    if (!window.confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      return;
-    }
-
-    const result = await deleteAccount();
-
-    if (result.success) {
-      alert(result.message);
-      window.location.href = "/login";
-    } else {
-      alert(result.message);
-    }
-
   };
 
   return (
@@ -116,109 +110,58 @@ export default function Login() {
             {message}
           </div>
         )}
-        {/* 로그인된 상태 */}
-        {isAuthenticated ? (
-          <div>
-            <h3>환영합니다, {user.nickname || user.userId}님!</h3>
-            <div>
-              <p><strong>ID:</strong> {user.userId}</p>
-              <p><strong>이메일:</strong> {user.email}</p>
-              <p><strong>닉네임:</strong> {user.nickname}</p>
-              {user.introduction && <p><strong>소개:</strong> {user.introduction}</p>}
-              <p><strong>가입일:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
+        {/* 로그인 폼 */}
+        <div className="auth-form">
+          <form onSubmit={handleLogin}>
+            <div className="form-field">
+              <label htmlFor="userId" className={hasLoginError ? "error" : ""}>ID</label>
+              <input
+                type="text"
+                id="userId"
+                name="userId"
+                value={formData.userId}
+                onChange={handleInputChange}
+                required
+                disabled={isSubmitting}
+                className={hasLoginError ? "error" : ""}
+                autoComplete="username"
+              />
             </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isSubmitting}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#dc3545',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isSubmitting ? '로그아웃 중...' : '로그아웃'}
-            </button>
-            {/* 회원탈퇴 버튼 */}
-            <br />
-            <button
-              type="button"
-              className="!border !mt-20 !p-1"
-              onClick={handleDeleteAccount}
-            >
-              회원 탈퇴
-            </button>
-
-          </div>
-        ) : (
-          /* 로그인 폼 */
-          <div className="auth-form">
-            <form onSubmit={handleLogin}>
-              <div className="form-field">
-                <label htmlFor="userId" className={hasLoginError ? "error" : ""}>ID</label>
+            <div className="form-field !mt-10">
+              <label htmlFor="password" className={hasLoginError ? "error" : ""}>Password</label>
+              <div className="password-container">
                 <input
-                  type="text"
-                  id="userId"
-                  name="userId"
-                  value={formData.userId}
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
                   required
                   disabled={isSubmitting}
                   className={hasLoginError ? "error" : ""}
-                  autoComplete="username"
+                  autoComplete="current-password"
                 />
-              </div>
-              <div className="form-field !mt-10">
-                <label htmlFor="password" className={hasLoginError ? "error" : ""}>Password</label>
-                <div className="password-container">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                    disabled={isSubmitting}
-                    className={hasLoginError ? "error" : ""}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="password-toggle-btn"
-                  >
-                    <span className="material-symbols-rounded text-[#666]">Visibility{showPassword ? "_off" : ""}</span>
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="password-toggle-btn"
+                >
+                  <span className="material-symbols-rounded text-[#666]">Visibility{showPassword ? "_off" : ""}</span>
 
-                  </button>
-                </div>
+                </button>
               </div>
-              <div className="auth-btn-wrap !mt-10">
-                <button type="submit" className="auth-btn">로그인</button>
-                <Link to="/join" className="auth-btn sub">회원가입</Link>
-              </div>
-              <div className="text-[#999] text-sm !my-4">
-                <Link to="/findId" className="">아이디 찾기</Link>
-                <span className="!px-2">|</span>
-                <Link to="/findPw" className="">비밀번호 찾기</Link>
-              </div>
-            </form>
-            <div className="none">
-              <pre className='bg-gray-200'>
-                <b>[로그인 테스트 정보]</b><br />
-                id:   kim_coder<br />
-                pw:        1234
-              </pre><br />
-              <pre className='bg-gray-200'>
-                <b>[로그인 테스트 정보]</b><br />
-                id:         demo<br />
-                pw:        1234
-              </pre>
             </div>
-          </div>
-        )}
+            <div className="auth-btn-wrap !mt-10">
+              <button type="submit" className="auth-btn">로그인</button>
+              <Link to="/join" className="auth-btn sub">회원가입</Link>
+            </div>
+            <div className="text-[#999] text-sm !my-4">
+              <Link to="/findId" className="">아이디 찾기</Link>
+              <span className="!px-2">|</span>
+              <Link to="/findPw" className="">비밀번호 찾기</Link>
+            </div>
+          </form>
+        </div>
       </div>
     </main>
   );
