@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useStudy } from '../../contexts/StudyContext';
 import { useParams } from "react-router-dom";
 import ConfirmModal from '../../users/modal/ConfirmModal';
 import { getProfileImageSrc } from "../../utils/imageUtils";
 
-import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname } from "./studyMemberApi";
+import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname, leaveGroup } from "./studyMemberApi";
 
 import "./StudyMember.css";
 
@@ -13,6 +14,8 @@ export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
   const { studyInfo } = useStudy();
+
+  const navigate = useNavigate();
 
   /* ========== 상태 관리 ========== */
   // 닉네임 관련 상태
@@ -29,9 +32,10 @@ export default function StudyMember() {
   const inputRef = useRef(null);
 
   // 모달 관련 상태
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   // 현재 사용자 멤버십 정보
   const myMembership = useMemo(() => {
@@ -109,6 +113,14 @@ export default function StudyMember() {
     setIsEditing(true);
   };
 
+  /** 엔터키 처리 */
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveClick();
+    }
+  }
+
   /** 닉네임 저장 */
   const handleSaveClick = async () => {
     try {
@@ -184,20 +196,45 @@ export default function StudyMember() {
   }, [isEditing]);
 
   /* ========== 모달 ========== */
-  /** 모달 취소 핸들러 */
+  /** 스터디 탈퇴 핸들러 */
+  const handleLeaveStudy = async () => {
+    if (!window.confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+    try {
+      const result = await leaveGroup(groupId);
+      alert(result.message || "그룹에서 성공적으로 탈퇴했습니다.");
+
+      // 탈퇴 성공 시 페이지 이동
+      navigate("/");
+
+    } catch (error) {
+      console.error("스터디 탈퇴 실패:", error);
+
+      // 에러 메시지 표시
+      if (error.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("스터디 탈퇴에 실패했습니다.");
+      }
+    } finally {
+      setIsLeaveModalOpen(false);
+    }
+  };
+
+  /** 신청 모달 취소 핸들러 */
   const handleModalCancel = () => {
     setIsAcceptModalOpen(false);
     setIsRejectModalOpen(false);
+    setIsLeaveModalOpen(false);
     setSelectedRequest(null);
   };
 
-  /** 모달 확인 핸들러 */
+  /** 신청 모달 확인 핸들러 */
   const handleModalConfirm = async () => {
-
-    if (!selectedRequest) return;
+    if (!selectedRequest && !isLeaveModalOpen) return;
 
     try {
-
       if (isAcceptModalOpen) {
         // 수락 처리 로직
         const result = await approveUserRequest(selectedRequest.id);
@@ -206,6 +243,10 @@ export default function StudyMember() {
         // 거절 처리 로직 
         const result = await rejectUserRequest(selectedRequest.id);
         alert(result.message || `${selectedRequest?.nickname}님의 신청을 거절했습니다.`);
+      } else if (isLeaveModalOpen) {
+        // 스터디 탈퇴 처리
+        await handleLeaveStudy();
+        return; // handleLeaveStudy에서 모달 닫기 처리함
       }
 
       // 모달 닫기
@@ -251,6 +292,8 @@ export default function StudyMember() {
                 className={`nickname-input ${isEditing ? "editing" : ""}`}
                 readOnly={!isEditing}
                 value={tempNickname}
+                onKeyDown={handleKeyDown}
+                maxLength={8}
                 onChange={(e) => setTempNickname(e.target.value)}
                 ref={inputRef}
               />
@@ -376,9 +419,16 @@ export default function StudyMember() {
           }
         </ul>
       </div>
-      {/* <div className="!mt-40 text-center">
-        <button type="button" className="study-leave-btn md:float-right">스터디 탈퇴</button>
-      </div> */}
+      {/* 스터디 탈퇴 버튼 - 멤버에게만 */}
+      {studyInfo?.groupOwnerId !== user?.id ? (
+        <div className="!mt-40 text-center">
+          <button type="button"
+            className="study-leave-btn md:float-right"
+            onClick={() => setIsLeaveModalOpen(true)}
+          >스터디 탈퇴
+          </button>
+        </div>
+      ) : <></>}
       {/* 수락 모달 - ConfirmModal 컴포넌트 */}
       <ConfirmModal
         isOpen={isAcceptModalOpen}
@@ -407,16 +457,19 @@ export default function StudyMember() {
         }}
       />
       {/* 스터디 탈퇴 모달 - ConfirmModal 컴포넌트 */}
-      {/* <ConfirmModal
-        isOpen={''}
+      <ConfirmModal
+        isOpen={isLeaveModalOpen}
         onCancel={handleModalCancel}
         onConfirm={handleModalConfirm}
         type="kick"
-        userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
-        profileImage={selectedRequest?.profileImage}
+        userName={user?.nickname || ""}
+        profileImage={getProfileImageSrc(user?.profileImage)}
         customText={{
+          title: "스터디 탈퇴",
+          description: "정말로 이 스터디에서 탈퇴하시겠습니까?\n탈퇴 후에는 재가입을 할 수 없습니다.",
+          actionText: "탈퇴"
         }}
-      /> */}
+      />
     </div>
   );
 }

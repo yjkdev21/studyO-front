@@ -26,17 +26,17 @@ const StudyCard = ({
   onSelect,
 }) => {
   const navigate = useNavigate();
-  
+
   // 썸네일 이미지 URL을 우선순위에 따라 반환 (S3 URL > 기존 썸네일 > 기본 이미지)
   const getThumbnailUrl = () => {
     if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
       return thumbnailFullPath;
     }
-    
+
     if (thumbnail && !thumbnail.includes('default')) {
       return thumbnail;
     }
-    
+
     return '/images/default-thumbnail.png';
   };
 
@@ -72,7 +72,7 @@ const StudyCard = ({
           <span className="mypage-study-card-badge location">{region || '지역 정보 없음'}</span>
           <span className="mypage-study-card-badge members">최대 {maxMembers || 0}명</span>
         </div>
-        
+
         {/* 스터디 상세 정보 (카테고리, 제목, 소개, 그룹장, 생성일) */}
         <div className="mypage-study-card-content">
           <div className="mypage-study-title-row">
@@ -86,7 +86,7 @@ const StudyCard = ({
           <p className="mypage-study-card-date">생성일: {formatDate(createdAt)}</p>
         </div>
       </div>
-      
+
       {/* 스터디 썸네일 이미지 */}
       <div className="mypage-study-thumbnail-wrapper">
         <div className="mypage-study-thumbnail-image">
@@ -94,8 +94,8 @@ const StudyCard = ({
             src={getThumbnailUrl()}
             alt={`${groupName} 썸네일`}
             width="200"
-            onError={(e) => { 
-              e.target.src = '/images/default-thumbnail.png'; 
+            onError={(e) => {
+              e.target.src = '/images/default-thumbnail.png';
             }}
           />
         </div>
@@ -123,17 +123,17 @@ const BookmarkCard = ({
   onSelect,
 }) => {
   const navigate = useNavigate();
-  
+
   // 썸네일 이미지 URL을 우선순위에 따라 반환
   const getThumbnailUrl = () => {
     if (thumbnailFullPath && !thumbnailFullPath.includes('default')) {
       return thumbnailFullPath;
     }
-    
+
     if (thumbnail && !thumbnail.includes('default')) {
       return thumbnail;
     }
-    
+
     return '/images/default-thumbnail.png';
   };
 
@@ -184,8 +184,8 @@ const BookmarkCard = ({
             src={getThumbnailUrl()}
             alt={`${groupName} 썸네일`}
             width="200"
-            onError={(e) => { 
-              e.target.src = '/images/default-thumbnail.png'; 
+            onError={(e) => {
+              e.target.src = '/images/default-thumbnail.png';
             }}
           />
         </div>
@@ -196,7 +196,7 @@ const BookmarkCard = ({
 
 function MyPage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, deleteAccount } = useAuth();
   const defaultProfileImageSrc = "/images/default-profile.png";
 
   // 프로필 관련 상태
@@ -206,23 +206,23 @@ function MyPage() {
   // 카드 선택 상태
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedBookmarkCard, setSelectedBookmarkCard] = useState(null);
-  
+
   // 스터디 관련 상태
   const [myStudies, setMyStudies] = useState([]);
   const [studyLoading, setStudyLoading] = useState(true);
   const [studyError, setStudyError] = useState(null);
-  
+
   // 북마크 관련 상태
   const [myBookmarks, setMyBookmarks] = useState([]);
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
   const [bookmarkError, setBookmarkError] = useState(null);
-  
+
   // 필터링 및 페이지네이션 상태
   const [activeStudyFilter, setActiveStudyFilter] = useState('all');
   const [filteredStudies, setFilteredStudies] = useState([]);
   const [studyCurrentPage, setStudyCurrentPage] = useState(0);
   const [bookmarkCurrentPage, setBookmarkCurrentPage] = useState(0);
-  
+
   // 모달 관련 상태
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -245,7 +245,7 @@ function MyPage() {
 
     try {
       const apiUrl = import.meta.env.VITE_AWS_API_HOST;
-      
+
       const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
         withCredentials: true,
         timeout: 10000
@@ -253,21 +253,21 @@ function MyPage() {
 
       if (response.status === 200 && response.data.success) {
         const serverUser = response.data.data;
-        
+
         const imageToSet = serverUser.profileImageFullPath || defaultProfileImageSrc;
         setProfileImage(imageToSet);
-        
+
         const updatedUser = {
           ...user,
           ...serverUser,
           profileImage: serverUser.profileImageFullPath || defaultProfileImageSrc
         };
         setDisplayUser(updatedUser);
-        
+
       } else {
         fallbackToLocalUser();
       }
-      
+
     } catch (error) {
       fallbackToLocalUser();
     }
@@ -275,10 +275,10 @@ function MyPage() {
 
   // 서버 로딩 실패 시 로컬 user 데이터 사용
   const fallbackToLocalUser = () => {
-    const imageToSet = (user.profileImage && user.profileImage.startsWith('http')) 
-      ? user.profileImage 
+    const imageToSet = (user.profileImage && user.profileImage.startsWith('http'))
+      ? user.profileImage
       : defaultProfileImageSrc;
-    
+
     setProfileImage(imageToSet);
     setDisplayUser(user);
   };
@@ -306,7 +306,7 @@ function MyPage() {
   // 필터 타입에 따라 스터디 목록 필터링
   const filterStudies = (filterType) => {
     let filtered = [];
-    
+
     switch (filterType) {
       case 'all':
         filtered = myStudies;
@@ -315,8 +315,8 @@ function MyPage() {
         filtered = myStudies.filter(study => study.groupOwnerId === user?.id);
         break;
       case 'participating':
-        filtered = myStudies.filter(study => 
-          study.groupOwnerId !== user?.id && 
+        filtered = myStudies.filter(study =>
+          study.groupOwnerId !== user?.id &&
           (study.status === 'active' || !study.status)
         );
         break;
@@ -326,7 +326,7 @@ function MyPage() {
       default:
         filtered = myStudies;
     }
-    
+
     setFilteredStudies(filtered);
     setActiveStudyFilter(filterType);
     setStudyCurrentPage(0); // 필터 변경 시 첫 페이지로 리셋
@@ -399,7 +399,7 @@ function MyPage() {
 
     try {
       const apiUrl = import.meta.env.VITE_AWS_API_HOST;
-      
+
       const requestBody = {
         userId: user.userId,
         password: password
@@ -465,7 +465,7 @@ function MyPage() {
         setStudyError(null);
 
         const apiUrl = import.meta.env.VITE_AWS_API_HOST;
-        
+
         const response = await axios.get(`${apiUrl}/api/study/user/${user.id}/active`, {
           withCredentials: true,
           headers: {
@@ -511,7 +511,7 @@ function MyPage() {
         setBookmarkError(null);
 
         const apiUrl = import.meta.env.VITE_AWS_API_HOST;
-        
+
         const response = await axios.get(`${apiUrl}/api/bookmark/user/${user.id}`, {
           withCredentials: true,
           headers: {
@@ -544,6 +544,24 @@ function MyPage() {
     fetchMyBookmarks();
   }, [isAuthenticated, user?.id]);
 
+  // 회원 탈퇴 기능
+  const handleDeleteAccount = async () => {
+    // 확인 창 추가
+    if (!window.confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+
+    const result = await deleteAccount();
+
+    if (result.success) {
+      window.location.href = "/login";
+      alert(result.message);
+    } else {
+      alert(result.message);
+    }
+
+  };
+
   // 로딩 중일 때
   if (isLoading) {
     return (
@@ -571,9 +589,9 @@ function MyPage() {
         <div className="mypage-profile-section">
           <div className="mypage-profile-image-wrapper">
             <div className="mypage-profile-image">
-              <img 
-                src={profileImage || defaultProfileImageSrc} 
-                alt="프로필" 
+              <img
+                src={profileImage || defaultProfileImageSrc}
+                alt="프로필"
                 onError={handleImageError}
               />
             </div>
@@ -585,8 +603,8 @@ function MyPage() {
             <button className="mypage-edit-profile-btn" onClick={handleEditProfile}>
               프로필 수정
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                <circle cx="12" cy="12" r="3"/>
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
               </svg>
             </button>
           </div>
@@ -660,18 +678,18 @@ function MyPage() {
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">스터디</h3>
-              
+
               {/* 스터디 페이지네이션 버튼 */}
               {filteredStudies.length > 0 && (
                 <div className="mypage-header-pagination">
-                  <button 
+                  <button
                     className={`mypage-header-pagination-btn prev ${studyCurrentPage === 0 ? 'disabled' : ''}`}
                     onClick={handleStudyPrevPage}
                     disabled={studyCurrentPage === 0}
                   >
                     <span className="header-arrow-icon">‹</span>
                   </button>
-                  <button 
+                  <button
                     className={`mypage-header-pagination-btn next ${studyCurrentPage >= getStudyPages() - 1 ? 'disabled' : ''}`}
                     onClick={handleStudyNextPage}
                     disabled={studyCurrentPage >= getStudyPages() - 1}
@@ -681,7 +699,7 @@ function MyPage() {
                 </div>
               )}
             </div>
-            
+
             {/* 스터디 필터 탭 */}
             <div className="mypage-study-filter-tabs">
               {studyFilterOptions.map(option => (
@@ -756,18 +774,18 @@ function MyPage() {
           <div className="mypage-section-header">
             <div className="mypage-section-header-top">
               <h3 className="mypage-section-title">북마크</h3>
-              
+
               {/* 북마크 페이지네이션 버튼 */}
               {myBookmarks.length > 0 && (
                 <div className="mypage-header-pagination">
-                  <button 
+                  <button
                     className={`mypage-header-pagination-btn prev ${bookmarkCurrentPage === 0 ? 'disabled' : ''}`}
                     onClick={handleBookmarkPrevPage}
                     disabled={bookmarkCurrentPage === 0}
                   >
                     <span className="header-arrow-icon">‹</span>
                   </button>
-                  <button 
+                  <button
                     className={`mypage-header-pagination-btn next ${bookmarkCurrentPage >= getBookmarkPages() - 1 ? 'disabled' : ''}`}
                     onClick={handleBookmarkNextPage}
                     disabled={bookmarkCurrentPage >= getBookmarkPages() - 1}
@@ -831,6 +849,18 @@ function MyPage() {
             )}
           </div>
         </div>
+
+        {/* 회원탈퇴 버튼 */}
+        <div className="mypage-section-card flex justify-end">
+          <button
+            type="button"
+            className="!border user-leave-btn"
+            onClick={handleDeleteAccount}
+          >
+            회원 탈퇴
+          </button>
+        </div>
+
       </div>
 
       {/* 프로필 수정 확인 모달 */}

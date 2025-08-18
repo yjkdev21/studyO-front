@@ -146,7 +146,7 @@
 /* 비활성화된 필드 */
 #studygroup-groupname-input:disabled,
 #studygroup-nickname-input:disabled,
-#studygroup-region-input:disabled,
+#studygroup-region-select:disabled,
 #studygroup-contact-input:disabled,
 #studygroup-category-select:disabled,
 #studygroup-maxmembers-input:disabled,

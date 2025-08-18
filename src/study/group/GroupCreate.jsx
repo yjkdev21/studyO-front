@@ -20,143 +20,26 @@ const RESET_FORM = {
     nickname: ''
 };
 
+//필수 필드
 const REQUIRED_FIELDS = [
     'groupName', 'nickname', 'category', 'maxMembers',
     'studyMode', 'region', 'contact', 'groupIntroduction'
 ];
 
 function GroupCreate() {
+    //환경 변수
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const host = import.meta.env.VITE_AWS_API_HOST;
-    
+
+    //상태 변수
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
-
-    // 모달 관련 상태
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    if (!isAuthenticated) {
-        return (
-            <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh' 
-            }}>
-                <h2>로그인이 필요합니다</h2>
-                <p>스터디 그룹을 생성하려면 먼저 로그인해주세요.</p>
-                <button 
-                    onClick={() => navigate('/login')}
-                    style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    로그인하러 가기
-                </button>
-            </div>
-        );
-    }
-
-    // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
-    const handleModalConfirm = async () => {
-        await handleFormSubmit();
-    };
-
-    // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
-    const handleModalCancel = () => {
-        setIsCreateModalOpen(false);
-    };
-
-    const checkGroupNameDuplicate = async (groupName) => {
-        try {
-            const res = await axios.get(`${host}/api/study/check-name/${encodeURIComponent(groupName)}`);
-            return res.data.isDuplicate;
-        } catch (err) {
-            console.error('중복 확인 오류:', err);
-            return false;
-        }
-    };
-
-    const checkNicknameDuplicate = async (nickname) => {
-    try {
-        const res = await axios.get(`${host}/api/study/check-nickname/${encodeURIComponent(nickname)}`);
-        return res.data.isDuplicate;
-    } catch (err) {
-        console.error('닉네임 중복 확인 오류:', err);
-        return false;
-    }
-};
-
-    useEffect(() => {
-        if (isAuthenticated && user) {
-            const fetchUserNickname = async () => {
-                try {
-                    const userId = user.id || user.userId || 1;
-                    const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
-                        withCredentials: true,
-                    });
-                    
-                    if (res.data.success) {
-                        const nickname = res.data.nickname;
-                        setUserNickname(nickname || '');
-                        setFormData(prev => ({
-                            ...prev,
-                            nickname: nickname || '',
-                            groupOwnerId: userId
-                        }));
-                    }
-                } catch (error) {
-                    console.error("닉네임 불러오기 실패:", error);
-                }
-            };
-            fetchUserNickname();
-        }
-    }, [host, isAuthenticated, user]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => {
-            const newData = { ...prev, [name]: value };
-            if (name === 'studyMode' && value === '온라인') {
-                newData.region = '';
-            }
-            return newData;
-        });
-    };
-
-    const handleFileInputChange = (file) => {
-        setFormData((prev) => ({
-            ...prev,
-            thumbnail: file,
-        }));
-    };
-
-    const validateRequiredFields = () => {
-        for (const field of REQUIRED_FIELDS) {
-            if (field === 'region' && formData.studyMode === '온라인') {
-                continue;
-            }
-            const value = formData[field];
-            if (!value || value.toString().trim() === '') {
-                return `${getFieldDisplayName(field)} 필드를 입력해주세요.`;
-            }
-        }
-        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') && 
-            (!formData.region || formData.region.trim() === '')) {
-            return '오프라인 또는 온오프 모드에서는 지역 정보가 필요합니다.';
-        }
-        return null;
-    };
-
+    //유틸리티 함수
     const getFieldDisplayName = (field) => {
         const fieldNames = {
             groupName: '스터디 이름',
@@ -171,32 +54,93 @@ function GroupCreate() {
         return fieldNames[field] || field;
     };
 
+    const validateRequiredFields = () => {
+        // 스터디 이름 길이 체크
+        if (formData.groupName && formData.groupName.length > 6) {
+            return '스터디 이름은 6글자 이내로 입력해주세요.';
+        }
+
+        // 닉네임 길이 체크 추가
+        if (formData.nickname && formData.nickname.length > 6) {
+            return '닉네임은 6글자 이내로 입력해주세요.';
+        }
+
+        for (const field of REQUIRED_FIELDS) {
+            if (field === 'region' && formData.studyMode === '온라인') {
+                continue;
+            }
+            const value = formData[field];
+            if (!value || value.toString().trim() === '') {
+                return `${getFieldDisplayName(field)} 필드를 입력해주세요.`;
+            }
+        }
+        if ((formData.studyMode === '오프라인' || formData.studyMode === '온오프') &&
+            (!formData.region || formData.region.trim() === '')) {
+            return '오프라인 또는 온오프 모드에서는 지역 정보가 필요합니다.';
+        }
+        return null;
+    };
+
+    //스터디 그룹 중복확인
+    const checkGroupNameDuplicate = async (groupName) => {
+        try {
+            const res = await axios.get(`${host}/api/study/check-name/${encodeURIComponent(groupName)}`);
+            return res.data.isDuplicate;
+        } catch (err) {
+            console.error(' 스터디 그룹 중복 확인 오류:', err);
+            return false;
+        }
+    };
+
+const handleInputChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => {
+            const newData = { ...prev, [name]: value };
+            if (name === 'studyMode' && value === '온라인') {
+                newData.region = '';
+            }
+            return newData;
+        });
+    };
+
+    const handleFileInputChange = (file) => {
+        if (file) {
+            // 파일 크기 검증 (1MB 제한)
+            if (file.size > 1 * 1024 * 1024) {
+                alert('파일 크기는 1MB 이하여야 합니다.');
+                setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
+                return;
+            }
+
+            setSubmitMessage('');
+
+            setFormData((prev) => ({
+                ...prev,
+                thumbnail: file,
+            }));
+        }
+    };
+
     // 작성하기 버튼 클릭 → 확인 모달 띄우기
-const handleCreateClick = async (e) => {
-    e.preventDefault();
-    const validationError = validateRequiredFields();
-    if (validationError) {
-        setSubmitMessage(validationError);
-        return;
-    }
-    
-    // 그룹명 중복 검사
-    const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
-    if (isGroupNameDuplicate) {
-        setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
-        return;
-    }
-    
-    // 닉네임 중복 검사 추가
-    const isNicknameDuplicate = await checkNicknameDuplicate(formData.nickname);
-    if (isNicknameDuplicate) {
-        setSubmitMessage("이미 사용 중인 닉네임입니다.");
-        return;
-    }
-    
-    // 확인 모달 띄우기
-    setIsCreateModalOpen(true);
-};
+    const handleCreateClick = async (e) => {
+        e.preventDefault();
+        const validationError = validateRequiredFields();
+        if (validationError) {
+            setSubmitMessage(validationError);
+            return;
+        }
+
+        // 그룹명 중복 검사
+        const isGroupNameDuplicate = await checkGroupNameDuplicate(formData.groupName);
+        if (isGroupNameDuplicate) {
+            setSubmitMessage("이미 사용 중인 스터디 이름입니다.");
+            return;
+        }
+
+        // 확인 모달 띄우기
+        setIsCreateModalOpen(true);
+    };
 
     // 실제 생성 처리
     const handleFormSubmit = async () => {
@@ -225,7 +169,7 @@ const handleCreateClick = async (e) => {
             });
             if (response.data.success) {
                 setIsCreateModalOpen(false);
-                navigate('/study/postMain'); // 성공 시 바로 이동
+                navigate('/study/postMain');
             } else {
                 setSubmitMessage(response.data.message || '등록에 실패했습니다.');
                 setIsCreateModalOpen(false);
@@ -238,6 +182,42 @@ const handleCreateClick = async (e) => {
             setIsSubmitting(false);
         }
     };
+
+    // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
+    const handleModalConfirm = async () => {
+        await handleFormSubmit();
+    };
+
+    // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
+    const handleModalCancel = () => {
+        setIsCreateModalOpen(false);
+    };
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            const fetchUserNickname = async () => {
+                try {
+                    const userId = user.id || user.userId || 1;
+                    const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
+                        withCredentials: true,
+                    });
+
+                    if (res.data.success) {
+                        const nickname = res.data.nickname;
+                        setUserNickname(nickname || '');
+                        setFormData(prev => ({
+                            ...prev,
+                            nickname: nickname || '',
+                            groupOwnerId: userId
+                        }));
+                    }
+                } catch (error) {
+                    console.error("닉네임 불러오기 실패:", error);
+                }
+            };
+            fetchUserNickname();
+        }
+    }, [host, isAuthenticated, user]);
 
     return (
         <main id='studygroup-container'>
