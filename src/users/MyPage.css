@@ -2,6 +2,7 @@
   min-height: 100vh;
   background-color: #ffffff;
   position: relative;
+  overflow-x: hidden; /* 좌우 스크롤 방지 */
 }
 
 .mypage-top-background {
@@ -16,9 +17,9 @@
 }
 
 .mypage-main-content {
-  max-width: 80rem;
+  max-width: 85rem; /* 80rem에서 85rem으로 증가하여 프로필 공간 확보 */
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1.5rem 0 7.5rem; /* 왼쪽 패딩을 늘려서 프로필 공간 확보 */
   position: relative;
 }
 
@@ -410,6 +411,11 @@
   line-height: 1.3;
   flex: 1;
   display: inline-block;
+  
+  /* 말줄임 처리 - 1줄로 제한 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mypage-study-card-description {
@@ -417,9 +423,14 @@
   color: #666666;
   line-height: 1.4;
   margin: 0;
+  
+  /* 말줄임 처리 - 2줄로 제한 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
+  word-break: break-word;
 }
 
 .mypage-study-card-owner {
@@ -478,6 +489,12 @@
 @media (max-width: 768px) {
   .mypage-container {
     padding: 1rem;
+    overflow-x: hidden; /* 모바일에서도 좌우 스크롤 방지 */
+  }
+
+  .mypage-main-content {
+    /* 모바일에서는 기본 패딩으로 복원 */
+    padding: 0 1.5rem;
   }
 
   .mypage-profile-name {
@@ -496,6 +513,11 @@
     border-color: #eeeeee;
   }
 
+  .mypage-study-card-description {
+    /* 모바일에서는 3줄까지 표시 */
+    -webkit-line-clamp: 3;
+  }
+
   .mypage-chevron-right {
     width: 8px;
     height: 8px;
@@ -507,8 +529,8 @@
 
   .mypage-study-filter-tabs {
     justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 4px;
   }
   
   .mypage-filter-tab {
