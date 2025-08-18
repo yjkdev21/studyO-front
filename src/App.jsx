@@ -101,6 +101,8 @@ function App() {
 
             <Route path="/groupCreate" element={<GroupCreate />} />
             <Route path="/groupUpdate/:groupId" element={<GroupUpdate />} />
+            <Route path="/group/:groupId" element={<GroupDetail />} />
+            
             <Route path="/study/postMain" element={<StudyPostMain />} />
             <Route
               path="/study/postView/:groupId"
@@ -143,7 +145,7 @@ function App() {
 
           <Route path="/search" element={<Search />} />
 
-          <Route path="/group/:groupId" element={<GroupDetail />} />
+          
 
           <Route
             path="/study/components/studySidebar"
