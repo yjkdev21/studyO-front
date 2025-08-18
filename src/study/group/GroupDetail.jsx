@@ -5,90 +5,16 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function GroupDetail() {
+    //환경변수
     const host = import.meta.env.VITE_AWS_API_HOST;
     const { groupId } = useParams();
+    const navigate = useNavigate();
+    const { user, isAuthenticated, isLoading } = useAuth();
+    //상태변수
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [memberCount, setMemberCount] = useState(0);
-    const navigate = useNavigate();
-    const { user, isAuthenticated, isLoading } = useAuth();
-
-    useEffect(() => {
-        if (!groupId || !isAuthenticated) {
-            setGroup(null);
-            setLoading(false);
-            return;
-        }
-
-        const fetchGroup = async () => {
-            setLoading(true);
-            setErrorMessage("");
-
-            try {
-                const response = await axios.get(`${host}/api/study/${groupId}`, { withCredentials: true });
-
-                console.log('=== 그룹 상세 조회 응답 ===');
-                console.log('전체 응답:', response.data);
-                console.log('성공 여부:', response.data.success);
-
-                if (response.data && response.data.data) {
-                    const groupData = response.data.data;
-                    console.log('그룹 데이터:', groupData);
-                    console.log('썸네일 파일명 (DB):', groupData.thumbnail);
-                    console.log('썸네일 전체 URL:', groupData.thumbnailFullPath);
-
-                    setGroup(groupData);
-
-                    // S3 썸네일 URL 검증
-                    if (groupData.thumbnailFullPath && !groupData.thumbnailFullPath.includes('default')) {
-                        console.log('🖼️ S3 썸네일 URL 확인:', groupData.thumbnailFullPath);
-
-                        // URL 접근 가능성 테스트
-                        const img = new Image();
-                        img.onload = () => console.log('썸네일 이미지 로드 성공!');
-                        img.onerror = () => console.log('썸네일 이미지 로드 실패!');
-                        img.src = groupData.thumbnailFullPath;
-                    } else {
-                        console.log('📷 기본 썸네일 이미지 사용');
-                    }
-                    console.log('===========================');
-                } else {
-                    setGroup(null);
-                }
-
-                try {
-                    const memberResponse = await axios.get(`${host}/api/study/${groupId}/members`, { withCredentials: true });
-                    setMemberCount(memberResponse.data.memberCount || 0);
-                } catch {
-                    setMemberCount(0);
-                }
-            } catch (err) {
-                setErrorMessage("그룹 정보를 불러오는 데 실패했습니다.");
-                setGroup(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGroup();
-    }, [groupId, host, isAuthenticated]);
-
-    if (loading || isLoading) return <p>로딩 중...</p>;
-
-
-    if (errorMessage) return <div className="alert alert-danger">{errorMessage}</div>;
-    if (!group) return <div>존재하지 않는 그룹입니다.</div>;
-
-    const isOwner = () => {
-        if (!user || !group) return false;
-        const userId = user.id || user.userId;
-        return group.groupOwnerId === userId;
-    };
-
-    const canDelete = () => {
-        return isOwner() && memberCount <= 1;
-    };
 
     // S3 썸네일 URL 처리 함수 (기존 로직과 통합)
     const getThumbnailUrl = (group) => {
@@ -98,19 +24,26 @@ export default function GroupDetail() {
 
         // thumbnailFullPath가 있으면 S3 URL 사용
         if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
-            console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
             return group.thumbnailFullPath;
         }
 
         // thumbnail 필드만 있는 경우 (기존 호환성)
         if (group.thumbnail && !group.thumbnail.includes('default')) {
-            console.log('썸네일 필드 사용:', group.thumbnail);
             return group.thumbnail;
         }
 
         // 기본 이미지
-        console.log('기본 썸네일 이미지 사용');
         return '/images/default-thumbnail.png';
+    };
+
+    const isOwner = () => {
+        if (!user || !group) return false;
+        const userId = user.id || user.userId;
+        return group.groupOwnerId === userId;
+    };
+
+    const canDelete = () => {
+        return isOwner() && memberCount <= 1;
     };
 
     const handleDelete = async () => {
@@ -132,9 +65,68 @@ export default function GroupDetail() {
             navigate(-1);
         } catch (err) {
             const errorMsg = err.response?.data?.message || "삭제에 실패했습니다.";
-            setErrorMessage(`❌ ${errorMsg}`);
+            setErrorMessage(`${errorMsg}`);
         }
     };
+
+    //데이터 가져오기
+    useEffect(() => {
+        if (!groupId || !isAuthenticated) {
+            setGroup(null);
+            setLoading(false);
+            return;
+        }
+
+        const fetchGroup = async () => {
+            setLoading(true);
+            setErrorMessage("");
+
+            try {
+                const response = await axios.get(`${host}/api/study/${groupId}`, { withCredentials: true });
+
+                if (response.data && response.data.data) {
+                    const groupData = response.data.data;
+
+                    setGroup(groupData);
+
+                    // S3 썸네일 URL 검증
+                    if (groupData.thumbnailFullPath && !groupData.thumbnailFullPath.includes('default')) {
+                        console.log('S3 썸네일 URL 확인:', groupData.thumbnailFullPath);
+
+                        // URL 접근 가능성 테스트
+                        const img = new Image();
+                        img.onload = () => console.log('썸네일 이미지 로드 성공!');
+                        img.onerror = () => console.log('썸네일 이미지 로드 실패!');
+                        img.src = groupData.thumbnailFullPath;
+                    } else {
+                        console.log('기본 썸네일 이미지 사용');
+                    }
+                } else {
+                    setGroup(null);
+                }
+
+                try {
+                    const memberResponse = await axios.get(`${host}/api/study/${groupId}/members`, { withCredentials: true });
+                    setMemberCount(memberResponse.data.memberCount || 0);
+                } catch {
+                    setMemberCount(0);
+                }
+            } catch (err) {
+                setErrorMessage("그룹 정보를 불러오는 데 실패했습니다.");
+                setGroup(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGroup();
+    }, [groupId, host, isAuthenticated]);
+
+    //조건부 렌더링 (로딩 및 에러상태)
+    if (loading || isLoading) return <p>로딩 중...</p>;
+    if (errorMessage) return <div className="alert alert-danger">{errorMessage}</div>;
+    if (!group) return <div>존재하지 않는 그룹입니다.</div>;
+
 
     return (
         <div id="groupdetail" className="container mt-4">
@@ -146,9 +138,9 @@ export default function GroupDetail() {
                 <h1 className="view-title">{group.groupName}</h1>
                 <div className="view-author-info">
                     <img
-                        src="/default-profile.png"
+                        src={group.ownerProfileImageFullPath || "/images/default-profile.png"}
                         alt="프로필 이미지"
-                        className="view-profile-image"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                     />
 
                     <span className="view-author">{group.nickname}</span>

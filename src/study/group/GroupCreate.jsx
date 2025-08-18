@@ -20,108 +20,38 @@ const RESET_FORM = {
     nickname: ''
 };
 
+//필수 필드
 const REQUIRED_FIELDS = [
     'groupName', 'nickname', 'category', 'maxMembers',
     'studyMode', 'region', 'contact', 'groupIntroduction'
 ];
 
 function GroupCreate() {
+    //환경 변수
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const host = import.meta.env.VITE_AWS_API_HOST;
 
+    //상태 변수
     const [formData, setFormData] = useState(RESET_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
     const [userNickname, setUserNickname] = useState('');
-
-    // 모달 관련 상태
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
-    const handleModalConfirm = async () => {
-        await handleFormSubmit();
-    };
-
-    // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
-    const handleModalCancel = () => {
-        setIsCreateModalOpen(false);
-    };
-
-    const checkGroupNameDuplicate = async (groupName) => {
-        try {
-            const res = await axios.get(`${host}/api/study/check-name/${encodeURIComponent(groupName)}`);
-            return res.data.isDuplicate;
-        } catch (err) {
-            console.error('중복 확인 오류:', err);
-            return false;
-        }
-    };
-
-    const checkNicknameDuplicate = async (nickname) => {
-        try {
-            const res = await axios.get(`${host}/api/study/check-nickname/${encodeURIComponent(nickname)}`);
-            return res.data.isDuplicate;
-        } catch (err) {
-            console.error('닉네임 중복 확인 오류:', err);
-            return false;
-        }
-    };
-
-    useEffect(() => {
-        if (isAuthenticated && user) {
-            const fetchUserNickname = async () => {
-                try {
-                    const userId = user.id || user.userId || 1;
-                    const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
-                        withCredentials: true,
-                    });
-
-                    if (res.data.success) {
-                        const nickname = res.data.nickname;
-                        setUserNickname(nickname || '');
-                        setFormData(prev => ({
-                            ...prev,
-                            nickname: nickname || '',
-                            groupOwnerId: userId
-                        }));
-                    }
-                } catch (error) {
-                    console.error("닉네임 불러오기 실패:", error);
-                }
-            };
-            fetchUserNickname();
-        }
-    }, [host, isAuthenticated, user]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-
-        setFormData((prev) => {
-            const newData = { ...prev, [name]: value };
-            if (name === 'studyMode' && value === '온라인') {
-                newData.region = '';
-            }
-            return newData;
-        });
-    };
-
-    const handleFileInputChange = (file) => {
-        if (file) {
-            // 파일 크기 검증 (1MB 제한)
-            if (file.size > 1 * 1024 * 1024) {
-                alert('파일 크기는 1MB 이하여야 합니다.');
-                setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
-                return;
-            }
-
-            setSubmitMessage('');
-
-            setFormData((prev) => ({
-                ...prev,
-                thumbnail: file,
-            }));
-        }
+    //유틸리티 함수
+    const getFieldDisplayName = (field) => {
+        const fieldNames = {
+            groupName: '스터디 이름',
+            nickname: '닉네임',
+            category: '카테고리',
+            maxMembers: '최대 인원',
+            studyMode: '진행 방식',
+            region: '지역',
+            contact: '연락처',
+            groupIntroduction: '스터디 소개'
+        };
+        return fieldNames[field] || field;
     };
 
     const validateRequiredFields = () => {
@@ -151,18 +81,45 @@ function GroupCreate() {
         return null;
     };
 
-    const getFieldDisplayName = (field) => {
-        const fieldNames = {
-            groupName: '스터디 이름',
-            nickname: '닉네임',
-            category: '카테고리',
-            maxMembers: '최대 인원',
-            studyMode: '진행 방식',
-            region: '지역',
-            contact: '연락처',
-            groupIntroduction: '스터디 소개'
-        };
-        return fieldNames[field] || field;
+    //스터디 그룹 중복확인
+    const checkGroupNameDuplicate = async (groupName) => {
+        try {
+            const res = await axios.get(`${host}/api/study/check-name/${encodeURIComponent(groupName)}`);
+            return res.data.isDuplicate;
+        } catch (err) {
+            console.error(' 스터디 그룹 중복 확인 오류:', err);
+            return false;
+        }
+    };
+
+const handleInputChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => {
+            const newData = { ...prev, [name]: value };
+            if (name === 'studyMode' && value === '온라인') {
+                newData.region = '';
+            }
+            return newData;
+        });
+    };
+
+    const handleFileInputChange = (file) => {
+        if (file) {
+            // 파일 크기 검증 (1MB 제한)
+            if (file.size > 1 * 1024 * 1024) {
+                alert('파일 크기는 1MB 이하여야 합니다.');
+                setSubmitMessage('파일 크기는 1MB 이하여야 합니다.');
+                return;
+            }
+
+            setSubmitMessage('');
+
+            setFormData((prev) => ({
+                ...prev,
+                thumbnail: file,
+            }));
+        }
     };
 
     // 작성하기 버튼 클릭 → 확인 모달 띄우기
@@ -212,7 +169,7 @@ function GroupCreate() {
             });
             if (response.data.success) {
                 setIsCreateModalOpen(false);
-                navigate('/study/postMain'); // 성공 시 바로 이동
+                navigate('/study/postMain');
             } else {
                 setSubmitMessage(response.data.message || '등록에 실패했습니다.');
                 setIsCreateModalOpen(false);
@@ -225,6 +182,42 @@ function GroupCreate() {
             setIsSubmitting(false);
         }
     };
+
+    // 모달에서 확인 버튼 클릭 → 서버 전송 후 postMain으로 이동
+    const handleModalConfirm = async () => {
+        await handleFormSubmit();
+    };
+
+    // 모달에서 취소 버튼 클릭 → 서버 전송 안 함, 폼 데이터 유지
+    const handleModalCancel = () => {
+        setIsCreateModalOpen(false);
+    };
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            const fetchUserNickname = async () => {
+                try {
+                    const userId = user.id || user.userId || 1;
+                    const res = await axios.get(`${host}/api/study/user/${userId}/nickname`, {
+                        withCredentials: true,
+                    });
+
+                    if (res.data.success) {
+                        const nickname = res.data.nickname;
+                        setUserNickname(nickname || '');
+                        setFormData(prev => ({
+                            ...prev,
+                            nickname: nickname || '',
+                            groupOwnerId: userId
+                        }));
+                    }
+                } catch (error) {
+                    console.error("닉네임 불러오기 실패:", error);
+                }
+            };
+            fetchUserNickname();
+        }
+    }, [host, isAuthenticated, user]);
 
     return (
         <main id='studygroup-container'>

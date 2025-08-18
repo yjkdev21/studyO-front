@@ -42,7 +42,6 @@ const StudyForm = ({
             if (onFileChange) {
                 onFileChange(file);
             } else {
-                // 기존 방식 fallback
                 onChange({
                     target: {
                         name: 'thumbnail',
