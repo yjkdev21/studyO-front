@@ -24,15 +24,18 @@ export default function GroupDetail() {
 
         // thumbnailFullPath가 있으면 S3 URL 사용
         if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
+            console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
             return group.thumbnailFullPath;
         }
 
         // thumbnail 필드만 있는 경우 (기존 호환성)
         if (group.thumbnail && !group.thumbnail.includes('default')) {
+            console.log('썸네일 필드 사용:', group.thumbnail);
             return group.thumbnail;
         }
 
         // 기본 이미지
+        console.log('기본 썸네일 이미지 사용');
         return '/images/default-thumbnail.png';
     };
 
@@ -126,7 +129,6 @@ export default function GroupDetail() {
     if (loading || isLoading) return <p>로딩 중...</p>;
     if (errorMessage) return <div className="alert alert-danger">{errorMessage}</div>;
     if (!group) return <div>존재하지 않는 그룹입니다.</div>;
-
 
     return (
         <div id="groupdetail" className="container mt-4">

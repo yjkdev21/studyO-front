@@ -244,7 +244,7 @@ function MyPage() {
     if (!user?.id) return;
 
     try {
-      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      const apiUrl = import.meta.env.VITE_AWS_API_HOST;
       
       const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
         withCredentials: true,
@@ -398,7 +398,7 @@ function MyPage() {
     setPasswordError('');
 
     try {
-      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      const apiUrl = import.meta.env.VITE_AWS_API_HOST;
       
       const requestBody = {
         userId: user.userId,
@@ -464,7 +464,7 @@ function MyPage() {
         setStudyLoading(true);
         setStudyError(null);
 
-        const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+        const apiUrl = import.meta.env.VITE_AWS_API_HOST;
         
         const response = await axios.get(`${apiUrl}/api/study/user/${user.id}/active`, {
           withCredentials: true,
@@ -510,7 +510,7 @@ function MyPage() {
         setBookmarkLoading(true);
         setBookmarkError(null);
 
-        const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+        const apiUrl = import.meta.env.VITE_AWS_API_HOST;
         
         const response = await axios.get(`${apiUrl}/api/bookmark/user/${user.id}`, {
           withCredentials: true,
