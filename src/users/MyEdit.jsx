@@ -43,7 +43,7 @@ function MyEdit() {
     // 서버에서 사용자 프로필 정보 로드
     const loadUserProfileFromServer = async () => {
         try {
-            const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+            const apiUrl = import.meta.env.VITE_AWS_API_HOST;
             
             const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
                 withCredentials: true,
@@ -167,7 +167,7 @@ function MyEdit() {
     // 수정 확인 및 서버 전송
     const handleConfirm = async () => {
         try {
-            const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+            const apiUrl = import.meta.env.VITE_AWS_API_HOST;
             let response;
             
             if (profileImageFile) {

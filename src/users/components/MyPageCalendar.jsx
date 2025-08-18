@@ -17,7 +17,7 @@ const MyPageCalendar = ({ myStudies, userId }) => {
     
     setLoading(true);
     try {
-      const apiUrl = window.REACT_APP_API_URL || 'http://localhost:8081';
+      const apiUrl = import.meta.env.VITE_AWS_API_HOST;
 
       // 병렬로 각 스터디 일정 불러오기
       const promises = myStudies.map(async (study) => {
