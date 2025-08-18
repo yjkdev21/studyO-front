@@ -148,8 +148,7 @@
     font-weight: normal;
 }
 
-#study-member .dashboard-member-list .member-btn,
-#study-member .study-leave-btn {
+#study-member .dashboard-member-list .member-btn {
     width: 48px;
     padding: 5px 10px;
     border: 1px solid #999;
@@ -173,15 +172,4 @@
 #study-member .request-btn-wrap button:disabled {
     opacity: 0.3;
     cursor: auto;
-}
-
-/* ========== 멤버 대시보드 - 탈퇴 버튼 ========== */
-#study-member .study-leave-btn {
-    width: auto;
-    color: #999;
-}
-
-#study-member .study-leave-btn:hover {
-    background-color: #ff2525;
-    color: white;
 }

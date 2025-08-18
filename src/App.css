@@ -35,6 +35,24 @@
   margin-left: 20px;
 }
 
+button.study-leave-btn,
+button.user-leave-btn {
+  width: auto;
+  padding: 5px 10px;
+  border: 1px solid #999;
+  color: #999;
+  border-radius: 5px;
+  transition: all .2s;
+  font-size: 14px;
+}
+
+button.study-leave-btn:hover,
+button.user-leave-btn:hover {
+  border-color: #ff2525;
+  background-color: #ff2525;
+  color: white;
+}
+
 /* ========================================
                   Main
 ======================================== */
@@ -182,7 +200,7 @@ header {
   border-color: var(--main-color);
 }
 
-#header .header-dropmenu li > * {
+#header .header-dropmenu li>* {
   display: block;
   width: 100%;
   text-align: left;
@@ -235,6 +253,7 @@ header {
 
 /* 모바일 - 화면 767px 이하 */
 @media (max-width: 767px) {
+
   #header .header-info .join,
   #header .header-study-btn {
     display: none;
@@ -255,7 +274,7 @@ header {
     justify-content: center;
   }
 
-  #footer .footer-content > *:not(h2) {
+  #footer .footer-content>*:not(h2) {
     display: none;
   }
 }
