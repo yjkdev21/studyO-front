@@ -237,8 +237,8 @@
 }
 
 .alert-error-message {
-  font-size: 0.9rem;
-  font-weight: 400;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: red;
   margin: 0 0 20px 0;
   width: 100%;

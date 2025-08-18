@@ -23,7 +23,7 @@ export default function BookMarkViewCnt({ post }) {
         const res = await axios.get(`${host}/api/bookmark/user/${userId}`, {
           withCredentials: true,
         });
-        console.log("사용자 북마크 API 응답:", res.data);
+        // console.log("사용자 북마크 API 응답:", res.data);
         if (res.data.success && Array.isArray(res.data.data)) {
           const bookmarkGroupIds = res.data.data.map(
             (bookmark) => bookmark.groupId

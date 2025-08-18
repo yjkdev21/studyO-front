@@ -41,10 +41,34 @@ export default function StudyPostView({
         }
         if (postDto) {
           setPost(postDto);
-          setError(null);
 
           if (groupId && userId) {
-            checkApplicationStatus(postDto.studyPostId);
+            // 모집 마감일 확인
+            if (postDto.recruitEndDate) {
+              const endDate = new Date(postDto.recruitEndDate);
+              endDate.setDate(endDate.getDate() + 1); // 하루 더해서 0시 보정
+
+              const today = new Date();
+              if (endDate <= today) {
+                if (onStudyJoin) {
+                  // 가입신청 handler 가 props 에 존재하면
+                  setError("모집마감일이 지나 신청이 마감되었습니다.");
+                  setHasApplied(true);
+                } else {
+                  // 가입신청 버튼 handler 가 없는 개설자 인 경우..
+                  setError(
+                    "모집마감일 만료! \n 모집마감일 과 모집인원을 수정하여 신규 멤버를 유치해 보세요."
+                  );
+                }
+                return;
+              }
+            }
+
+            if (onStudyJoin) {
+              // 가입신청 View 인 경우...
+              // 모집 마감일이 지나지 않았다면 가입 신청 여부 확인
+              checkApplicationStatus(postDto.studyPostId);
+            }
           }
         } else {
           setError("게시글 정보를 찾을 수 없습니다.");
@@ -60,12 +84,19 @@ export default function StudyPostView({
       }
     };
 
+    // 가입신청 가능 여부 확인
     const checkApplicationStatus = async (postId) => {
       try {
         const response = await axios.get(
           `${host}/api/userRequest/exist/${groupId}/${userId}/${postId}`
         );
-        setHasApplied(response.data.exists);
+        if (!response.data.joinAble) {
+          setError(response.data.errorMessage);
+          setHasApplied(true); // 가입신청 불가로 / 신청버튼 hidden state
+        } else {
+          setError(null);
+          setHasApplied(false); // 가입신청 가능
+        }
       } catch (error) {
         console.error("가입 신청 여부 확인 실패:", error?.message || error);
         setHasApplied(false);
@@ -125,16 +156,17 @@ export default function StudyPostView({
 
   return (
     <div className="study-post-main-content">
+      {error == null || (
+        <div className="alert alert-error-message">⚠️ {error}</div>
+      )}
       {loading ? (
         <div className="loading-container">
           <div className="spinner"></div>
           <div className="loading-text">게시글을 불러오는 중입니다...</div>
         </div>
-      ) : error ? (
-        <div className="alert alert-warning">{error}</div>
       ) : !post || !group ? (
-        <div className="alert alert-warning">
-          게시글 정보가 존재하지 않습니다.
+        <div className="alert alert-error-message">
+          ⚠️ 게시글 정보가 존재하지 않습니다.
         </div>
       ) : (
         <>
