@@ -142,7 +142,7 @@ export default function GroupDetail() {
                     <img
                         src={group.ownerProfileImageFullPath || "/images/default-profile.png"}
                         alt="프로필 이미지"
-                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '100%' }}
                     />
 
                     <span className="view-author">{group.nickname}</span>
