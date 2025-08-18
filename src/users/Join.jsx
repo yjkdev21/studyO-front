@@ -352,8 +352,8 @@ function Join() {
         navigate("/login", {
           state: {
             userId: form.userId,
-            fromSignup: true
-          }
+            fromSignup: true,
+          },
         });
       } else {
         alert("회원가입 실패: " + res.data);
@@ -431,7 +431,12 @@ function Join() {
   return (
     <main>
       <h1
-        style={{ fontWeight: "bold", marginTop: "50px", textAlign: "center" }}
+        style={{
+          fontSize: "30px",
+          fontWeight: "bold",
+          marginTop: "50px",
+          textAlign: "center",
+        }}
       >
         회원가입
       </h1>

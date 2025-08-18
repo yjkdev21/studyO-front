@@ -78,12 +78,24 @@ const StudyPostEdit = ({ groupId, onPostUpdated, onCancel }) => {
   }, [groupId, host]);
 
   const handleStartDateChange = (newDate) => {
-    setStartDate(newDate);
     const newStartDate = new Date(newDate.replace(/\./g, "-"));
     const currentEndDate = new Date(endDate.replace(/\./g, "-"));
-    if (currentEndDate < newStartDate) {
-      setEndDate(newDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 시간 제거
+
+    // 마감일이 시작일보다 빠른 경우
+    if (newStartDate > currentEndDate) {
+      setErrorDateMessage("⚠️ 모집 마감일은 모집 시작일보다 빠를 수 없습니다.");
+      return;
     }
+
+    // 시작일이 오늘보다 이전인 경우
+    if (newStartDate < today) {
+      setErrorDateMessage("⚠️ 모집 시작일은 오늘 이전일 수 없습니다.");
+      return;
+    }
+
+    setStartDate(newDate);
     setErrorMessage("");
     setErrorDateMessage("");
   };
@@ -92,10 +104,23 @@ const StudyPostEdit = ({ groupId, onPostUpdated, onCancel }) => {
     const newEndDate = new Date(newDate.replace(/\./g, "-"));
     const currentStartDate = new Date(startDate.replace(/\./g, "-"));
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 마감일이 시작일보다 빠른 경우
     if (newEndDate < currentStartDate) {
-      setErrorDateMessage("모집 마감일은 모집 시작일보다 빠를 수 없습니다.");
+      setErrorDateMessage("⚠️ 모집 마감일은 모집 시작일보다 빠를 수 없습니다.");
       return;
     }
+
+    // 마감일이 오늘보다 이전인 경우
+    console.log("newEndDate: ", newEndDate);
+    console.log("today: ", today);
+    if (newEndDate < today) {
+      setErrorDateMessage("⚠️ 모집 마감일은 오늘 이전일 수 없습니다.");
+      return;
+    }
+
     setEndDate(newDate);
     setErrorMessage("");
     setErrorDateMessage("");

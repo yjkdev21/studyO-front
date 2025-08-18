@@ -87,10 +87,6 @@ export default function StudyPromotion() {
 
   return (
     <div className="promotion-container">
-      {/* <h2 className="form-title">
-        <span className="form-badge">✔</span>
-        스터디 모집 홍보글
-      </h2> */}
       <StudyPostView groupId={groupId} onStudyJoin={handleStudyJoin} />
       <RequestModal
         isOpen={isModalOpen}
