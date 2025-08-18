@@ -45,6 +45,7 @@ function GroupUpdate() {
 
     // 이미지 상태 추가
     const [originalThumbnail, setOriginalThumbnail] = useState('');
+    const [imageDeleted, setImageDeleted] = useState(false);
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -77,8 +78,8 @@ function GroupUpdate() {
 
     const validateRequiredFields = () => {
         // 스터디 이름 길이 체크
-        if (formData.groupName && formData.groupName.length > 6) {
-            return '스터디 이름은 6글자 이내로 입력해주세요.';
+        if (formData.groupName && formData.groupName.length >= 20) {
+            return '스터디 이름은 20글자 이내로 입력해주세요.';
         }
 
         // 닉네임 길이 체크 추가
@@ -303,7 +304,7 @@ function GroupUpdate() {
 
                         setOriginalThumbnail(data.thumbnail || '');
                         setUserNickname(data.nickname || '');
-                        setMemberCount(data.memberCount || 1);
+                        setMemberCount(response.data.memberCount || 1);
                     } else {
                         setSubmitMessage('데이터를 불러올 수 없습니다.');
                     }

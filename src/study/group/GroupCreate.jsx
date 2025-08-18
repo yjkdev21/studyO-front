@@ -56,8 +56,8 @@ function GroupCreate() {
 
     const validateRequiredFields = () => {
         // 스터디 이름 길이 체크
-        if (formData.groupName && formData.groupName.length > 6) {
-            return '스터디 이름은 6글자 이내로 입력해주세요.';
+        if (formData.groupName && formData.groupName.length >= 20) {
+            return '스터디 이름은 20글자 이내로 입력해주세요.';
         }
 
         // 닉네임 길이 체크 추가

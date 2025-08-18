@@ -129,8 +129,8 @@ const StudyForm = ({
                             value={formData.groupName || ''}
                             onChange={onChange}
                             disabled={isFieldDisabled('groupName')}
-                            placeholder="6글자 이내"
-                            maxLength={6}
+                            placeholder="20글자 이내"
+                            maxLength={20}
                             required
                         />
                     </div>
@@ -283,7 +283,7 @@ const StudyForm = ({
                         value={formData.groupIntroduction || ''}
                         onChange={onChange}
                         disabled={isFieldDisabled('groupIntroduction')}
-                        placeholder="200자 내외로 스터디를 소개하세요"
+                        placeholder="255자 내외로 스터디를 소개하세요"
                         required
                         rows="4"
                     />
