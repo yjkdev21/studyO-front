@@ -1,9 +1,13 @@
 import React, { useState, useCallback } from "react";
 import axios from "axios";
+// ⚠️ 1. useNavigate 훅 import
 import { useNavigate } from "react-router-dom";
 
 function Join() {
+  // ⚠️ 2. useNavigate 훅 사용
   const navigate = useNavigate();
+
+  // host 설정 개선
   const host = import.meta.env.VITE_AWS_API_HOST;
 
   const [form, setForm] = useState({
@@ -22,8 +26,9 @@ function Join() {
     email: "",
   });
 
+  // 검증 상태 추가
   const [validationStatus, setValidationStatus] = useState({
-    userId: null,
+    userId: null, // null, 'checking', 'valid', 'invalid'
     nickname: null,
     password: null,
     passwordCheck: null,
@@ -33,11 +38,15 @@ function Join() {
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
   const validatePassword = (password) =>
     password.length >= 8 && password.length <= 16;
+
+  // ⚠️ 추가된 아이디 유효성 검사 함수
   const validateUserId = (userId) => {
+    // 5~20자의 영문 소문자, 숫자, 특수기호(_),(-)만 허용
     const regex = /^[a-z0-9_-]{5,20}$/;
     return regex.test(userId);
   };
 
+  // 체크 아이콘 SVG 컴포넌트
   const CheckIcon = () => (
     <svg
       width="20"
@@ -58,6 +67,7 @@ function Join() {
     </svg>
   );
 
+  // 디바운스된 중복 검사 함수
   const debounce = (func, wait) => {
     let timeout;
     return function executedFunction(...args) {
@@ -70,8 +80,10 @@ function Join() {
     };
   };
 
+  // 아이디 중복 검사
   const checkUserId = useCallback(
     debounce(async (userId) => {
+      // ⚠️ 유효성 검사 추가
       if (!validateUserId(userId)) {
         setMessages((prev) => ({
           ...prev,
@@ -79,7 +91,7 @@ function Join() {
             "5~20자의 영문 소문자, 숫자, 특수기호(_),(-)만 사용 가능합니다.",
         }));
         setValidationStatus((prev) => ({ ...prev, userId: "invalid" }));
-        return;
+        return; // 유효하지 않으면 중복 검사 API 호출 안 함
       }
 
       try {
@@ -113,6 +125,7 @@ function Join() {
     [host]
   );
 
+  // 닉네임 중복 검사
   const checkNickname = useCallback(
     debounce(async (nickname) => {
       if (!nickname.trim()) return;
@@ -148,6 +161,7 @@ function Join() {
     [host]
   );
 
+  // 한글 포함 여부 확인 함수
   const hasKorean = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
 
   const handleChange = (e) => {
@@ -156,6 +170,7 @@ function Join() {
 
     switch (name) {
       case "userId":
+        // ⚠️ 기존 한글 검사 대신 새로운 아이디 유효성 검사 함수 호출
         if (value.trim() && !validateUserId(value.trim())) {
           setMessages((prev) => ({
             ...prev,
@@ -172,6 +187,7 @@ function Join() {
         break;
 
       case "email":
+        // 이메일 앞부분 추출
         const localPart = value.split("@")[0] || "";
         if (hasKorean(localPart)) {
           setMessages((prev) => ({
@@ -194,6 +210,7 @@ function Join() {
         }
         break;
 
+      // 기존 password, passwordCheck, nickname 처리 그대로 유지
       case "nickname":
         if (value.trim()) {
           checkNickname(value.trim());
@@ -247,6 +264,7 @@ function Join() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ⚠️ 최종 아이디 유효성 검사 추가
     if (!validateUserId(form.userId.trim())) {
       alert(
         "아이디는 5~20자의 영문 소문자, 숫자, 특수기호(_),(-)만 사용 가능합니다."
@@ -254,11 +272,13 @@ function Join() {
       return;
     }
 
+    // 한글 포함 추가 검사 (기존 로직 유지)
     if (hasKorean(form.email.split("@")[0])) {
       alert("이메일 앞부분에 한글은 사용할 수 없습니다.");
       return;
     }
 
+    // 모든 필드 검증
     if (
       !form.userId.trim() ||
       !form.password ||
@@ -270,6 +290,7 @@ function Join() {
       return;
     }
 
+    // 클라이언트 측 최종 검증
     if (form.password !== form.passwordCheck) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -283,6 +304,7 @@ function Join() {
       return;
     }
 
+    // ⚠️ 아이디 유효성 상태 확인
     if (validationStatus.userId !== "valid") {
       alert("아이디를 다시 확인해주세요.");
       return;
@@ -294,6 +316,7 @@ function Join() {
         form: { ...form, password: "***" },
       });
 
+      // 최종 서버 중복 확인 (보안상 한 번 더 확인)
       const [idRes, nickRes] = await Promise.all([
         axios.get(`${host}/api/user/check-id?userId=${form.userId}`),
         axios.get(`${host}/api/user/check-nickname?nickname=${form.nickname}`),
@@ -309,6 +332,7 @@ function Join() {
         return;
       }
 
+      // 회원가입 요청
       const res = await axios.post(`${host}/api/user/register`, {
         userId: form.userId,
         password: form.password,
@@ -324,6 +348,7 @@ function Join() {
 
       if (res.data === "success") {
         alert("회원가입이 완료되었습니다!");
+        // 회원가입 성공 시 아이디 파라미터 로그인 페이지에 전송
         navigate("/login", {
           state: {
             userId: form.userId,
@@ -346,35 +371,6 @@ function Join() {
         alert("알 수 없는 오류가 발생했습니다.");
       }
     }
-  };
-
-  // 인라인 스타일 객체
-  const mainStyle = {
-    padding: "0 15px",
-    boxSizing: "border-box",
-    overflowX: "hidden",
-  };
-
-  const h1Style = {
-    fontSize: "clamp(24px, 6vw, 30px)",
-    fontWeight: "bold",
-    marginTop: "40px",
-    textAlign: "center",
-  };
-
-  const h2Style = {
-    fontSize: "clamp(12px, 3vw, 14px)",
-    marginTop: "20px",
-    marginBottom: "40px",
-    color: "#999999",
-    textAlign: "center",
-  };
-
-  const formWrapperStyle = {
-    width: "90%",
-    maxWidth: "400px",
-    margin: "0 auto",
-    padding: "0 20px",
   };
 
   const inputWrapperStyle = {
@@ -409,7 +405,7 @@ function Join() {
       msg.includes("이미 사용 중") ||
       msg.includes("일치하지") ||
       msg.includes("올바르지") ||
-      msg.includes("사용 가능합니다.") ||
+      msg.includes("사용 가능합니다.") || // ⚠️ 추가된 오류 메시지
       msg.includes("서버 오류")
         ? "red"
         : msg.includes("사용 가능한") || msg.includes("올바른 이메일")
@@ -426,28 +422,39 @@ function Join() {
     pointerEvents: "none",
   };
 
-  const buttonStyle = {
-    backgroundColor: "#eeeeee",
-    color: "#000",
-    border: "none",
-    borderRadius: "5px",
-    padding: "12px 50px",
-    fontSize: "16px",
-    cursor: "pointer",
-    marginTop: "30px",
-    fontWeight: "bold",
-    display: "block",
-    width: "100%",
-    maxWidth: "200px",
-    margin: "30px auto 0",
+  const formWrapperStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   };
 
   return (
-    <main style={mainStyle}>
-      <h1 style={h1Style}>회원가입</h1>
-      <h2 style={h2Style}>스터디에서 시작해 프로젝트까지 한번에</h2>
+    <main>
+      <h1
+        style={{
+          fontSize: "30px",
+          fontWeight: "bold",
+          marginTop: "50px",
+          textAlign: "center",
+        }}
+      >
+        회원가입
+      </h1>
+
+      <h2
+        style={{
+          fontSize: "14px",
+          marginTop: "25px",
+          marginBottom: "70px",
+          color: "#999999",
+          textAlign: "center",
+        }}
+      >
+        스터디에서 시작해 프로젝트까지 한번에
+      </h2>
+
       <div style={formWrapperStyle}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: 400 }}>
           {["userId", "password", "passwordCheck", "nickname", "email"].map(
             (field, i) => {
               const labels = {
@@ -498,7 +505,23 @@ function Join() {
             }
           )}
 
-          <button type="submit" style={buttonStyle}>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#eeeeee",
+              color: "#000",
+              border: "none",
+              borderRadius: "5px",
+              padding: "10px 50px",
+              fontSize: "16px",
+              cursor: "pointer",
+              marginTop: "30px",
+              fontWeight: "bold",
+              display: "block",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
             Sign Up
           </button>
         </form>
