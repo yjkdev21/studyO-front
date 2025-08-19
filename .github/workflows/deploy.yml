@@ -1,10 +1,6 @@
-name: CI/CD Pipeline
+name: React Deploy using GitHub Actions
 
 on:
-  # push:
-  #   branches:
-  #     - main
-
   workflow_dispatch:
     inputs:
       reason:
@@ -16,29 +12,28 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  React-CD:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js for frontend build
+      - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: "20"
 
-      - name: Install dependencies and build frontend
+      - name: Install dependencies and build
         run: |
           npm ci
           npm run build
 
-      - name: Docker build & push all services
+      - name: Docker build & push to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          # docker-compose를 사용하여 모든 서비스의 이미지를 빌드하고 푸시
-          sudo docker-compose build
-          sudo docker-compose push
+          sudo docker build --platform linux/amd64/v3 -t obama1004/studyo:latest .
+          sudo docker push obama1004/studyo:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -47,26 +42,17 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            # docker-compose가 설치되어 있지 않으면 설치
-            if ! command -v docker-compose &> /dev/null
-            then
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-            fi
+            sudo docker stop $(sudo docker ps -q --filter "name=studyo") || true
+            sudo docker rm $(sudo docker ps -aq --filter "name=studyo") || true
 
-            # 서버에 접속하여 docker-compose.yml 파일이 있는 디렉토리로 이동
-            cd /home/ubuntu
+            sudo docker pull obama1004/studyo:latest
 
-            # studyo와 tjspring 컨테이너만 중지 및 삭제 (데이터베이스는 건드리지 않음)
-            sudo docker-compose stop studyo tjspring
-            sudo docker-compose rm -f studyo tjspring
+            sudo docker run -d \
+              --name studyo \
+              -p 80:80 \
+              -p 443:443 \
+              -v /etc/letsencrypt:/etc/letsencrypt \
+              -v /var/lib/letsencrypt:/var/lib/letsencrypt \
+              obama1004/studyo:latest
 
-            # 최신 이미지 pull
-            sudo docker-compose pull
-
-            # 모든 컨테이너를 다시 시작 (백그라운드에서 실행)
-            # --no-recreate 옵션으로 기존 컨테이너를 재사용하고, studyo와 tjspring만 업데이트
-            sudo docker-compose up -d --force-recreate --no-deps tjspring studyo
-
-            # 사용하지 않는 이미지 정리
             sudo docker image prune -f
