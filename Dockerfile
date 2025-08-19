@@ -1,22 +1,28 @@
-# 1단계: 빌드용 Node 이미지 (기존과 동일)
 FROM node:20-alpine AS build
+
+# 작업 디렉토리 설정
 WORKDIR /app
+
+# 의존성 파일 복사
 COPY package*.json ./
+
+# 의존성 설치
 RUN npm ci
+
+# 소스 코드 복사
 COPY . .
+
+# 프론트엔드 빌드
 RUN npm run build
 
-# 2단계: Nginx에 정적 파일 및 SSL 설정 복사
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Nginx를 사용한 최종 이미지
+FROM nginx:stable-alpine
 
-# start.sh 스크립트 추가
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# 빌드된 파일들을 Nginx 디렉토리로 복사
+COPY --from=build /app/build /usr/share/nginx/html
 
-EXPOSE 80
-EXPOSE 443
+# Nginx 설정 파일 복사
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Nginx와 React/Vite 앱을 모두 실행하도록 CMD 명령어 변경
-CMD ["/start.sh"]
+# 컨테이너 시작 시 실행될 명령어
+CMD ["nginx", "-g", "daemon off;"]
