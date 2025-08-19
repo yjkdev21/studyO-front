@@ -57,6 +57,8 @@ jobs:
             AWS_REGION=${{ secrets.AWS_REGION }}
             EOF
 
-            # 최신 이미지 pull 및 실행
-            docker compose pull
+            # 애플리케이션 컨테이너만 재시작 (DB 보존)
+            docker compose stop tjspring nginx
+            docker compose rm -f tjspring nginx
+            docker compose pull tjspring nginx
             docker compose up -d
