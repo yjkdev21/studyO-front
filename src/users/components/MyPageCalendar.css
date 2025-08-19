@@ -3,11 +3,12 @@
   border: 1px solid #EEEEEE;
   border-radius: 8px;
   padding: 12px;
-  max-width: 100%;
-  height: 400px;
+  width: 355px;
+  height: 280px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .loading {
@@ -35,6 +36,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
 }
 
 .nav-button:hover {
@@ -52,6 +55,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  flex: 1;
 }
 
 .year {
@@ -68,15 +72,18 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .day-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
 }
 
 .day-name {
@@ -84,6 +91,7 @@
   font-weight: 600;
   color: #000000;
   text-align: center;
+  white-space: nowrap;
 }
 
 .day-name.sunday {
@@ -95,7 +103,8 @@
 }
 
 .date-cell {
-  width: 36px;
+  width: 100%;
+  max-width: 36px;
   height: 36px;
   border-radius: 8px;
   display: flex;
@@ -107,6 +116,8 @@
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  aspect-ratio: 1;
+  box-sizing: border-box;
 }
 
 .date-cell.no-event {
@@ -258,4 +269,112 @@
   color: #333333;
   line-height: 1.6;
   margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 8px;
+    height: 280px;
+  }
+  
+  .calendar-header {
+    margin-bottom: 10px;
+  }
+  
+  .nav-button {
+    padding: 4px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+  
+  .arrow {
+    font-size: 16px;
+  }
+  
+  .year {
+    font-size: 16px;
+  }
+  
+  .week {
+    font-size: 10px;
+  }
+  
+  .calendar-grid {
+    gap: 2px;
+  }
+  
+  .day-column {
+    gap: 2px;
+  }
+  
+  .day-name {
+    font-size: 10px;
+  }
+  
+  .date-cell {
+    max-width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .date-cell.today {
+    border: 2px solid #FDB515;
+  }
+  
+  .event-details {
+    margin-top: 10px;
+  }
+  
+  .event-list {
+    max-height: 120px;
+    padding: 8px 12px;
+  }
+  
+  .event-item {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+  }
+  
+  .event-title {
+    font-size: 12px;
+  }
+  
+  .event-study-group,
+  .event-period,
+  .event-content {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 6px;
+    height: 280px;
+  }
+  
+  .calendar-grid {
+    gap: 1px;
+  }
+  
+  .day-column {
+    gap: 1px;
+  }
+  
+  .day-name {
+    font-size: 9px;
+  }
+  
+  .date-cell {
+    max-width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  
+  .year {
+    font-size: 14px;
+  }
+  
+  .event-list {
+    max-height: 100px;
+  }
 }
