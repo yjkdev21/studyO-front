@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './StudySidebar.css';
 import { useStudy } from '../../contexts/StudyContext';
 
 
 export default function StudySidebar({
   initialTab = '', //기본 활성화 탭
-  onMenuClick
+  onMenuClick,
+  onCollapseChange
 }) {
-  
+
   // StudyContext에서 필요한 데이터만 가져오기
   const { studyInfo, isLoading: loading } = useStudy();
-  
+
   // 사이드 바 접기, 펼치기
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -39,6 +40,13 @@ export default function StudySidebar({
     setIsCollapsed(!isCollapsed); // 현재 상태의 반대로 변경
   };
 
+  // collapsed 상태 부모에게 전달 
+  useEffect(() => {
+    if (onCollapseChange) {
+      onCollapseChange(isCollapsed);
+    }
+  }, [isCollapsed, onCollapseChange])
+
   return (
     <div id={'sidebar-wrap'} className={` ${isCollapsed ? 'collapsed' : ''}`}>
       {/* 메인 사이드바 */}
@@ -58,7 +66,7 @@ export default function StudySidebar({
         {/* 대시보드 메뉴 */}
         <ul className='sidebar-study-menu'>
           <li className={`menu-tab dashboard-tab ${currentTab === 'dashboard' ? 'active' : ''}`}
-  onClick={() => handleMenuClick('dashboard')}>
+            onClick={() => handleMenuClick('dashboard')}>
             대시보드
           </li>
           <li className={`menu-tab member-tab ${currentTab === 'member' ? 'active' : ''}`}
