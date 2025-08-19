@@ -531,6 +531,10 @@
         padding: 0 16px !important;
     }
 
+    #view-author-info img{
+        border-radius: '100%'
+    }
+
     /* 섹션 헤더 */
     #studygroup-basic-info-header,
     #studygroup-content-header {

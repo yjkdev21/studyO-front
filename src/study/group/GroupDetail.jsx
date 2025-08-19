@@ -197,12 +197,13 @@ export default function GroupDetail() {
                 <Link to={`/study/${groupId}/dashboard`} className="btn btn-secondary">
                     대시보드
                 </Link>
-                <Link to="/study/postMain" className="btn btn-secondary">
-                    홍보글 관리
-                </Link>
+                
 
                 {isOwner() && (
                     <>
+                    <Link to="/study/postMain" className="btn btn-secondary">
+                    홍보글 관리
+                </Link>
                         <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
                             수정
                         </Link>
