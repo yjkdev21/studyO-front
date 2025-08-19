@@ -1,13 +1,10 @@
 services:
   nginx:
     container_name: studyo
-    image: obama1004/studyo:latest
+    build: ./studyo # Dockerfile 위치
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - tjspring
 
@@ -15,9 +12,9 @@ services:
     container_name: tjspring
     image: obama1004/tjspring:latest
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@15.164.165.161:1521:XE
-      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME} # .env에서 읽음
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD} # .env에서 읽음
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     depends_on:
       - ora
 

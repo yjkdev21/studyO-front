@@ -1,23 +1,20 @@
-# 1단계: React 빌드
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+# Stage 1: Build React app
+FROM node:20 AS build
 
-# 2단계: Nginx 컨테이너
+WORKDIR /app
+COPY frontend/ .   # React 프로젝트 폴더 위치
+RUN npm install
+RUN npm run build   # build 폴더 생성
+
+# Stage 2: Serve with NGINX
 FROM nginx:alpine
 
-# 빌드된 React 정적 파일을 Nginx 웹 루트로 복사
-COPY --from=build /app/dist /usr/share/nginx/html
+# React 정적 파일 복사
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Nginx 설정 복사 (SSL + proxy_pass 포함)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# NGINX 설정 복사
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# 포트 노출
-EXPOSE 80
-EXPOSE 443
-
-# 실행
+# 불필요한 start.sh 제거
+# EXPOSE 80 이미 NGINX 이미지에서 열림
 CMD ["nginx", "-g", "daemon off;"]
