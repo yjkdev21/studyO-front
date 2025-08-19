@@ -1,4 +1,4 @@
-# 1단계: 빌드용 Node 이미지 (기존과 동일)
+# 1단계: React 빌드
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -6,17 +6,18 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# 2단계: Nginx에 정적 파일 및 SSL 설정 복사
+# 2단계: Nginx 컨테이너
 FROM nginx:alpine
-# 빌드 단계에서 생성된 정적 파일을 Nginx의 웹 루트 디렉토리로 복사
+
+# 빌드된 React 정적 파일을 Nginx 웹 루트로 복사
 COPY --from=build /app/dist /usr/share/nginx/html
-# 로컬에 생성된 nginx.conf 파일을 컨테이너 내부로 복사
+
+# Nginx 설정 복사 (SSL + proxy_pass 포함)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 80(HTTP) 및 443(HTTPS) 포트를 외부에 노출
+# 포트 노출
 EXPOSE 80
 EXPOSE 443
 
-# Nginx 실행 명령어만 남김
-# Nginx는 이제 빌드된 정적 파일을 직접 서비스
+# 실행
 CMD ["nginx", "-g", "daemon off;"]

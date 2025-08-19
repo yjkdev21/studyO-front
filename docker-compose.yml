@@ -1,35 +1,7 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  # Spring Boot API 서버 컨테이너
-  tjspring:
-    image: obama1004/tjspring:latest
-    container_name: tjspring
-    ports:
-      - "8081:8081"
-    environment:
-      - TZ=Asia/Seoul
-    networks:
-      - studyo-network
-    depends_on:
-      - ora
-
-  # React + Vite 웹 서버 컨테이너 (Nginx)
-  studyo:
-    image: obama1004/studyo:latest
-    container_name: studyo
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /etc/letsencrypt/live/www.studyo.r-e.kr/:/etc/letsencrypt/live/www.studyo.r-e.kr/:ro
-      - /etc/letsencrypt/archive/www.studyo.r-e.kr/:/etc/letsencrypt/archive/www.studyo.r-e.kr/:ro
-    networks:
-      - studyo-network
-    depends_on:
-      - tjspring
-
-  # Oracle Database 컨테이너
+  # Oracle DB (이미 실행 중이면 건너뛰어도 됨)
   ora:
     image: oracleinanutshell/oracle-xe-11g
     container_name: ora
@@ -38,16 +10,45 @@ services:
       - "8080:8080"
     environment:
       - ORACLE_ALLOW_REMOTE=true
+      - ORACLE_DISABLE_ASYNCH_IO=true
     volumes:
-      - oracle-data:/u01/app/oracle
+      - ora-data:/u01/app/oracle
     networks:
-      - studyo-network
+      - studyo-net
 
-# Docker 네트워크 정의
-networks:
-  studyo-network:
-    driver: bridge
+  # Spring Boot REST API
+  tjspring:
+    image: obama1004/tjspring:latest
+    container_name: tjspring
+    depends_on:
+      - ora
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@ora:1521:XE
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - studyo-net
+    restart: always
 
-# Docker 볼륨 정의
+  # React 정적 서비스 (Nginx + SSL)
+  studyo:
+    image: obama1004/studyo:latest
+    container_name: studyo
+    depends_on:
+      - tjspring
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # 호스트 인증서를 컨테이너로 전달
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - studyo-net
+    restart: always
+
 volumes:
-  oracle-data:
+  ora-data:
+
+networks:
+  studyo-net:
+    driver: bridge
