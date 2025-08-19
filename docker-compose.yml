@@ -21,6 +21,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/www.studyo.r-e.kr/:/etc/letsencrypt/live/www.studyo.r-e.kr/:ro
+      - /etc/letsencrypt/archive/www.studyo.r-e.kr/:/etc/letsencrypt/archive/www.studyo.r-e.kr/:ro
     networks:
       - studyo-network
     depends_on:
