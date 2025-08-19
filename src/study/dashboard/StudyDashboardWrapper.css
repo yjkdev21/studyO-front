@@ -5,12 +5,13 @@
   margin-top: -80px;
   min-height: 100vh;
   background-color: #f5f5f5;
+  transition: padding .3s;
 }
 
 .main-scrollable-area {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 80px 12px;
+  padding: 80px 15px;
   transition: margin .3s;
 }
 
@@ -18,4 +19,18 @@
 #sidebar-wrap.collapsed + .main-scrollable-area {
   width: 100%;
   margin: 0 auto;
+}
+
+/* 화면 1840px 이하 */
+@media (max-width: 1840px) {
+  .study-layout-wrapper.on {
+    padding-left: 280px;
+  }
+}
+
+/* 모바일 - 767px 이하 */
+@media (max-width: 767px) {
+  .study-layout-wrapper.on {
+    padding-left: 0;
+  }
 }
