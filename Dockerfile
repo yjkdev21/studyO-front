@@ -1,28 +1,22 @@
+# 1단계: 빌드용 Node 이미지 (기존과 동일)
 FROM node:20-alpine AS build
-
-# 작업 디렉토리 설정
 WORKDIR /app
-
-# 의존성 파일 복사
 COPY package*.json ./
-
-# 의존성 설치
 RUN npm ci
-
-# 소스 코드 복사
 COPY . .
-
-# 프론트엔드 빌드
 RUN npm run build
 
-# Nginx를 사용한 최종 이미지
-FROM nginx:stable-alpine
+# 2단계: Nginx에 정적 파일 및 SSL 설정 복사
+FROM nginx:alpine
+# 빌드 단계에서 생성된 정적 파일을 Nginx의 웹 루트 디렉토리로 복사
+COPY --from=build /app/dist /usr/share/nginx/html
+# 로컬에 생성된 nginx.conf 파일을 컨테이너 내부로 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 빌드된 파일들을 Nginx 디렉토리로 복사
-COPY --from=build /app/build /usr/share/nginx/html
+# 80(HTTP) 및 443(HTTPS) 포트를 외부에 노출
+EXPOSE 80
+EXPOSE 443
 
-# Nginx 설정 파일 복사
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-
-# 컨테이너 시작 시 실행될 명령어
+# Nginx 실행 명령어만 남김
+# Nginx는 이제 빌드된 정적 파일을 직접 서비스
 CMD ["nginx", "-g", "daemon off;"]
