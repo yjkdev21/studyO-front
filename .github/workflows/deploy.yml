@@ -57,8 +57,13 @@ jobs:
             AWS_REGION=${{ secrets.AWS_REGION }}
             EOF
 
-            # 애플리케이션 컨테이너만 재시작 (DB 보존)
-            docker compose stop tjspring nginx
-            docker compose rm -f tjspring nginx
+            # 애플리케이션 컨테이너만 재시작 (DB 완전 보존)
+            # 기존 애플리케이션 컨테이너 중지 및 제거
+            docker stop tjspring nginx 2>/dev/null || true
+            docker rm -f tjspring nginx 2>/dev/null || true
+
+            # 최신 이미지 다운로드
             docker compose pull tjspring nginx
-            docker compose up -d
+
+            # 애플리케이션 컨테이너만 개별 실행 (ora 건드리지 않음)
+            docker compose up -d --no-recreate --no-deps tjspring nginx
