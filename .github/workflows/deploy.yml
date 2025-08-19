@@ -47,11 +47,15 @@ jobs:
           script: |
             cd /home/ubuntu
 
+            # GitHub Secrets를 EC2에서 사용할 .env 파일로 생성
+            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+
             # 최신 이미지 pull
             docker compose pull
 
-            # Secrets 기반 환경변수 적용 후 컨테이너 재배포
-            DB_USERNAME=${{ secrets.DB_USERNAME }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} docker compose up -d --force-recreate --no-deps studyo tjspring
+            # .env 파일 기반 컨테이너 재배포
+            docker compose up -d --force-recreate --no-deps studyo tjspring
 
             # 사용하지 않는 이미지 제거
             docker image prune -f
