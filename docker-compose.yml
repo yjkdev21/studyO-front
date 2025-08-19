@@ -1,7 +1,9 @@
+version: "3.8"
+
 services:
   nginx:
     container_name: studyo
-    build: ./studyo # Dockerfile 위치
+    image: obama1004/studyo:latest # 빌드된 React + Nginx 이미지
     ports:
       - "80:80"
       - "443:443"
