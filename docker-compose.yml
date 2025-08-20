@@ -1,5 +1,7 @@
+version: "3.9"
+
 services:
-  studyo: # NGINX 컨테이너
+  studyo:
     container_name: studyo
     image: obama1004/studyo:latest
     ports:
@@ -8,17 +10,7 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
-      - reactapp
       - tjspring
-    restart: unless-stopped
-    networks:
-      - app-network
-
-  reactapp: # React 앱 컨테이너
-    container_name: reactapp
-    image: obama1004/studyo:latest
-    expose:
-      - "3000"
     restart: unless-stopped
     networks:
       - app-network
