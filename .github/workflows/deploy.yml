@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: "배포 사유"
+        description: "배포 사유22222"
         required: false
         default: "React studyo & SpringBoot 배포"
 
