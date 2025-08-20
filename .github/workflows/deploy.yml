@@ -25,26 +25,21 @@ jobs:
     steps:
       # 코드 체크아웃
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       # Docker Hub 로그인
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Docker 이미지 빌드
-      - name: Build Docker Images
+      # Docker 이미지 Pull (이미 빌드된 이미지 사용)
+      - name: Pull Docker Images
         run: |
-          docker compose -f docker-compose.yml build --no-cache
-
-      # Docker 이미지 Push
-      - name: Push Docker Images
-        run: |
-          docker compose -f docker-compose.yml push
+          docker compose -f docker-compose.yml pull
 
       # EC2 배포
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ubuntu
@@ -62,74 +57,13 @@ jobs:
             AWS_REGION=${{ secrets.AWS_REGION }}
             EOF
 
-            # Docker Compose 파일이 없으면 다운로드
-            if [ ! -f docker-compose.yml ]; then
-              echo "docker-compose.yml not found, downloading from repository..."
-              curl -o docker-compose.yml https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/docker-compose.yml
-            fi
+            # 애플리케이션 컨테이너만 재시작 (DB 완전 보존)
+            # 기존 애플리케이션 컨테이너 중지 및 제거
+            docker stop tjspring nginx 2>/dev/null || true
+            docker rm -f tjspring nginx 2>/dev/null || true
 
             # 최신 이미지 다운로드
-            docker compose pull
+            docker compose pull tjspring nginx
 
-            # Oracle DB 컨테이너 상태 확인 (절대 재시작하지 않음)
-            if docker ps --format "table {{.Names}}\t{{.Status}}" | grep -q "ora.*Up"; then
-              echo "✅ Oracle DB container is running - will not touch it"
-            else
-              echo "⚠️  WARNING: Oracle DB container is not running"
-              echo "Please check Oracle container status manually"
-              exit 1
-            fi
-
-            # SSL 인증서 상태 확인 (갱신하지 않음, 단순 확인만)
-            if [ -f "/etc/letsencrypt/live/yourdomain.com/fullchain.pem" ]; then
-              echo "✅ SSL certificate found"
-              CERT_EXPIRY=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/yourdomain.com/fullchain.pem | cut -d= -f2)
-              echo "Certificate expires: $CERT_EXPIRY"
-            else
-              echo "❌ SSL certificate not found"
-              exit 1
-            fi
-
-            # 기존 애플리케이션 컨테이너만 안전하게 중지
-            echo "Stopping application containers only (preserving Oracle DB)..."
-            docker stop nginx tjspring studyo 2>/dev/null || true
-            docker rm -f nginx tjspring studyo 2>/dev/null || true
-
-            # 애플리케이션 이미지만 제거 (Oracle 이미지는 절대 건드리지 않음)
-            docker rmi obama1004/studyo:latest 2>/dev/null || true
-            docker rmi obama1004/tjspring:latest 2>/dev/null || true
-
-            # 애플리케이션 컨테이너들만 재시작 (Oracle은 제외)
-            echo "Starting application containers with SSL support..."
-            docker compose up -d nginx tjspring studyo
-
-            # 컨테이너 시작 대기
-            sleep 15
-
-            # SSL 설정 검증
-            echo "Verifying SSL configuration..."
-            if timeout 10 curl -k -f https://localhost:443 >/dev/null 2>&1; then
-              echo "✅ SSL endpoint is responding"
-            else
-              echo "⚠️  SSL endpoint verification failed"
-            fi
-
-            # Oracle DB 연결 테스트
-            echo "Testing Oracle DB connectivity..."
-            if docker exec tjspring timeout 10 nc -z ora 1521 2>/dev/null; then
-              echo "✅ Oracle DB connection successful"
-            else
-              echo "⚠️  Oracle DB connection test failed"
-            fi
-
-            # 사용하지 않는 애플리케이션 이미지만 정리 (Oracle 관련 이미지는 절대 삭제하지 않음)
-            echo "Cleaning up unused application images only..."
-            docker image prune -f --filter "label!=oracle"
-
-            # 최종 컨테이너 상태 확인
-            echo "Final container status:"
-            docker compose ps
-
-            # Oracle DB 상태 재확인
-            echo "Oracle DB final status:"
-            docker ps --filter "name=ora" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            # 애플리케이션 컨테이너만 개별 실행 (ora 건드리지 않음)
+            docker compose up -d --no-recreate --no-deps tjspring nginx
