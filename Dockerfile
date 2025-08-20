@@ -2,19 +2,18 @@
 FROM node:20 AS build
 
 WORKDIR /app
-COPY frontend/ .   # React 프로젝트 폴더 위치
+COPY package*.json ./
 RUN npm install
-RUN npm run build   # build 폴더 생성
+COPY . .
+RUN npm run build
 
 # Stage 2: Serve with NGINX
 FROM nginx:alpine
 
-# React 정적 파일 복사
-COPY --from=build /app/build /usr/share/nginx/html
+# React static files
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# NGINX 설정 복사
+# NGINX configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# 불필요한 start.sh 제거
-# EXPOSE 80 이미 NGINX 이미지에서 열림
 CMD ["nginx", "-g", "daemon off;"]
