@@ -33,11 +33,11 @@ jobs:
       - name: Build & Push Docker images
         run: |
           # studyo (React + NGINX)
-          docker build -t obama1004/studyo:latest
+          docker build -t obama1004/studyo:latest .
           docker push obama1004/studyo:latest
 
           # tjspring (Spring Boot)
-          docker build -t obama1004/tjspring:latest
+          docker build -t obama1004/tjspring:latest .
           docker push obama1004/tjspring:latest
 
       # EC2 배포
