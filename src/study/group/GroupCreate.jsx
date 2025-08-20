@@ -92,17 +92,17 @@ function GroupCreate() {
         }
     };
 
-const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    const handleInputChange = (e) => {
+            const { name, value } = e.target;
 
-        setFormData((prev) => {
-            const newData = { ...prev, [name]: value };
-            if (name === 'studyMode' && value === '온라인') {
-                newData.region = '';
-            }
-            return newData;
-        });
-    };
+            setFormData((prev) => {
+                const newData = { ...prev, [name]: value };
+                if (name === 'studyMode' && value === '온라인') {
+                    newData.region = '';
+                }
+                return newData;
+            });
+        };
 
     const handleFileInputChange = (file) => {
         if (file) {
