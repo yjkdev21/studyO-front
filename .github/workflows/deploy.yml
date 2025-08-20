@@ -72,7 +72,7 @@ jobs:
             docker rmi obama1004/tjspring:latest 2>/dev/null || true
 
             # 최신 이미지 다운로드
-            docker compose pull tjspring studyo
+            docker compose pull nginx tjspring
 
-            # 애플리케이션 컨테이너만 개별 실행 (ora 건드리지 않음)
-            docker compose up -d --no-recreate --no-deps tjspring studyo
+            # docker-compose로 애플리케이션 컨테이너만 실행 (ora 건드리지 않음)
+            docker compose up -d --no-recreate --no-deps nginx tjspring
