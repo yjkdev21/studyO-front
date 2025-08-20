@@ -5,6 +5,7 @@ import { useStudy } from '../../contexts/StudyContext';
 import { useParams } from "react-router-dom";
 import ConfirmModal from '../../users/modal/ConfirmModal';
 import { getProfileImageSrc } from "../../utils/imageUtils";
+import axios from 'axios';
 
 import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname, leaveGroup } from "./studyMemberApi";
 
@@ -27,6 +28,7 @@ export default function StudyMember() {
   // 데이터 관련 상태
   const [userRequests, setUserRequests] = useState([]);
   const [groupMembers, setGroupMembers] = useState([]);
+  const [currentUserInfo, setCurrentUserInfo] = useState(null);
 
   // ref
   const inputRef = useRef(null);
@@ -55,6 +57,20 @@ export default function StudyMember() {
 
   const totalPages = Math.ceil(userRequests.length / itemsPerPage);
 
+  // 프로필 이미지 URL 처리
+  const getDirectProfileImageSrc = () => {
+    const fullPath = currentUserInfo?.profileImageFullPath;
+    const profileImage = currentUserInfo?.profileImage || user?.profileImage;
+    
+    // profileImageFullPath가 있고 완전한 URL인 경우
+    if (fullPath && (fullPath.startsWith('http://') || fullPath.startsWith('https://'))) {
+      return fullPath;
+    }
+    
+    // 기본 처리
+    return getProfileImageSrc(profileImage);
+  };
+
   /* ========== API 호출 함수 ========== */
   // 회원 신청 목록
   const fetchUserRequests = async () => {
@@ -75,6 +91,39 @@ export default function StudyMember() {
       handleApiError(error);
     }
   }
+
+  // 현재 사용자 정보 로드 (최신 프로필 정보 가져오기)
+  const loadCurrentUserInfo = async () => {
+    if (!user?.id) {
+      return;
+    }
+    
+    try {
+      // MyEdit.js와 같은 방식으로 API URL 결정
+      const getApiUrl = () => {
+        if (window.location.protocol === 'https:') {
+          return '';
+        }
+        return import.meta.env.VITE_AWS_API_HOST || '';
+      };
+
+      const apiUrl = getApiUrl();
+      const requestUrl = `${apiUrl}/api/user/${user.id}`;
+
+      const response = await axios.get(requestUrl, {
+        withCredentials: true,
+        timeout: 10000
+      });
+
+      if (response.status === 200 && response.data.success) {
+        setCurrentUserInfo(response.data.data);
+      }
+    } catch (error) {
+      console.error('사용자 정보 로드 실패:', error);
+      // 실패 시 기존 user 정보 사용
+      setCurrentUserInfo(user);
+    }
+  };
 
   // API 에러 처리
   const handleApiError = (error) => {
@@ -98,7 +147,8 @@ export default function StudyMember() {
     try {
       await Promise.all([
         fetchUserRequests(),
-        loadGroupMembers()
+        loadGroupMembers(),
+        loadCurrentUserInfo()
       ]);
     } catch (err) {
       handleApiError(err);
@@ -186,7 +236,6 @@ export default function StudyMember() {
     }
   }, [myMembership]);
 
-
   /** 편집 모드 진입 시 포커스 */
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -194,6 +243,27 @@ export default function StudyMember() {
       inputRef.current.select();
     }
   }, [isEditing]);
+
+  /** 프로필 업데이트 이벤트 감지 */
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      // 이벤트에서 전달받은 사용자 정보로 즉시 업데이트 (경로 중복 처리 제거)
+      if (event.detail) {
+        setCurrentUserInfo(event.detail);
+      }
+      
+      // 멤버 목록도 새로고침
+      loadGroupMembers();
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [user?.id]); // user.id가 변경될 때도 재등록
 
   /* ========== 모달 ========== */
   /** 스터디 탈퇴 핸들러 */
@@ -272,6 +342,15 @@ export default function StudyMember() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  // 프로필 이미지 에러 핸들링
+  const handleImageError = (e) => {
+    e.target.src = '/default-profile.png'; // 기본 이미지로 대체
+  };
+
+  const handleImageLoad = (e) => {
+    // 이미지 로드 성공
+  };
+
   return (
     <div id="study-member">
       {/* 내 정보 */}
@@ -280,7 +359,14 @@ export default function StudyMember() {
         <div className="dashboard-my-info">
           {/* 프로필 이미지 */}
           <div className="profile-image rounded-full overflow-hidden">
-            <img className="w-full block" src={getProfileImageSrc(user?.profileImage)} alt="프로필" />
+            <img 
+              className="w-full block" 
+              src={getDirectProfileImageSrc()} 
+              alt="프로필"
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+              style={{ backgroundColor: '#f0f0f0' }}
+            />
           </div>
 
           {/* 닉네임 */}
@@ -327,7 +413,7 @@ export default function StudyMember() {
                 </div>
               )}
             </div>
-            <p className="text-[#666] !px-2">{user?.introduction}</p>
+            <p className="text-[#666] !px-2">{currentUserInfo?.introduction || user?.introduction}</p>
           </div>
         </div>
       </div>
@@ -360,7 +446,10 @@ export default function StudyMember() {
                 <li key={req.id || idx} className="dashboard-member-list justify-between">
                   <div className="profile-image rounded-full overflow-hidden">
                     <img className="w-full block"
-                      src={getProfileImageSrc(req.profileImage)} alt="프로필" />
+                      src={getProfileImageSrc(req.profileImage)} 
+                      alt="프로필"
+                      onError={handleImageError}
+                      onLoad={handleImageLoad} />
                   </div>
                   <div className="member-info request">
                     <p className="font-bold text-[#333]">{req.nickname}</p>
@@ -401,7 +490,11 @@ export default function StudyMember() {
             groupMembers.map((member, idx) => (
               <li key={member?.id || idx} className={`dashboard-member-list justify-start  ${member?.userId === user?.id ? 'me' : ''}`}>
                 <div className="profile-image rounded-full overflow-hidden">
-                  <img className="w-full block" src={getProfileImageSrc(member?.profileImage)} alt="프로필" />
+                  <img className="w-full block" 
+                    src={getProfileImageSrc(member?.profileImage)} 
+                    alt="프로필"
+                    onError={handleImageError}
+                    onLoad={handleImageLoad} />
                 </div>
                 <div className="member-info">
                   <p className="font-bold text-[#333]">

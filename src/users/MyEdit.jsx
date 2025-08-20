@@ -248,8 +248,19 @@ function MyEdit() {
                     confirmPassword: ''
                 }));
                 
-                // 헤더 컴포넌트에 프로필 업데이트 알림
-                window.dispatchEvent(new CustomEvent('profileUpdated'));
+                // 업데이트된 사용자 정보를 이벤트에 포함하여 전송
+                const updatedUserData = {
+                    id: formData.id,
+                    nickname: formData.nickname.trim(),
+                    introduction: formData.introduction || '',
+                    profileImage: profileImage, // 현재 설정된 프로필 이미지
+                    profileImageFullPath: profileImage // 전체 경로
+                };
+                
+                // 헤더 컴포넌트와 다른 컴포넌트에 프로필 업데이트 알림 (데이터 포함)
+                window.dispatchEvent(new CustomEvent('profileUpdated', {
+                    detail: updatedUserData
+                }));
                 
                 setShowSuccessModal(true);
             }
