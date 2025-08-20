@@ -1,7 +1,5 @@
-version: "3.8"
-
 services:
-  nginx:
+  studyo:
     container_name: studyo
     image: obama1004/studyo:latest # 빌드된 React + Nginx 이미지
     ports:
@@ -11,6 +9,9 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro # SSL 인증서 마운트
     depends_on:
       - tjspring
+    restart: unless-stopped
+    networks:
+      - app-network
 
   tjspring:
     container_name: tjspring
@@ -21,6 +22,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     depends_on:
       - ora
+    restart: unless-stopped
+    networks:
+      - app-network
 
   ora:
     container_name: ora
@@ -30,3 +34,14 @@ services:
       - "8080:8080"
     environment:
       - ORACLE_ALLOW_REMOTE=true
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  oracle_data:
+  oracle_backup:
+
+networks:
+  app-network:
+    driver: bridge

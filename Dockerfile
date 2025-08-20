@@ -1,17 +1,21 @@
-# Stage 1: Build React app
-FROM node:20 AS build
-
-WORKDIR /app
-COPY frontend/ .
-RUN npm install
-RUN npm run build
-
-# Stage 2: Serve with serve
+# Stage 1: Build and Serve React app
 FROM node:20
 
 WORKDIR /app
-COPY --from=build /app/build /app/build
+
+# 패키지 설치
+COPY package*.json ./
+RUN npm install
+
+# 소스 전체 복사 후 빌드
+COPY . .
+RUN npm run build
+
+# serve 설치
 RUN npm install -g serve
 
+# 포트 설정
 EXPOSE 3000
+
+# 컨테이너 시작 명령
 CMD ["serve", "-s", "build", "-l", "3000"]
