@@ -5,8 +5,8 @@ WORKDIR /app
 # package.json과 package-lock.json 먼저 복사 (캐시 최적화)
 COPY package*.json ./
 
-# 의존성 설치
-RUN npm ci --only=production
+# 의존성 설치 (devDependencies 포함)
+RUN npm ci
 
 # 소스 코드 복사
 COPY . .
