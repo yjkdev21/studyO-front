@@ -33,6 +33,16 @@ function MyEdit() {
     // 표시용 사용자 정보
     const [displayUser, setDisplayUser] = useState(null);
 
+    //SSL 환경을 위한 API URL 결정 함수
+    const getApiUrl = () => {
+        // HTTPS 환경(배포)에서는 상대경로 사용
+        if (window.location.protocol === 'https:') {
+            return '';
+        }
+        // HTTP 환경(로컬)에서는 환경변수 사용
+        return import.meta.env.VITE_AWS_API_HOST || '';
+    };
+
     // 컴포넌트 마운트 시 사용자 프로필 로드
     useEffect(() => {
         if (user && isAuthenticated) {
@@ -43,7 +53,8 @@ function MyEdit() {
     // 서버에서 사용자 프로필 정보 로드
     const loadUserProfileFromServer = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_AWS_API_HOST;
+            const apiUrl = getApiUrl();
+            console.log('🔍 [DEBUG] Loading profile with API URL:', apiUrl);
             
             const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
                 withCredentials: true,
@@ -85,6 +96,7 @@ function MyEdit() {
             }
             
         } catch (error) {
+            console.error('Profile load error:', error);
             fallbackToLocalUser();
         }
     };
@@ -167,7 +179,11 @@ function MyEdit() {
     // 수정 확인 및 서버 전송
     const handleConfirm = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_AWS_API_HOST;
+            const apiUrl = getApiUrl();
+            console.log('🔍 [DEBUG] API URL for update:', apiUrl);
+            console.log('🔍 [DEBUG] HTTPS environment:', window.location.protocol === 'https:');
+            console.log('🔍 [DEBUG] Profile image file:', profileImageFile);
+            
             let response;
             
             if (profileImageFile) {
@@ -188,6 +204,8 @@ function MyEdit() {
                 formDataToSend.append('userDto', JSON.stringify(userDto));
                 formDataToSend.append('profileImage', profileImageFile);
 
+                console.log('🔍 [DEBUG] Sending multipart request to:', `${apiUrl}/api/user/update-with-image`);
+
                 response = await axios.put(`${apiUrl}/api/user/update-with-image`, formDataToSend, {
                     withCredentials: true,
                     timeout: 30000
@@ -204,12 +222,16 @@ function MyEdit() {
                     dataToSend.password = formData.newPassword;
                 }
 
+                console.log('🔍 [DEBUG] Sending JSON request to:', `${apiUrl}/api/user/update`);
+
                 response = await axios.put(`${apiUrl}/api/user/update`, dataToSend, {
                     withCredentials: true,
                     headers: { 'Content-Type': 'application/json' },
                     timeout: 10000
                 });
             }
+
+            console.log('🔍 [DEBUG] Response:', response.status, response.data);
 
             if (response.status === 200) {
                 // 수정 완료 후 최신 정보 다시 로드
@@ -233,10 +255,19 @@ function MyEdit() {
             }
             
         } catch (err) {
+            console.error('🔍 [DEBUG] Update error:', err);
+            
             // 에러 상황별 처리
             if (err.response) {
                 const status = err.response.status;
                 const errorData = err.response.data;
+                
+                console.error('🔍 [DEBUG] Error details:', {
+                    status,
+                    statusText: err.response.statusText,
+                    data: errorData,
+                    url: err.response.config?.url
+                });
                 
                 switch (status) {
                     case 401:
@@ -260,8 +291,10 @@ function MyEdit() {
                         alert(defaultErrorMessage);
                 }
             } else if (err.request) {
+                console.error('🔍 [DEBUG] Request error - no response');
                 alert('서버와 연결할 수 없습니다.');
             } else {
+                console.error('🔍 [DEBUG] Setup error:', err.message);
                 alert('프로필 수정 중 오류가 발생했습니다.');
             }
         } finally {
@@ -386,6 +419,7 @@ function MyEdit() {
                             onChange={handleInputChange}
                             className="myedit-field-input"
                             placeholder="새 비밀번호를 입력하세요"
+                            autoComplete="new-password"
                         />
                     </div>
 
@@ -398,6 +432,7 @@ function MyEdit() {
                             onChange={handleInputChange}
                             className="myedit-field-input"
                             placeholder="새 비밀번호를 다시 입력하세요"
+                            autoComplete="new-password"
                         />
                         {/* 비밀번호 불일치 에러 메시지 */}
                         {formData.newPassword && formData.confirmPassword && 
