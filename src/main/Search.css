@@ -291,7 +291,7 @@
   height: 24px;
   fill: #a0a0a0;
   stroke: #a0a0a0;
-  transition: all 0.2s;
+
   stroke-width: 0px;
 }
 .g-bookmark-svg:hover {
