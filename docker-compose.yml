@@ -1,14 +1,24 @@
 services:
-  studyo:
+  studyo: # NGINX 컨테이너
     container_name: studyo
-    image: obama1004/studyo:latest # 빌드된 React + Nginx 이미지
+    image: obama1004/studyo:latest
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro # SSL 인증서 마운트
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
+      - reactapp
       - tjspring
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  reactapp: # React 앱 컨테이너
+    container_name: reactapp
+    image: obama1004/studyo:latest
+    expose:
+      - "3000"
     restart: unless-stopped
     networks:
       - app-network
@@ -37,10 +47,6 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-
-volumes:
-  oracle_data:
-  oracle_backup:
 
 networks:
   app-network:
