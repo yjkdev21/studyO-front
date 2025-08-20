@@ -1,4 +1,4 @@
-name: CI/CD Pipeline (HTTPS)
+name: CI/CD Pipeline
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       reason:
         description: "배포 사유"
         required: false
-        default: "React studyo & SpringBoot 배포 (HTTPS)"
+        default: "React studyo & SpringBoot 배포"
 
 permissions:
   contents: read
@@ -23,21 +23,21 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-      # 1. 코드 체크아웃
+      # 코드 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      # 2. Docker Hub 로그인
+      # Docker Hub 로그인
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 3. Docker 이미지 Pull (애플리케이션만)
+      # Docker 이미지 Pull (이미 빌드된 이미지 사용)
       - name: Pull Docker Images
         run: |
-          docker compose -f docker-compose.yml pull tjspring studyo
+          docker compose -f docker-compose.yml pull
 
-      # 4. EC2 배포
+      # EC2 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
@@ -55,17 +55,18 @@ jobs:
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION=${{ secrets.AWS_REGION }}
-            VITE_HTTPS=true
-            VITE_SSL_KEY_PATH=/etc/letsencrypt/live/www.studyo.r-e.kr/privkey.pem
-            VITE_SSL_CERT_PATH=/etc/letsencrypt/live/www.studyo.r-e.kr/fullchain.pem
             EOF
 
-            # 기존 애플리케이션 컨테이너 중지 및 제거 (DB는 그대로)
+            # 애플리케이션 컨테이너만 재시작 (DB 완전 보존)
+            # 기존 애플리케이션 컨테이너 중지 및 제거
             docker stop tjspring studyo 2>/dev/null || true
             docker rm -f tjspring studyo 2>/dev/null || true
+
+            # 기존 이미지 삭제 (강제 업데이트)
+            docker rmi obama1004/tjspring:latest obama1004/studyo:latest 2>/dev/null || true
 
             # 최신 이미지 다운로드
             docker compose pull tjspring studyo
 
-            # 애플리케이션 컨테이너 실행 (HTTPS 적용)
+            # 애플리케이션 컨테이너만 개별 실행 (ora 건드리지 않음)
             docker compose up -d --no-recreate --no-deps tjspring studyo

@@ -1,59 +1,32 @@
-version: "3.9"
+version: "3.8"
 
 services:
-  ora:
-    image: container-registry.oracle.com/database/express:21.3.0-xe
-    container_name: ora
-    environment:
-      - ORACLE_PWD=${DB_PASSWORD}
-      - ORACLE_CHARACTERSET=AL32UTF8
+  nginx:
+    container_name: studyo
+    image: obama1004/studyo:latest # 빌드된 React + Nginx 이미지
     ports:
-      - "1521:1521"
-      - "5500:5500"
+      - "80:80"
+      - "443:443"
     volumes:
-      - oracle_data:/opt/oracle/oradata
-      - oracle_backup:/opt/oracle/backup
-    restart: unless-stopped
-    networks:
-      - app-network
+      - /etc/letsencrypt:/etc/letsencrypt:ro # SSL 인증서 마운트
+    depends_on:
+      - tjspring
 
   tjspring:
-    image: obama1004/tjspring:latest
     container_name: tjspring
+    image: obama1004/tjspring:latest
     environment:
       - SPRING_DATASOURCE_URL=${DB_URL}
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION}
-      - SERVER_PORT=8081
-    ports:
-      - "8081:8081"
     depends_on:
       - ora
-    restart: unless-stopped
-    networks:
-      - app-network
 
-  studyo:
-    build: .
-    container_name: studyo
+  ora:
+    container_name: ora
+    image: oracleinanutshell/oracle-xe-11g
     ports:
-      - "3000:3000"
+      - "1521:1521"
+      - "8080:8080"
     environment:
-      - NODE_ENV=production
-      - VITE_API_URL=https://tjspring:8081
-    depends_on:
-      - tjspring
-    restart: unless-stopped
-    networks:
-      - app-network
-
-volumes:
-  oracle_data:
-  oracle_backup:
-
-networks:
-  app-network:
-    driver: bridge
+      - ORACLE_ALLOW_REMOTE=true
