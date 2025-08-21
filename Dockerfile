@@ -1,20 +1,23 @@
-# Stage 1: Build React app
+# Stage 1: React build
 FROM node:20 AS build
-
 WORKDIR /app
-COPY frontend/ .   # React 프로젝트 폴더 위치
-RUN npm install
-RUN npm run build   # build 폴더 생성
 
-# Stage 2: Serve with NGINX
+# package.json과 package-lock.json 먼저 복사 (캐시 최적화)
+COPY package*.json ./
+
+# 의존성 설치 (devDependencies 포함)
+RUN npm ci
+
+# 소스 코드 복사
+COPY . .
+
+# React 앱 빌드 및 결과 확인
+RUN npm run build && ls -la /app/dist/
+
+# Stage 2: NGINX serve
 FROM nginx:alpine
-
-# React 정적 파일 복사
-COPY --from=build /app/build /usr/share/nginx/html
-
-# NGINX 설정 복사
+COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# 불필요한 start.sh 제거
-# EXPOSE 80 이미 NGINX 이미지에서 열림
+EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]

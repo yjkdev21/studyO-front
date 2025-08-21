@@ -24,18 +24,15 @@ export default function GroupDetail() {
 
         // thumbnailFullPath가 있으면 S3 URL 사용
         if (group.thumbnailFullPath && !group.thumbnailFullPath.includes('default')) {
-            console.log('S3 썸네일 URL 사용:', group.thumbnailFullPath);
             return group.thumbnailFullPath;
         }
 
         // thumbnail 필드만 있는 경우 (기존 호환성)
         if (group.thumbnail && !group.thumbnail.includes('default')) {
-            console.log('썸네일 필드 사용:', group.thumbnail);
             return group.thumbnail;
         }
 
         // 기본 이미지
-        console.log('기본 썸네일 이미지 사용');
         return '/images/default-thumbnail.png';
     };
 
@@ -98,12 +95,9 @@ export default function GroupDetail() {
 
                         // URL 접근 가능성 테스트
                         const img = new Image();
-                        img.onload = () => console.log('썸네일 이미지 로드 성공!');
                         img.onerror = () => console.log('썸네일 이미지 로드 실패!');
                         img.src = groupData.thumbnailFullPath;
-                    } else {
-                        console.log('기본 썸네일 이미지 사용');
-                    }
+                    } 
                 } else {
                     setGroup(null);
                 }
@@ -202,8 +196,8 @@ export default function GroupDetail() {
                 {isOwner() && (
                     <>
                     <Link to="/study/postMain" className="btn btn-secondary">
-                    홍보글 관리
-                </Link>
+                        홍보글 관리
+                    </Link>
                         <Link to={`/groupUpdate/${group.groupId}`} className="btn btn-primary">
                             수정
                         </Link>

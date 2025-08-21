@@ -17,7 +17,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [hasLoginError, setHasLoginError] = useState(false);
 
-  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+  const { isAuthenticated, isLoading, login } = useAuth();
 
   // 로그인된 사용자 리다이렉트 처리
   useEffect(() => {
@@ -27,11 +27,17 @@ export default function Login() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // 페이지 로드 후 초기화
+  useEffect(() => {
+    if (location.state?.fromSignup) {
+      navigate(location.pathname, { replace: true });
+    }
+  }, []);
+
   // 로딩 중이거나 이미 로그인된 상태라면 아무것도 렌더링하지 않음
   if (isLoading || isAuthenticated) {
     return null; // 또는 로딩 스피너
   }
-
 
   // 입력값 변경 처리
   const handleInputChange = (e) => {
@@ -74,22 +80,6 @@ export default function Login() {
     setIsSubmitting(false);
   };
 
-  // 페이지 로드 후 초기화
-  useEffect(() => {
-    if (location.state?.fromSignup) {
-      window.history.replaceState({}, document.title);
-    }
-  }, []);
-
-  // 로그아웃 핸들
-  const handleLogout = async () => {
-    const confirmed = window.confirm("로그아웃 하시겠습니까?");
-    if (!confirmed) return;
-
-    alert("로그아웃되었습니다.");
-    const result = await logout();
-    setMessage(result.message);
-  };
 
   return (
     <main>

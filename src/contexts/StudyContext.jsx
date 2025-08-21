@@ -95,7 +95,7 @@ export const StudyProvider = ({ children, groupId }) => {
     if (writerId && memberNicknames[writerId]) {
       return memberNicknames[writerId];
     }
-    return '사용자';
+    return '(알 수 없음)';
   };
 
   const getProfileImageUrl = (post) => {

@@ -85,6 +85,8 @@ function Search() {
   const { user, isAuthenticated } = useAuth();
   const debounceTimer = useRef(null);
   const scrollPositionRef = useRef(0);
+  const searchInputRef = useRef(null);
+  const isInitialLoad = useRef(true); // 💡 추가: 초기 로드 상태를 추적하는 Ref
 
   const initialCategoryFromHeader = location.state?.category || "전체";
 
@@ -295,9 +297,16 @@ function Search() {
     currentCategory,
     currentSearch
   ) => {
-    // 검색 시작 시 스크롤 위치 저장
-    if (!isSearching && currentSearch.trim() !== "") {
+    // 👇 이 부분을 수정했어요!
+    // 검색창에 직접 입력했을 때만 스크롤 위치 저장
+    if (document.activeElement === searchInputRef.current) {
       scrollPositionRef.current = window.scrollY;
+    } else {
+      // 드롭다운 필터 변경 시 스크롤을 맨 위로 올립니다.
+      // 이 경우 스크롤 위치를 0으로 초기화하여 포커스 로직이 실행되지 않도록 합니다.
+      scrollPositionRef.current = 0;
+      setCurrentPage(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     setIsSearching(true);
@@ -321,7 +330,6 @@ function Search() {
       setIsLoading(false);
       setIsSearching(false);
       setIsInitialLoading(false);
-      setCurrentPage(1);
     } catch (err) {
       setError("데이터를 불러오는 데 실패했습니다.");
       setIsLoading(false);
@@ -331,12 +339,24 @@ function Search() {
     }
   };
 
-  // 🚨 스크롤 위치 복원 로직
-  // `isSearching` 상태가 `true`에서 `false`로 변경될 때만 실행
   useEffect(() => {
+    // `isInitialLoad`를 사용해 초기 렌더링 시에는 아무것도 하지 않습니다.
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // 검색이 완료되었고, 동시에 검색창에 입력이 있었을 때만 포커스 로직 실행
+    // `scrollPositionRef.current > 0` 조건은 검색창 입력으로 스크롤이 이동했을 때만 true가 됩니다.
     if (!isSearching && scrollPositionRef.current > 0) {
+      // 검색 완료 후 커서 포커스
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+      // 스크롤 위치 복원 (검색창에서 검색했을 때만)
       window.scrollTo(0, scrollPositionRef.current);
-      scrollPositionRef.current = 0; // 스크롤 복원 후 초기화
+      // 복원 후 값 초기화
+      scrollPositionRef.current = 0;
     }
   }, [isSearching]);
 
@@ -353,8 +373,8 @@ function Search() {
       clearTimeout(debounceTimer.current);
     }
 
-    if (searchQuery.trim() === "") {
-      fetchDataWithFilters(filters, categoryFilter, searchQuery);
+    // 검색어가 2자 미만이거나 비어있지 않을 때만 실행
+    if (searchQuery.length > 0 && searchQuery.length < 2) {
       return;
     }
 
@@ -854,6 +874,7 @@ function Search() {
                 className="g-search-input"
                 value={searchQuery}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
+                ref={searchInputRef}
               />
             </div>
           </div>
@@ -871,10 +892,6 @@ function Search() {
       ) : error ? (
         <div className="g-error-message">
           <p>{error}</p>
-        </div>
-      ) : error ? (
-        <div className="g-error-message">
-                    <p>{error}</p>       {" "}
         </div>
       ) : (
         <div className="g-main-content">
