@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import "./Search.css";
 
-// Dropdown 컴포넌트는 기존과 동일
+
 const Dropdown = ({ options, value, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -297,13 +297,13 @@ function Search() {
     currentCategory,
     currentSearch
   ) => {
-    // 👇 이 부분을 수정했어요!
+    
     // 검색창에 직접 입력했을 때만 스크롤 위치 저장
     if (document.activeElement === searchInputRef.current) {
       scrollPositionRef.current = window.scrollY;
     } else {
-      // 드롭다운 필터 변경 시 스크롤을 맨 위로 올립니다.
-      // 이 경우 스크롤 위치를 0으로 초기화하여 포커스 로직이 실행되지 않도록 합니다.
+  
+      // 스크롤 위치를 0으로 초기화하여 포커스 로직
       scrollPositionRef.current = 0;
       setCurrentPage(1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -340,34 +340,32 @@ function Search() {
   };
 
   useEffect(() => {
-    // `isInitialLoad`를 사용해 초기 렌더링 시에는 아무것도 하지 않습니다.
+  
     if (isInitialLoad.current) {
       isInitialLoad.current = false;
       return;
     }
 
-    // 검색이 완료되었고, 동시에 검색창에 입력이 있었을 때만 포커스 로직 실행
-    // `scrollPositionRef.current > 0` 조건은 검색창 입력으로 스크롤이 이동했을 때만 true가 됩니다.
     if (!isSearching && scrollPositionRef.current > 0) {
-      // 검색 완료 후 커서 포커스
+   
       if (searchInputRef.current) {
         searchInputRef.current.focus();
       }
-      // 스크롤 위치 복원 (검색창에서 검색했을 때만)
+     
       window.scrollTo(0, scrollPositionRef.current);
-      // 복원 후 값 초기화
+   
       scrollPositionRef.current = 0;
     }
   }, [isSearching]);
 
-  // Effect 1: 카테고리/드롭다운 필터 변경 시 실행
+ 
   useEffect(() => {
     if (!isInitialLoading) {
       fetchDataWithFilters(filters, categoryFilter, searchQuery);
     }
   }, [filters, categoryFilter, isAuthenticated, user?.id]);
 
-  // Effect 2: 검색어 입력 시 디바운싱 적용
+ 
   useEffect(() => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
