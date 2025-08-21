@@ -19,6 +19,7 @@ import {
 import "./StudyMember.css";
 
 export default function StudyMember() {
+  const host = import.meta.env.VITE_AWS_API_HOST;
   const { user } = useAuth();
   const { groupId } = useParams();
   const { studyInfo } = useStudy();
@@ -109,12 +110,7 @@ export default function StudyMember() {
     }
 
     try {
-      const getApiUrl = () => {
-        return import.meta.env.VITE_AWS_API_HOST; // 이거로 local , webserver 자동전환 되니까 이렇게 쓰시면 됩니다.
-      };
-
-      const apiUrl = getApiUrl();
-      const requestUrl = `${apiUrl}/api/user/${user.id}`;
+      const requestUrl = `${host}/api/user/${user.id}`;
 
       const response = await axios.get(requestUrl, {
         withCredentials: true,

@@ -32,16 +32,7 @@ function MyEdit() {
 
   // 표시용 사용자 정보
   const [displayUser, setDisplayUser] = useState(null);
-
-  //SSL 환경을 위한 API URL 결정 함수
-  const getApiUrl = () => {
-    // // HTTPS 환경(배포)에서는 8081 포트 사용
-    // if (window.location.protocol === 'https:') {
-    //     return 'https://www.studyo.r-e.kr:8081';
-    // }
-    // local , webserver 에 따라 env , env.development 로 자동 전환되는 환경변수.
-    return import.meta.env.VITE_AWS_API_HOST;
-  };
+  const host = import.meta.env.VITE_AWS_API_HOST;
 
   // 컴포넌트 마운트 시 사용자 프로필 로드
   useEffect(() => {
@@ -53,10 +44,9 @@ function MyEdit() {
   // 서버에서 사용자 프로필 정보 로드
   const loadUserProfileFromServer = async () => {
     try {
-      const apiUrl = getApiUrl();
-      console.log("🔍 [DEBUG] Loading profile with API URL:", apiUrl);
+      //console.log("🔍 [DEBUG] Loading profile with API URL:", host);
 
-      const response = await axios.get(`${apiUrl}/api/user/${user.id}`, {
+      const response = await axios.get(`${host}/api/user/${user.id}`, {
         withCredentials: true,
         timeout: 10000,
       });
@@ -183,8 +173,7 @@ function MyEdit() {
   // 수정 확인 및 서버 전송
   const handleConfirm = async () => {
     try {
-      const apiUrl = getApiUrl();
-      console.log("🔍 [DEBUG] API URL for update:", apiUrl);
+      //console.log("🔍 [DEBUG] API URL for update:", apiUrl);
       console.log(
         "🔍 [DEBUG] HTTPS environment:",
         window.location.protocol === "https:"
@@ -213,11 +202,11 @@ function MyEdit() {
 
         console.log(
           "🔍 [DEBUG] Sending multipart request to:",
-          `${apiUrl}/api/user/update-with-image`
+          `${host}/api/user/update-with-image`
         );
 
         response = await axios.put(
-          `${apiUrl}/api/user/update-with-image`,
+          `${host}/api/user/update-with-image`,
           formDataToSend,
           {
             withCredentials: true,
@@ -238,10 +227,10 @@ function MyEdit() {
 
         console.log(
           "🔍 [DEBUG] Sending JSON request to:",
-          `${apiUrl}/api/user/update`
+          `${host}/api/user/update`
         );
 
-        response = await axios.put(`${apiUrl}/api/user/update`, dataToSend, {
+        response = await axios.put(`${host}/api/user/update`, dataToSend, {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
           timeout: 10000,
