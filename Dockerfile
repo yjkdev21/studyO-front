@@ -12,6 +12,7 @@ RUN npm ci
 COPY . .
 
 # React 앱 빌드 및 결과 확인
+RUN npm install
 RUN npm run build && ls -la /app/dist/
 
 # Stage 2: NGINX serve
