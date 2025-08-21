@@ -1,13 +1,9 @@
 import React, { useState, useCallback } from "react";
 import axios from "axios";
-// ⚠️ 1. useNavigate 훅 import
 import { useNavigate } from "react-router-dom";
 
 function Join() {
-  // ⚠️ 2. useNavigate 훅 사용
   const navigate = useNavigate();
-
-  // host 설정 개선
   const host = import.meta.env.VITE_AWS_API_HOST;
 
   const [form, setForm] = useState({
@@ -28,7 +24,7 @@ function Join() {
 
   // 검증 상태 추가
   const [validationStatus, setValidationStatus] = useState({
-    userId: null, // null, 'checking', 'valid', 'invalid'
+    userId: null,
     nickname: null,
     password: null,
     passwordCheck: null,
@@ -39,14 +35,11 @@ function Join() {
   const validatePassword = (password) =>
     password.length >= 8 && password.length <= 16;
 
-  // ⚠️ 추가된 아이디 유효성 검사 함수
   const validateUserId = (userId) => {
-    // 5~20자의 영문 소문자, 숫자, 특수기호(_),(-)만 허용
     const regex = /^[a-z0-9_-]{5,20}$/;
     return regex.test(userId);
   };
 
-  // 체크 아이콘 SVG 컴포넌트
   const CheckIcon = () => (
     <svg
       width="20"
@@ -83,7 +76,7 @@ function Join() {
   // 아이디 중복 검사
   const checkUserId = useCallback(
     debounce(async (userId) => {
-      // ⚠️ 유효성 검사 추가
+      // 유효성 검사 추가
       if (!validateUserId(userId)) {
         setMessages((prev) => ({
           ...prev,
@@ -170,7 +163,6 @@ function Join() {
 
     switch (name) {
       case "userId":
-        // ⚠️ 기존 한글 검사 대신 새로운 아이디 유효성 검사 함수 호출
         if (value.trim() && !validateUserId(value.trim())) {
           setMessages((prev) => ({
             ...prev,
@@ -187,7 +179,6 @@ function Join() {
         break;
 
       case "email":
-        // 이메일 앞부분 추출
         const localPart = value.split("@")[0] || "";
         if (hasKorean(localPart)) {
           setMessages((prev) => ({
@@ -210,7 +201,6 @@ function Join() {
         }
         break;
 
-      // 기존 password, passwordCheck, nickname 처리 그대로 유지
       case "nickname":
         if (value.trim()) {
           checkNickname(value.trim());
@@ -264,7 +254,7 @@ function Join() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ⚠️ 최종 아이디 유효성 검사 추가
+    // 최종 아이디 유효성 검사 추가
     if (!validateUserId(form.userId.trim())) {
       alert(
         "아이디는 5~20자의 영문 소문자, 숫자, 특수기호(_),(-)만 사용 가능합니다."
@@ -272,7 +262,7 @@ function Join() {
       return;
     }
 
-    // 한글 포함 추가 검사 (기존 로직 유지)
+    // 한글 포함 추가 검사
     if (hasKorean(form.email.split("@")[0])) {
       alert("이메일 앞부분에 한글은 사용할 수 없습니다.");
       return;
@@ -304,19 +294,14 @@ function Join() {
       return;
     }
 
-    // ⚠️ 아이디 유효성 상태 확인
+    // 아이디 유효성 상태 확인
     if (validationStatus.userId !== "valid") {
       alert("아이디를 다시 확인해주세요.");
       return;
     }
 
     try {
-      console.log("회원가입 요청 시작:", {
-        host,
-        form: { ...form, password: "***" },
-      });
-
-      // 최종 서버 중복 확인 (보안상 한 번 더 확인)
+      // 최종 서버 중복 확인
       const [idRes, nickRes] = await Promise.all([
         axios.get(`${host}/api/user/check-id?userId=${form.userId}`),
         axios.get(`${host}/api/user/check-nickname?nickname=${form.nickname}`),
@@ -343,8 +328,6 @@ function Join() {
         isDeleted: "N",
         globalRole: "USER",
       });
-
-      console.log("회원가입 응답:", res.data);
 
       if (res.data === "success") {
         alert("회원가입이 완료되었습니다!");
@@ -405,7 +388,7 @@ function Join() {
       msg.includes("이미 사용 중") ||
       msg.includes("일치하지") ||
       msg.includes("올바르지") ||
-      msg.includes("사용 가능합니다.") || // ⚠️ 추가된 오류 메시지
+      msg.includes("사용 가능합니다.") ||
       msg.includes("서버 오류")
         ? "red"
         : msg.includes("사용 가능한") || msg.includes("올바른 이메일")
