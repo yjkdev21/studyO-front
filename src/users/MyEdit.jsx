@@ -35,9 +35,9 @@ function MyEdit() {
 
     //SSL 환경을 위한 API URL 결정 함수
     const getApiUrl = () => {
-        // HTTPS 환경(배포)에서는 상대경로 사용
+        // HTTPS 환경(배포)에서는 8081 포트 사용
         if (window.location.protocol === 'https:') {
-            return '';
+            return 'https://www.studyo.r-e.kr:8081';
         }
         // HTTP 환경(로컬)에서는 환경변수 사용
         return import.meta.env.VITE_AWS_API_HOST || '';

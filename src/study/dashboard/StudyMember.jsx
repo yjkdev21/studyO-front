@@ -102,7 +102,7 @@ export default function StudyMember() {
       // MyEdit.js와 같은 방식으로 API URL 결정
       const getApiUrl = () => {
         if (window.location.protocol === 'https:') {
-          return '';
+          return 'https://www.studyo.r-e.kr:8081';
         }
         return import.meta.env.VITE_AWS_API_HOST || '';
       };
