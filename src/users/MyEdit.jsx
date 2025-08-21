@@ -9,6 +9,7 @@ function MyEdit() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const defaultProfileImageSrc = "/images/default-profile.png";
+  const host = import.meta.env.VITE_AWS_API_HOST;
 
   // 폼 데이터 상태
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ function MyEdit() {
     profileImage: null,
   });
 
-  // 프로필 이미지 관련 상태
+  // 프로필 이미지 상태
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [isImageChanged, setIsImageChanged] = useState(false);
@@ -32,20 +33,10 @@ function MyEdit() {
 
   // 표시용 사용자 정보
   const [displayUser, setDisplayUser] = useState(null);
-  const host = import.meta.env.VITE_AWS_API_HOST;
-
-  // 컴포넌트 마운트 시 사용자 프로필 로드
-  useEffect(() => {
-    if (user && isAuthenticated) {
-      loadUserProfileFromServer();
-    }
-  }, [user, isAuthenticated]);
 
   // 서버에서 사용자 프로필 정보 로드
   const loadUserProfileFromServer = async () => {
     try {
-      //console.log("🔍 [DEBUG] Loading profile with API URL:", host);
-
       const response = await axios.get(`${host}/api/user/${user.id}`, {
         withCredentials: true,
         timeout: 10000,
@@ -66,16 +57,14 @@ function MyEdit() {
         });
 
         // 프로필 이미지 설정
-        const imageToSet =
-          serverUser.profileImageFullPath || defaultProfileImageSrc;
+        const imageToSet = serverUser.profileImageFullPath || defaultProfileImageSrc;
         setProfileImage(imageToSet);
 
         // 표시용 사용자 정보 업데이트
         const updatedUser = {
           ...user,
           ...serverUser,
-          profileImage:
-            serverUser.profileImageFullPath || defaultProfileImageSrc,
+          profileImage: serverUser.profileImageFullPath || defaultProfileImageSrc,
         };
         setDisplayUser(updatedUser);
 
@@ -86,7 +75,6 @@ function MyEdit() {
         fallbackToLocalUser();
       }
     } catch (error) {
-      console.error("Profile load error:", error);
       fallbackToLocalUser();
     }
   };
@@ -173,13 +161,6 @@ function MyEdit() {
   // 수정 확인 및 서버 전송
   const handleConfirm = async () => {
     try {
-      //console.log("🔍 [DEBUG] API URL for update:", apiUrl);
-      console.log(
-        "🔍 [DEBUG] HTTPS environment:",
-        window.location.protocol === "https:"
-      );
-      console.log("🔍 [DEBUG] Profile image file:", profileImageFile);
-
       let response;
 
       if (profileImageFile) {
@@ -199,11 +180,6 @@ function MyEdit() {
 
         formDataToSend.append("userDto", JSON.stringify(userDto));
         formDataToSend.append("profileImage", profileImageFile);
-
-        console.log(
-          "🔍 [DEBUG] Sending multipart request to:",
-          `${host}/api/user/update-with-image`
-        );
 
         response = await axios.put(
           `${host}/api/user/update-with-image`,
@@ -225,19 +201,12 @@ function MyEdit() {
           dataToSend.password = formData.newPassword;
         }
 
-        console.log(
-          "🔍 [DEBUG] Sending JSON request to:",
-          `${host}/api/user/update`
-        );
-
         response = await axios.put(`${host}/api/user/update`, dataToSend, {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
           timeout: 10000,
         });
       }
-
-      console.log("🔍 [DEBUG] Response:", response.status, response.data);
 
       if (response.status === 200) {
         // 수정 완료 후 최신 정보 다시 로드
@@ -259,11 +228,11 @@ function MyEdit() {
           id: formData.id,
           nickname: formData.nickname.trim(),
           introduction: formData.introduction || "",
-          profileImage: profileImage, // 현재 설정된 프로필 이미지
-          profileImageFullPath: profileImage, // 전체 경로
+          profileImage: profileImage,
+          profileImageFullPath: profileImage,
         };
 
-        // 헤더 컴포넌트와 다른 컴포넌트에 프로필 업데이트 알림 (데이터 포함)
+        // 헤더 컴포넌트와 다른 컴포넌트에 프로필 업데이트 알림
         window.dispatchEvent(
           new CustomEvent("profileUpdated", {
             detail: updatedUserData,
@@ -273,19 +242,10 @@ function MyEdit() {
         setShowSuccessModal(true);
       }
     } catch (err) {
-      console.error("🔍 [DEBUG] Update error:", err);
-
       // 에러 상황별 처리
       if (err.response) {
         const status = err.response.status;
         const errorData = err.response.data;
-
-        console.error("🔍 [DEBUG] Error details:", {
-          status,
-          statusText: err.response.statusText,
-          data: errorData,
-          url: err.response.config?.url,
-        });
 
         switch (status) {
           case 401:
@@ -311,10 +271,8 @@ function MyEdit() {
             alert(defaultErrorMessage);
         }
       } else if (err.request) {
-        console.error("🔍 [DEBUG] Request error - no response");
         alert("서버와 연결할 수 없습니다.");
       } else {
-        console.error("🔍 [DEBUG] Setup error:", err.message);
         alert("프로필 수정 중 오류가 발생했습니다.");
       }
     } finally {
@@ -333,15 +291,24 @@ function MyEdit() {
     navigate("/mypage");
   };
 
-  // 수정 취소 및 초기화 후 마이페이지로 이동
+  // 수정 취소 및 마이페이지로 이동
   const handleCancel = () => {
     navigate("/mypage");
   };
 
-  // 이미지 로드 실패 시 기본 이미지로 대체
+  /**
+   * 이미지 로드 실패 시 기본 이미지로 대체
+   */
   const handleImageError = (e) => {
     e.target.src = defaultProfileImageSrc;
   };
+
+  // 컴포넌트 마운트 시 사용자 프로필 로드
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      loadUserProfileFromServer();
+    }
+  }, [user, isAuthenticated]);
 
   // 로딩 중 화면
   if (isLoading) {
@@ -399,9 +366,7 @@ function MyEdit() {
           {/* 새 이미지 선택 상태 표시 */}
           {profileImageFile && (
             <div className="myedit-image-status">
-              <small style={{ color: "#007bff" }}>
                 새 이미지가 선택되었습니다: {profileImageFile.name}
-              </small>
             </div>
           )}
         </div>

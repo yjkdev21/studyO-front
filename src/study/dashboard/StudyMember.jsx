@@ -23,10 +23,8 @@ export default function StudyMember() {
   const { user } = useAuth();
   const { groupId } = useParams();
   const { studyInfo } = useStudy();
-
   const navigate = useNavigate();
 
-  /* ========== 상태 관리 ========== */
   // 닉네임 관련 상태
   const [nickname, setNickname] = useState("");
   const [tempNickname, setTempNickname] = useState("");
@@ -38,7 +36,7 @@ export default function StudyMember() {
   const [groupMembers, setGroupMembers] = useState([]);
   const [currentUserInfo, setCurrentUserInfo] = useState(null);
 
-  // ref
+  // DOM 참조
   const inputRef = useRef(null);
 
   // 모달 관련 상태
@@ -47,7 +45,7 @@ export default function StudyMember() {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
-  // 현재 사용자 멤버십 정보
+  // 현재 사용자의 멤버십 정보
   const myMembership = useMemo(() => {
     return groupMembers.find((member) => member?.userId === user?.id);
   }, [groupMembers, user?.id]);
@@ -65,12 +63,12 @@ export default function StudyMember() {
 
   const totalPages = Math.ceil(userRequests.length / itemsPerPage);
 
-  // 프로필 이미지 URL 처리
+  // 직접 프로필 이미지 URL 반환
   const getDirectProfileImageSrc = () => {
     const fullPath = currentUserInfo?.profileImageFullPath;
     const profileImage = currentUserInfo?.profileImage || user?.profileImage;
 
-    // profileImageFullPath가 있고 완전한 URL인 경우
+    // 완전한 URL인 경우 그대로 반환
     if (
       fullPath &&
       (fullPath.startsWith("http://") || fullPath.startsWith("https://"))
@@ -78,12 +76,10 @@ export default function StudyMember() {
       return fullPath;
     }
 
-    // 기본 처리
     return getProfileImageSrc(profileImage);
   };
 
-  /* ========== API 호출 함수 ========== */
-  // 회원 신청 목록
+  // 회원 신청 목록 불러오기
   const fetchUserRequests = async () => {
     try {
       const data = await getUserRequests(groupId);
@@ -93,7 +89,7 @@ export default function StudyMember() {
     }
   };
 
-  // 그룹 멤버 목록
+  // 그룹 멤버 목록 불러오기
   const loadGroupMembers = async () => {
     try {
       const data = await fetchGroupMembers(groupId);
@@ -103,7 +99,7 @@ export default function StudyMember() {
     }
   };
 
-  // 현재 사용자 정보 로드 (최신 프로필 정보 가져오기)
+  // 현재 사용자 정보 불러오기
   const loadCurrentUserInfo = async () => {
     if (!user?.id) {
       return;
@@ -111,7 +107,6 @@ export default function StudyMember() {
 
     try {
       const requestUrl = `${host}/api/user/${user.id}`;
-
       const response = await axios.get(requestUrl, {
         withCredentials: true,
         timeout: 10000,
@@ -121,7 +116,6 @@ export default function StudyMember() {
         setCurrentUserInfo(response.data.data);
       }
     } catch (error) {
-      console.error("사용자 정보 로드 실패:", error);
       // 실패 시 기존 user 정보 사용
       setCurrentUserInfo(user);
     }
@@ -147,7 +141,7 @@ export default function StudyMember() {
     }
   };
 
-  // 데이터 리로드
+  // 전체 데이터 새로고침
   const reloadData = async () => {
     if (!groupId) return;
     try {
@@ -161,15 +155,13 @@ export default function StudyMember() {
     }
   };
 
-  /* ========== 닉네임 수정 관련 ========== */
-
-  /** 닉네임 수정 모드 */
+  // 닉네임 수정 모드 진입
   const handleEditClick = () => {
     setTempNickname(nickname);
     setIsEditing(true);
   };
 
-  /** 엔터키 처리 */
+  // 엔터키로 닉네임 저장
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -177,101 +169,42 @@ export default function StudyMember() {
     }
   };
 
-  /** 닉네임 저장 */
+  // 닉네임 저장
   const handleSaveClick = async () => {
     try {
       const result = await updateNickname(groupId, tempNickname);
 
-      // 성공 시 UI 업데이트
       setNickname(tempNickname);
       setIsEditing(false);
       clearSelection();
 
       alert(result.message || "닉네임이 성공적으로 수정되었습니다.");
-
-      // 멤버 목록 새로고침
       await loadGroupMembers();
     } catch (error) {
-      console.error("닉네임 수정 실패:", error);
-
-      // 에러 메시지 표시
       if (error.response?.data?.error) {
         alert(error.response.data.error);
       } else {
         alert("닉네임 수정에 실패했습니다.");
       }
 
-      // 실패 시 원래 닉네임으로 되돌리기
       setTempNickname(nickname);
     }
   };
 
-  /** 닉네임 수정 취소 */
+  // 닉네임 수정 취소
   const handleCancelClick = () => {
     setTempNickname(nickname);
     setIsEditing(false);
     clearSelection();
   };
 
-  // 선택 해제
+  // 텍스트 선택 해제
   const clearSelection = () => {
     const selection = window.getSelection();
     if (selection?.rangeCount > 0) selection.removeAllRanges();
   };
 
-  /** 마운트/GroupId 변경 시 신청 목록 불러오기 */
-  useEffect(() => {
-    reloadData();
-  }, [groupId]);
-
-  // userRequests가 변경되고 현재 페이지가 유효하지 않을 때만 초기화
-  useEffect(() => {
-    const maxPage = Math.ceil(userRequests.length / itemsPerPage) || 1;
-    if (currentPage > maxPage) {
-      setCurrentPage(1);
-    }
-  }, [userRequests, currentPage, itemsPerPage]);
-
-  // 닉네임 로드
-  useEffect(() => {
-    if (myMembership?.nickname) {
-      setNickname(myMembership.nickname);
-      setTempNickname(myMembership.nickname);
-      setMemberId(myMembership.id);
-    }
-  }, [myMembership]);
-
-  /** 편집 모드 진입 시 포커스 */
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  /** 프로필 업데이트 이벤트 감지 */
-  useEffect(() => {
-    const handleProfileUpdate = (event) => {
-      // 이벤트에서 전달받은 사용자 정보로 즉시 업데이트 (경로 중복 처리 제거)
-      if (event.detail) {
-        setCurrentUserInfo(event.detail);
-      }
-
-      // 멤버 목록도 새로고침
-      loadGroupMembers();
-    };
-
-    // 이벤트 리스너 등록
-    window.addEventListener("profileUpdated", handleProfileUpdate);
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
-    return () => {
-      window.removeEventListener("profileUpdated", handleProfileUpdate);
-    };
-  }, [user?.id]); // user.id가 변경될 때도 재등록
-
-  /* ========== 모달 ========== */
-  /** 스터디 탈퇴 핸들러 */
+  // 스터디 탈퇴 처리
   const handleLeaveStudy = async () => {
     if (
       !window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")
@@ -281,13 +214,8 @@ export default function StudyMember() {
     try {
       const result = await leaveGroup(groupId);
       alert(result.message || "그룹에서 성공적으로 탈퇴했습니다.");
-
-      // 탈퇴 성공 시 페이지 이동
       navigate("/");
     } catch (error) {
-      console.error("스터디 탈퇴 실패:", error);
-
-      // 에러 메시지 표시
       if (error.response?.data?.error) {
         alert(error.response.data.error);
       } else {
@@ -298,7 +226,7 @@ export default function StudyMember() {
     }
   };
 
-  /** 신청 모달 취소 핸들러 */
+  // 모달 취소 처리
   const handleModalCancel = () => {
     setIsAcceptModalOpen(false);
     setIsRejectModalOpen(false);
@@ -306,66 +234,108 @@ export default function StudyMember() {
     setSelectedRequest(null);
   };
 
-  /** 신청 모달 확인 핸들러 */
+  // 모달 확인 처리
   const handleModalConfirm = async () => {
     if (!selectedRequest && !isLeaveModalOpen) return;
 
     try {
       if (isAcceptModalOpen) {
-        // 수락 처리 로직
         const result = await approveUserRequest(selectedRequest.id);
         alert(
           result.message ||
             `${selectedRequest?.nickname}님의 신청을 수락했습니다.`
         );
       } else if (isRejectModalOpen) {
-        // 거절 처리 로직
         const result = await rejectUserRequest(selectedRequest.id);
         alert(
           result.message ||
             `${selectedRequest?.nickname}님의 신청을 거절했습니다.`
         );
       } else if (isLeaveModalOpen) {
-        // 스터디 탈퇴 처리
         await handleLeaveStudy();
-        return; // handleLeaveStudy에서 모달 닫기 처리함
+        return;
       }
 
-      // 모달 닫기
       setIsAcceptModalOpen(false);
       setIsRejectModalOpen(false);
       setSelectedRequest(null);
 
-      // 목록 새로고침
       fetchUserRequests();
       loadGroupMembers();
     } catch (error) {
-      console.error("처리 중 오류:", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
 
-  /* ========== 페이지 이동 함수 ========== */
+  // 이전 페이지로 이동
   const goPrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
+  // 다음 페이지로 이동
   const goNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
-  // 프로필 이미지 에러 핸들링
+  // 이미지 로드 실패 시 기본 이미지로 대체
   const handleImageError = (e) => {
-    e.target.src = "/default-profile.png"; // 기본 이미지로 대체
+    e.target.src = "/default-profile.png";
   };
 
+  // 이미지 로드 성공 처리
   const handleImageLoad = (e) => {
     // 이미지 로드 성공
   };
 
+  // 컴포넌트 마운트 및 groupId 변경 시 데이터 로드
+  useEffect(() => {
+    reloadData();
+  }, [groupId]);
+
+  // 페이지네이션 유효성 검증
+  useEffect(() => {
+    const maxPage = Math.ceil(userRequests.length / itemsPerPage) || 1;
+    if (currentPage > maxPage) {
+      setCurrentPage(1);
+    }
+  }, [userRequests, currentPage, itemsPerPage]);
+
+  // 멤버십 정보 변경 시 닉네임 설정
+  useEffect(() => {
+    if (myMembership?.nickname) {
+      setNickname(myMembership.nickname);
+      setTempNickname(myMembership.nickname);
+      setMemberId(myMembership.id);
+    }
+  }, [myMembership]);
+
+  // 편집 모드 진입 시 입력 필드 포커스
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  // 프로필 업데이트 이벤트 리스너 등록
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      if (event.detail) {
+        setCurrentUserInfo(event.detail);
+      }
+      loadGroupMembers();
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+    };
+  }, [user?.id]);
+
   return (
     <div id="study-member">
-      {/* 내 정보 */}
+      {/* 내 정보 섹션 */}
       <div className="info-container !mb-[40px]">
         <h3 className="text-3xl !mb-5">내 정보</h3>
         <div className="dashboard-my-info">
@@ -381,7 +351,7 @@ export default function StudyMember() {
             />
           </div>
 
-          {/* 닉네임 */}
+          {/* 닉네임 및 소개 */}
           <div className="profile-text">
             <div className="edit-nickname-wrap">
               <input
@@ -438,7 +408,7 @@ export default function StudyMember() {
         </div>
       </div>
 
-      {/* 신청목록 */}
+      {/* 신청목록 - 방장에게만 표시 */}
       {studyInfo?.groupOwnerId === user?.id ? (
         <div className="request-container !mb-[40px]">
           <div className="!mb-8 flex justify-between items-center">
@@ -448,6 +418,7 @@ export default function StudyMember() {
                 {userRequests.length}
               </span>
             </h3>
+            {/* 페이지네이션 버튼 */}
             <div className="request-btn-wrap">
               <button
                 type="button"
@@ -473,7 +444,7 @@ export default function StudyMember() {
               </button>
             </div>
           </div>
-          {/* 신청 목록 불러오기 */}
+          {/* 신청 목록 */}
           <ul className="dashboard-member-wrap">
             {paginatedRequests.length > 0 ? (
               paginatedRequests.map((req, idx) => (
@@ -524,6 +495,7 @@ export default function StudyMember() {
               <li className="text-[#666]">신청자가 없습니다.</li>
             )}
           </ul>
+          {/* 페이지 정보 */}
           {paginatedRequests.length > 0 ? (
             <div className="text-center text-sm text-[#999] font-normal !mt-4">
               ({currentPage}/{totalPages})
@@ -535,6 +507,7 @@ export default function StudyMember() {
       ) : (
         ""
       )}
+
       {/* 멤버목록 */}
       <div className="member-container">
         <h3 className="text-3xl !mb-8">
@@ -581,7 +554,8 @@ export default function StudyMember() {
           )}
         </ul>
       </div>
-      {/* 스터디 탈퇴 버튼 - 멤버에게만 */}
+
+      {/* 스터디 탈퇴 버튼 - 일반 멤버에게만 표시 */}
       {studyInfo?.groupOwnerId !== user?.id ? (
         <div className="!mt-40 text-center">
           <button
@@ -595,7 +569,8 @@ export default function StudyMember() {
       ) : (
         <></>
       )}
-      {/* 수락 모달 - ConfirmModal 컴포넌트 */}
+
+      {/* 수락 확인 모달 */}
       <ConfirmModal
         isOpen={isAcceptModalOpen}
         onCancel={handleModalCancel}
@@ -608,7 +583,8 @@ export default function StudyMember() {
           description: selectedRequest?.applicationMessage,
         }}
       />
-      {/* 거절 모달 - ConfirmModal 컴포넌트 */}
+
+      {/* 거절 확인 모달 */}
       <ConfirmModal
         isOpen={isRejectModalOpen}
         onCancel={handleModalCancel}
@@ -622,7 +598,8 @@ export default function StudyMember() {
           actionText: "거절",
         }}
       />
-      {/* 스터디 탈퇴 모달 - ConfirmModal 컴포넌트 */}
+
+      {/* 스터디 탈퇴 확인 모달 */}
       <ConfirmModal
         isOpen={isLeaveModalOpen}
         onCancel={handleModalCancel}

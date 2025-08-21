@@ -3,15 +3,15 @@ import { createPortal } from 'react-dom';
 import './ConfirmModal.css';
 
 function ConfirmModal({
-    isOpen,                // 모달 표시 여부
-    onCancel,              // 취소 버튼 클릭 시 실행 함수
-    onConfirm,             // 확인 버튼 클릭 시 실행 함수
-    type = 'editProfile',  // 모달 종류
-    userName,              // 사용자 이름
-    profileImage,          // 프로필 이미지 URL
-    customText = {},       // 커스텀 텍스트 설정
-    isSuccess = false,     // 성공 모드 여부
-    onSuccessConfirm,      // 성공 모드에서 확인 버튼 클릭 시 실행 함수
+    isOpen,                
+    onCancel,              
+    onConfirm,             
+    type = 'editProfile',  
+    userName,              
+    profileImage,          
+    customText = {},       
+    isSuccess = false,     
+    onSuccessConfirm,      
 }) {
     // 모달이 열릴 때 스크롤 잠금
     useEffect(() => {
