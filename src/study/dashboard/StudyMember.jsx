@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { useStudy } from '../../contexts/StudyContext';
+import { useStudy } from "../../contexts/StudyContext";
 import { useParams } from "react-router-dom";
-import ConfirmModal from '../../users/modal/ConfirmModal';
+import ConfirmModal from "../../users/modal/ConfirmModal";
 import { getProfileImageSrc } from "../../utils/imageUtils";
-import axios from 'axios';
+import axios from "axios";
 
-import { getUserRequests, approveUserRequest, rejectUserRequest, fetchGroupMembers, updateNickname, leaveGroup } from "./studyMemberApi";
+import {
+  getUserRequests,
+  approveUserRequest,
+  rejectUserRequest,
+  fetchGroupMembers,
+  updateNickname,
+  leaveGroup,
+} from "./studyMemberApi";
 
 import "./StudyMember.css";
 
@@ -41,7 +48,7 @@ export default function StudyMember() {
 
   // 현재 사용자 멤버십 정보
   const myMembership = useMemo(() => {
-    return groupMembers.find(member => member?.userId === user?.id);
+    return groupMembers.find((member) => member?.userId === user?.id);
   }, [groupMembers, user?.id]);
 
   // 신청목록 페이지네이션 상태
@@ -61,12 +68,15 @@ export default function StudyMember() {
   const getDirectProfileImageSrc = () => {
     const fullPath = currentUserInfo?.profileImageFullPath;
     const profileImage = currentUserInfo?.profileImage || user?.profileImage;
-    
+
     // profileImageFullPath가 있고 완전한 URL인 경우
-    if (fullPath && (fullPath.startsWith('http://') || fullPath.startsWith('https://'))) {
+    if (
+      fullPath &&
+      (fullPath.startsWith("http://") || fullPath.startsWith("https://"))
+    ) {
       return fullPath;
     }
-    
+
     // 기본 처리
     return getProfileImageSrc(profileImage);
   };
@@ -90,21 +100,17 @@ export default function StudyMember() {
     } catch (error) {
       handleApiError(error);
     }
-  }
+  };
 
   // 현재 사용자 정보 로드 (최신 프로필 정보 가져오기)
   const loadCurrentUserInfo = async () => {
     if (!user?.id) {
       return;
     }
-    
+
     try {
-      // MyEdit.js와 같은 방식으로 API URL 결정
       const getApiUrl = () => {
-        if (window.location.protocol === 'https:') {
-          return 'https://www.studyo.r-e.kr:8081';
-        }
-        return import.meta.env.VITE_AWS_API_HOST || '';
+        return import.meta.env.VITE_AWS_API_HOST; // 이거로 local , webserver 자동전환 되니까 이렇게 쓰시면 됩니다.
       };
 
       const apiUrl = getApiUrl();
@@ -112,14 +118,14 @@ export default function StudyMember() {
 
       const response = await axios.get(requestUrl, {
         withCredentials: true,
-        timeout: 10000
+        timeout: 10000,
       });
 
       if (response.status === 200 && response.data.success) {
         setCurrentUserInfo(response.data.data);
       }
     } catch (error) {
-      console.error('사용자 정보 로드 실패:', error);
+      console.error("사용자 정보 로드 실패:", error);
       // 실패 시 기존 user 정보 사용
       setCurrentUserInfo(user);
     }
@@ -130,9 +136,13 @@ export default function StudyMember() {
     if (error.response) {
       const status = error.response.status;
       const errorMessage =
-        status === 401 ? "로그인이 필요합니다." :
-          status === 403 ? "접근 권한이 없습니다." :
-            status === 404 ? "요청한 리소스를 찾을 수 없습니다." : "서버 오류가 발생했습니다.";
+        status === 401
+          ? "로그인이 필요합니다."
+          : status === 403
+          ? "접근 권한이 없습니다."
+          : status === 404
+          ? "요청한 리소스를 찾을 수 없습니다."
+          : "서버 오류가 발생했습니다.";
       alert(errorMessage);
     } else if (error.request) {
       alert("서버에 연결할 수 없습니다.");
@@ -148,7 +158,7 @@ export default function StudyMember() {
       await Promise.all([
         fetchUserRequests(),
         loadGroupMembers(),
-        loadCurrentUserInfo()
+        loadCurrentUserInfo(),
       ]);
     } catch (err) {
       handleApiError(err);
@@ -165,16 +175,15 @@ export default function StudyMember() {
 
   /** 엔터키 처리 */
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSaveClick();
     }
-  }
+  };
 
   /** 닉네임 저장 */
   const handleSaveClick = async () => {
     try {
-
       const result = await updateNickname(groupId, tempNickname);
 
       // 성공 시 UI 업데이트
@@ -184,7 +193,7 @@ export default function StudyMember() {
 
       alert(result.message || "닉네임이 성공적으로 수정되었습니다.");
 
-      // 멤버 목록 새로고침 
+      // 멤버 목록 새로고침
       await loadGroupMembers();
     } catch (error) {
       console.error("닉네임 수정 실패:", error);
@@ -251,24 +260,26 @@ export default function StudyMember() {
       if (event.detail) {
         setCurrentUserInfo(event.detail);
       }
-      
+
       // 멤버 목록도 새로고침
       loadGroupMembers();
     };
 
     // 이벤트 리스너 등록
-    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
 
     // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
     };
   }, [user?.id]); // user.id가 변경될 때도 재등록
 
   /* ========== 모달 ========== */
   /** 스터디 탈퇴 핸들러 */
   const handleLeaveStudy = async () => {
-    if (!window.confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+    if (
+      !window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")
+    ) {
       return;
     }
     try {
@@ -277,7 +288,6 @@ export default function StudyMember() {
 
       // 탈퇴 성공 시 페이지 이동
       navigate("/");
-
     } catch (error) {
       console.error("스터디 탈퇴 실패:", error);
 
@@ -308,11 +318,17 @@ export default function StudyMember() {
       if (isAcceptModalOpen) {
         // 수락 처리 로직
         const result = await approveUserRequest(selectedRequest.id);
-        alert(result.message || `${selectedRequest?.nickname}님의 신청을 수락했습니다.`);
+        alert(
+          result.message ||
+            `${selectedRequest?.nickname}님의 신청을 수락했습니다.`
+        );
       } else if (isRejectModalOpen) {
-        // 거절 처리 로직 
+        // 거절 처리 로직
         const result = await rejectUserRequest(selectedRequest.id);
-        alert(result.message || `${selectedRequest?.nickname}님의 신청을 거절했습니다.`);
+        alert(
+          result.message ||
+            `${selectedRequest?.nickname}님의 신청을 거절했습니다.`
+        );
       } else if (isLeaveModalOpen) {
         // 스터디 탈퇴 처리
         await handleLeaveStudy();
@@ -328,8 +344,8 @@ export default function StudyMember() {
       fetchUserRequests();
       loadGroupMembers();
     } catch (error) {
-      console.error('처리 중 오류:', error);
-      alert('처리 중 오류가 발생했습니다.');
+      console.error("처리 중 오류:", error);
+      alert("처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -344,7 +360,7 @@ export default function StudyMember() {
 
   // 프로필 이미지 에러 핸들링
   const handleImageError = (e) => {
-    e.target.src = '/default-profile.png'; // 기본 이미지로 대체
+    e.target.src = "/default-profile.png"; // 기본 이미지로 대체
   };
 
   const handleImageLoad = (e) => {
@@ -359,13 +375,13 @@ export default function StudyMember() {
         <div className="dashboard-my-info">
           {/* 프로필 이미지 */}
           <div className="profile-image rounded-full overflow-hidden">
-            <img 
-              className="w-full block" 
-              src={getDirectProfileImageSrc()} 
+            <img
+              className="w-full block"
+              src={getDirectProfileImageSrc()}
               alt="프로필"
               onError={handleImageError}
               onLoad={handleImageLoad}
-              style={{ backgroundColor: '#f0f0f0' }}
+              style={{ backgroundColor: "#f0f0f0" }}
             />
           </div>
 
@@ -390,7 +406,9 @@ export default function StudyMember() {
                   className="nickname-btn"
                   aria-label="수정"
                 >
-                  <span className="material-symbols-rounded !text-3xl">Stylus</span>
+                  <span className="material-symbols-rounded !text-3xl">
+                    Stylus
+                  </span>
                 </button>
               ) : (
                 <div>
@@ -400,7 +418,9 @@ export default function StudyMember() {
                     className="nickname-btn save"
                     aria-label="저장"
                   >
-                    <span className="material-symbols-rounded !text-3xl">check</span>
+                    <span className="material-symbols-rounded !text-3xl">
+                      check
+                    </span>
                   </button>
                   <button
                     onClick={handleCancelClick}
@@ -408,12 +428,16 @@ export default function StudyMember() {
                     className="nickname-btn cancel"
                     aria-label="취소"
                   >
-                    <span className="material-symbols-rounded !text-3xl">close</span>
+                    <span className="material-symbols-rounded !text-3xl">
+                      close
+                    </span>
                   </button>
                 </div>
               )}
             </div>
-            <p className="text-[#666] !px-2">{currentUserInfo?.introduction || user?.introduction}</p>
+            <p className="text-[#666] !px-2">
+              {currentUserInfo?.introduction || user?.introduction}
+            </p>
           </div>
         </div>
       </div>
@@ -429,13 +453,27 @@ export default function StudyMember() {
               </span>
             </h3>
             <div className="request-btn-wrap">
-              <button type="button" className="request-btn-prev" onClick={goPrevPage}
-                disabled={currentPage === 1 || userRequests.length === 0}>
-                <span className="material-symbols-rounded !text-4xl">keyboard_arrow_left</span>
+              <button
+                type="button"
+                className="request-btn-prev"
+                onClick={goPrevPage}
+                disabled={currentPage === 1 || userRequests.length === 0}
+              >
+                <span className="material-symbols-rounded !text-4xl">
+                  keyboard_arrow_left
+                </span>
               </button>
-              <button type="button" className="request-btn-next" onClick={goNextPage}
-                disabled={currentPage === totalPages || userRequests.length === 0}>
-                <span className="material-symbols-rounded !text-4xl">keyboard_arrow_right</span>
+              <button
+                type="button"
+                className="request-btn-next"
+                onClick={goNextPage}
+                disabled={
+                  currentPage === totalPages || userRequests.length === 0
+                }
+              >
+                <span className="material-symbols-rounded !text-4xl">
+                  keyboard_arrow_right
+                </span>
               </button>
             </div>
           </div>
@@ -443,62 +481,97 @@ export default function StudyMember() {
           <ul className="dashboard-member-wrap">
             {paginatedRequests.length > 0 ? (
               paginatedRequests.map((req, idx) => (
-                <li key={req.id || idx} className="dashboard-member-list justify-between">
+                <li
+                  key={req.id || idx}
+                  className="dashboard-member-list justify-between"
+                >
                   <div className="profile-image rounded-full overflow-hidden">
-                    <img className="w-full block"
-                      src={getProfileImageSrc(req.profileImage)} 
+                    <img
+                      className="w-full block"
+                      src={getProfileImageSrc(req.profileImage)}
                       alt="프로필"
                       onError={handleImageError}
-                      onLoad={handleImageLoad} />
+                      onLoad={handleImageLoad}
+                    />
                   </div>
                   <div className="member-info request">
                     <p className="font-bold text-[#333]">{req.nickname}</p>
-                    <p className="text-sm text-[#666] truncate">{req.applicationMessage}</p>
+                    <p className="text-sm text-[#666] truncate">
+                      {req.applicationMessage}
+                    </p>
                   </div>
                   <div className="flex">
-                    <button type="button" className="member-btn !mr-2"
+                    <button
+                      type="button"
+                      className="member-btn !mr-2"
                       onClick={() => {
                         setSelectedRequest(req);
                         setIsAcceptModalOpen(true);
-                      }}>수락</button>
-                    <button type="button" className="member-btn rejected"
+                      }}
+                    >
+                      수락
+                    </button>
+                    <button
+                      type="button"
+                      className="member-btn rejected"
                       onClick={() => {
                         setSelectedRequest(req);
                         setIsRejectModalOpen(true);
-                      }}>거절</button>
+                      }}
+                    >
+                      거절
+                    </button>
                   </div>
                 </li>
               ))
-            )
-              :
-              (<li className="text-[#666]">신청자가 없습니다.</li>)
-            }
+            ) : (
+              <li className="text-[#666]">신청자가 없습니다.</li>
+            )}
           </ul>
           {paginatedRequests.length > 0 ? (
-            <div className="text-center text-sm text-[#999] font-normal !mt-4">({currentPage}/{totalPages})</div>
-          ) : ""}
+            <div className="text-center text-sm text-[#999] font-normal !mt-4">
+              ({currentPage}/{totalPages})
+            </div>
+          ) : (
+            ""
+          )}
         </div>
-      ) : ""}
+      ) : (
+        ""
+      )}
       {/* 멤버목록 */}
       <div className="member-container">
         <h3 className="text-3xl !mb-8">
           멤버목록
-          <span className="text-sm text-[#666] font-normal !ml-2">{groupMembers?.length || 0}</span>
+          <span className="text-sm text-[#666] font-normal !ml-2">
+            {groupMembers?.length || 0}
+          </span>
         </h3>
         <ul className="dashboard-member-wrap">
           {groupMembers.length > 0 ? (
             groupMembers.map((member, idx) => (
-              <li key={member?.id || idx} className={`dashboard-member-list justify-start  ${member?.userId === user?.id ? 'me' : ''}`}>
+              <li
+                key={member?.id || idx}
+                className={`dashboard-member-list justify-start  ${
+                  member?.userId === user?.id ? "me" : ""
+                }`}
+              >
                 <div className="profile-image rounded-full overflow-hidden">
-                  <img className="w-full block" 
-                    src={getProfileImageSrc(member?.profileImage)} 
+                  <img
+                    className="w-full block"
+                    src={getProfileImageSrc(member?.profileImage)}
                     alt="프로필"
                     onError={handleImageError}
-                    onLoad={handleImageLoad} />
+                    onLoad={handleImageLoad}
+                  />
                 </div>
                 <div className="member-info">
                   <p className="font-bold text-[#333]">
-                    {member?.memberRole === "ADMIN" ? (<span className="leader-tag">방장</span>) : ""}
+                    {member?.memberRole === "ADMIN" ? (
+                      <span className="leader-tag">방장</span>
+                    ) : (
+                      ""
+                    )}
                     {member?.nickname}
                   </p>
                   <span className="text-xs text-[#999] absolute bottom-4 right-4">
@@ -507,32 +580,36 @@ export default function StudyMember() {
                 </div>
               </li>
             ))
-          ) :
-            (<li className="text-[#666]">멤버가 없습니다.</li>)
-          }
+          ) : (
+            <li className="text-[#666]">멤버가 없습니다.</li>
+          )}
         </ul>
       </div>
       {/* 스터디 탈퇴 버튼 - 멤버에게만 */}
       {studyInfo?.groupOwnerId !== user?.id ? (
         <div className="!mt-40 text-center">
-          <button type="button"
+          <button
+            type="button"
             className="study-leave-btn md:float-right"
             onClick={() => setIsLeaveModalOpen(true)}
-          >스터디 탈퇴
+          >
+            스터디 탈퇴
           </button>
         </div>
-      ) : <></>}
+      ) : (
+        <></>
+      )}
       {/* 수락 모달 - ConfirmModal 컴포넌트 */}
       <ConfirmModal
         isOpen={isAcceptModalOpen}
         onCancel={handleModalCancel}
         onConfirm={handleModalConfirm}
         type="accept"
-        userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
+        userName={selectedRequest?.nickname || selectedRequest?.userId || ""}
         profileImage={getProfileImageSrc(selectedRequest?.profileImage)}
         customText={{
           title: "",
-          description: selectedRequest?.applicationMessage
+          description: selectedRequest?.applicationMessage,
         }}
       />
       {/* 거절 모달 - ConfirmModal 컴포넌트 */}
@@ -541,12 +618,12 @@ export default function StudyMember() {
         onCancel={handleModalCancel}
         onConfirm={handleModalConfirm}
         type="kick"
-        userName={selectedRequest?.nickname || selectedRequest?.userId || ''}
+        userName={selectedRequest?.nickname || selectedRequest?.userId || ""}
         profileImage={getProfileImageSrc(selectedRequest?.profileImage)}
         customText={{
           title: "",
           description: selectedRequest?.applicationMessage,
-          actionText: "거절"
+          actionText: "거절",
         }}
       />
       {/* 스터디 탈퇴 모달 - ConfirmModal 컴포넌트 */}
@@ -559,8 +636,9 @@ export default function StudyMember() {
         profileImage={getProfileImageSrc(user?.profileImage)}
         customText={{
           title: "스터디 탈퇴",
-          description: "정말로 이 스터디에서 탈퇴하시겠습니까?\n탈퇴 후에는 재가입을 할 수 없습니다.",
-          actionText: "탈퇴"
+          description:
+            "정말로 이 스터디에서 탈퇴하시겠습니까?\n탈퇴 후에는 재가입을 할 수 없습니다.",
+          actionText: "탈퇴",
         }}
       />
     </div>
