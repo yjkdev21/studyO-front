@@ -94,7 +94,7 @@ export default function PromotionList() {
   const handleDeletePost = async (id) => {
     // window.confirm 대신 커스텀 모달 또는 console.log로 대체
     // 실제 앱에서는 사용자에게 확인을 받는 UI를 구현해야 합니다.
-    console.log(`게시글 ID ${id}를 삭제 요청합니다.`);
+    // console.log(`게시글 ID ${id}를 삭제 요청합니다.`);
     const confirmDelete = window.confirm(
       "정말로 이 게시글을 삭제하시겠습니까?"
     ); // 임시로 window.confirm 유지, 실제 서비스에서는 커스텀 모달 사용 권장
@@ -104,7 +104,7 @@ export default function PromotionList() {
         await axios.delete(`${host}/api/study/promotion/${id}`, {
           withCredentials: true, // <<<<<<< 이 부분 추가: 자격 증명(쿠키 등)을 요청에 포함
         });
-        console.log("게시글이 성공적으로 삭제되었습니다.");
+        // console.log("게시글이 성공적으로 삭제되었습니다.");
         // alert 대신 사용자에게 보이는 메시지 상태 업데이트
         setErrorMessage("게시글이 성공적으로 삭제되었습니다.");
         fetchPosts(); // 삭제 후 목록 새로고침

@@ -15,7 +15,7 @@ export default function DashboardList() {
   const [studyError, setStudyError] = useState(null); // 스터디 에러 메시지
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState(null);
-  
+
   const host = import.meta.env.VITE_AWS_API_HOST;
 
   const handleCardSelect = (groupId) => {
@@ -74,8 +74,7 @@ export default function DashboardList() {
   return (
     <div className="mypage-section-card">
       <div className="mypage-section-header">
-        <h3 className="mypage-section-title">스터디</h3>
-        <span className="mypage-chevron-right">&gt;</span>
+        <h3 className="mypage-section-title">스터디 </h3>
       </div>
 
       <div className="mypage-study-cards-container">
@@ -109,7 +108,7 @@ export default function DashboardList() {
             />
           ))
         )}
-      </div>x
+      </div>
     </div>
   );
 }

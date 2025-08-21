@@ -78,8 +78,8 @@ const StudyPostInput = ({ groupId, onPostCreated }) => {
     }
 
     // 마감일이 오늘보다 이전인 경우
-    console.log("newEndDate: ", newEndDate);
-    console.log("today: ", today);
+    //console.log("newEndDate: ", newEndDate);
+    //console.log("today: ", today);
     if (newEndDate < today) {
       setErrorDateMessage("⚠️ 모집 마감일은 오늘 이전일 수 없습니다.");
       return;

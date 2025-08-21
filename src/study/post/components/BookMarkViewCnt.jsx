@@ -56,7 +56,6 @@ export default function BookMarkViewCnt({ post }) {
 
         if (res.data === "View count incremented.") {
           // console.log("view count increment!");
-        } else {
         }
       } catch (error) {
         console.error("view count fail!", error);

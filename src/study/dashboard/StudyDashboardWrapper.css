@@ -1,5 +1,3 @@
-/* StudyDashboardWrapper.css */
-
 .study-layout-wrapper {
   padding-top: 80px;
   margin-top: -80px;
@@ -16,7 +14,7 @@
 }
 
 /* 사이드바가 닫혔을 경우 */
-#sidebar-wrap.collapsed + .main-scrollable-area {
+#sidebar-wrap.collapsed+.main-scrollable-area {
   width: 100%;
   margin: 0 auto;
 }

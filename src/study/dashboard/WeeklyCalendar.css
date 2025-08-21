@@ -1,146 +1,5 @@
-/* WeeklyCalendar.css */
-
-.weekly-calendar-container {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin: 20px 0;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 14px;
-}
-
-/* FullCalendar 커스텀 스타일 */
-.fc {
-  font-family: inherit;
-}
-
-/* 헤더 스타일 */
-.fc-header-toolbar {
-  margin-bottom: 15px !important;
-  padding: 0 10px;
-}
-
-.fc-toolbar-title {
-  font-size: 1.1em !important;
-  font-weight: 600 !important;
-  color: #333 !important;
-}
-
-.fc-button {
-  background: #f8f9fa !important;
-  border: 1px solid #dee2e6 !important;
-  color: #495057 !important;
-  font-size: 0.85em !important;
-  padding: 0.375rem 0.75rem !important;
-  border-radius: 4px !important;
-}
-
-.fc-button:hover {
-  background: #e9ecef !important;
-  border-color: #adb5bd !important;
-}
-
-.fc-button-active {
-  background: #007bff !important;
-  border-color: #007bff !important;
-  color: white !important;
-}
-
-/* 주간 달력 전용 스타일 */
-.fc-timegrid {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-}
-
-.fc-timegrid-slot {
-  height: 35px !important; /* 시간 슬롯 높이 조절 */
-}
-
-.fc-timegrid-slot-label {
-  font-size: 0.8em;
-  color: #666;
-}
-
-/* 요일 헤더 */
-.fc-col-header-cell {
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  font-weight: 600;
-  color: #495057;
-  padding: 8px 4px;
-}
-
-/* 오늘 날짜 강조 */
-.fc-day-today {
-  background: rgba(0, 123, 255, 0.1) !important;
-}
-
-.fc-day-today .fc-col-header-cell-cushion {
-  color: #007bff;
-  font-weight: bold;
-}
-
-/* 이벤트 스타일 */
-.fc-event {
-  border-radius: 4px;
-  border: none !important;
-  padding: 2px 4px;
-  font-size: 0.8em;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.fc-event:hover {
-  opacity: 0.8;
-}
-
-.fc-event-title {
-  font-weight: 500;
-}
-
-/* 현재 시간 표시선 */
-.fc-timegrid-now-indicator-line {
-  border-color: #dc3545;
-  border-width: 2px;
-}
-
-.fc-timegrid-now-indicator-arrow {
-  border-color: #dc3545;
-}
-
-/* 종일 이벤트 영역 */
-.fc-timegrid-divider {
-  background: #f8f9fa;
-  border-color: #dee2e6;
-}
-
-.fc-timegrid-allday-slot {
-  background: #f8f9fa;
-}
-
-/* 스크롤바 스타일링 (선택사항) */
-.fc-timegrid-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.fc-timegrid-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.fc-timegrid-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.fc-timegrid-body::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.fc .fc-toolbar-title {
+  font-size: 20px;
 }
 
 /* 반응형 - 작은 화면에서 */
@@ -149,16 +8,16 @@
     padding: 15px;
     margin: 15px 0;
   }
-  
+
   .fc-toolbar-title {
     font-size: 1em !important;
   }
-  
+
   .fc-button {
     font-size: 0.75em !important;
     padding: 0.25rem 0.5rem !important;
   }
-  
+
   .fc-timegrid-slot {
     height: 30px !important;
   }

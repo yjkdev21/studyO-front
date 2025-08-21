@@ -12,7 +12,7 @@ export default function StudyMain() {
   const { groupId } = useParams();
   const { user } = useAuth();
   const { studyInfo, isLoading: studyLoading, error, getProfileImageUrl, getPostWriterNickname } = useStudy();
-  
+
   const [isNotice, setIsNotice] = useState(false);
   const [allNotices, setAllNotices] = useState([]);
   const [allPosts, setAllPosts] = useState([]);
@@ -146,7 +146,7 @@ export default function StudyMain() {
       fetchPosts();
     }
   }, [groupId]);
-  
+
   return (
     <div className='study-main-container'>
       {/* 스터디 정보 + 공지 + 최신글 */}
