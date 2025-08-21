@@ -14,7 +14,7 @@
 }
 
 /* 사이드바가 닫혔을 경우 */
-#sidebar-wrap.collapsed + .main-scrollable-area {
+#sidebar-wrap.collapsed+.main-scrollable-area {
   width: 100%;
   margin: 0 auto;
 }

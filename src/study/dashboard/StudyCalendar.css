@@ -218,27 +218,27 @@
     max-width: none;
     max-height: 95vh;
   }
-  
+
   .modal-section {
     padding: 12px 16px;
   }
-  
+
   .modal-header {
     padding: 16px 36px 0 16px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
+
   .action-buttons button {
     border-radius: 0;
   }
-  
+
   .action-buttons .update-button:last-child {
     border-radius: 0 0 8px 8px;
   }
-  
+
   .action-buttons .delete-button:last-child {
     border-radius: 0 0 8px 8px;
   }
