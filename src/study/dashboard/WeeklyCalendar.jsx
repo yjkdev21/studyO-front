@@ -24,7 +24,7 @@ export default function WeeklyCalendar() {
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
 
-  // Context 및 권환 관리 (월간 캘린더와 동일)
+  // Context 및 권한 관리 (월간 캘린더와 동일)
   const { user } = useAuth(); // 현재 로그인한 사용자 정보
   const userId = user?.id; // 사용자 ID (api 호출 시 사용)
   const { studyInfo } = useStudy(); // 스터디 정보(studyContext에서 가져옴)
@@ -50,7 +50,7 @@ export default function WeeklyCalendar() {
       // 백엔드 데이터를 FullCalendar 형식으로 변환
       const formattedEvents = response.data.map(event => ({
         id: event.id,
-        title: event.title,                              // 일정 제목
+        title: event.title,
         start: event.startDate,
         end: event.endDate,
         allDay: true, // 종일 일정으로 설정
@@ -233,22 +233,18 @@ export default function WeeklyCalendar() {
         eventClick={handleEventClick}
 
         // 기타 설정
-        weekends={true}            // 주말 표시
-        dayMaxEvents={3}           // 하루 최대 3개 일정 표시 (초과시 +more)
-        moreLinkClick="popover"    // +more 클릭시 팝오버로 표시
+        weekends={true} // 주말 표시
+        dayMaxEvents={3} // 하루 최대 3개 일정 표시 (초과시 +more)
+        moreLinkClick="popover" // +more 클릭시 팝오버로 표시
 
         // 요일 헤더 형식 (예: 월 8/13)
         dayHeaderFormat={{ weekday: 'short', month: 'numeric', day: 'numeric' }}
       />
 
-      {/* ================================================================ */}
-      {/* 11. 일정 상세보기/수정 모달 (월간 캘린더와 동일한 구조)           */}
-      {/* ================================================================ */}
-
+      {/* 일정 상세보기/수정 모달 */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-
             {/* 제목 입력 섹션 */}
             <div className="modal-section">
               <div className="modal-label">제목</div>

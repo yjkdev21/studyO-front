@@ -1,29 +1,87 @@
 /* 모달 배경 */
 .modal-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* 중앙 정렬 */
-  width: 380px;
-  height: auto;
-  background-color: #fff;
-  border: 0.5px solid #999;
-  border-radius: 7px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
+/* 모달 컨텐츠 */
+.modal-content {
+  position: relative;
+  width: 380px;
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
+/* X 버튼 스타일 */
+.modal-close-x {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1001;
+}
+
+.modal-close-x:hover {
+  color: #333;
+}
+
+/* 모달 헤더 */
+.modal-header {
+  padding: 20px 40px 0 20px;
+  text-align: center;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 15px 0;
+}
+
+.modal-title.error {
+  color: #dc3545;
+}
+
+.modal-title.success {
+  color: #28a745;
+}
+
+/* 모달 바디 (스크롤 가능한 영역) */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+}
 
 /* 각 섹션 */
 .modal-section {
-  padding: 15px 20px; /* 20px → 15px로 줄임 */
+  padding: 15px 20px;
   border-bottom: 1px solid #f0f0f0;
 }
 
 /* 라벨 (제목, 내용) */
 .modal-label {
-  font-size: 14px;
-  font-weight: bold;
   color: #333;
   margin-bottom: 8px;
 }
@@ -33,7 +91,6 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 14px;
 }
 
@@ -42,55 +99,147 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 14px;
   resize: vertical;
 }
 
 /* 버튼 섹션 */
 .modal-buttons {
-  padding: 15px 20px;
+  padding: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 /* 액션 버튼들 (수정, 삭제) */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  width: 100%;
+}
+
+.action-buttons button {
+  flex: 1;
+  margin: 0;
+  border-radius: 0;
 }
 
 /* 수정 버튼 */
 .update-button {
-  padding: 8px 16px;
+  padding: 16px;
   background-color: #FDB515;
-  color: #666666;
-  font-size: 14px;
-  font-weight: bold;
+  color: #333;
+  border: none;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+/* 단일 버튼일 때 */
+.modal-buttons .update-button:only-child {
+  width: 100%;
+  border-radius: 0 0 8px 8px;
+}
+
+/* 액션 버튼 그룹 내 수정 버튼 */
+.action-buttons .update-button {
+  border-radius: 0 0 0 8px;
 }
 
 /* 삭제 버튼 */
 .delete-button {
-  padding: 8px 16px;
-  background-color: #dc3545;
+  padding: 16px;
+  background-color: #FF2525;
   color: white;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 16px;
+  transition: background-color 0.2s;
 }
 
-/* 닫기 버튼 */
-.close-button {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #666;
-  font-size: 14px;
+/* 액션 버튼 그룹 내 삭제 버튼 */
+.action-buttons .delete-button {
+  border-radius: 0 0 8px 0;
+}
+
+/* 확인 버튼 */
+.confirm-button {
+  padding: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  border-radius: 0 0 8px 8px;
+}
+
+/* 단일 버튼 (알림 모달) */
+.single-button {
+  width: 100%;
+  margin: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+/* 확인 모달 스타일 */
+.confirm-modal {
+  min-width: 360px;
+}
+
+.confirm-message {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 알림 모달 스타일 */
+.alert-modal {
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.alert-message {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* 캘린더 사이드바 반응형 */
-.main-scrollable-area .fc-col-header ,
+.main-scrollable-area .fc-col-header,
 .main-scrollable-area .fc-scrollgrid-sync-table,
-.main-scrollable-area .fc-daygrid-body  {
+.main-scrollable-area .fc-daygrid-body {
   width: 100% !important;
+}
+
+/* 반응형 개선 */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95vw;
+    max-width: none;
+    max-height: 95vh;
+  }
+  
+  .modal-section {
+    padding: 12px 16px;
+  }
+  
+  .modal-header {
+    padding: 16px 36px 0 16px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons button {
+    border-radius: 0;
+  }
+  
+  .action-buttons .update-button:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .action-buttons .delete-button:last-child {
+    border-radius: 0 0 8px 8px;
+  }
 }
