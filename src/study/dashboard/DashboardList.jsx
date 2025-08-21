@@ -109,7 +109,7 @@ export default function DashboardList() {
             />
           ))
         )}
-      </div>x
+      </div>
     </div>
   );
 }
