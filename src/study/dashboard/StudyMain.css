@@ -7,22 +7,27 @@
   border-bottom: 1px solid #ddd;
   padding: 1rem 0;
 }
+
 .profile-img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
+
 .post-meta {
   display: flex;
   flex-direction: column;
   margin-left: 0.5rem;
 }
+
 .post-actions {
   margin-left: auto;
 }
+
 .post-title {
   font-weight: bold;
 }
+
 .post-content {
   margin-top: 0.5rem;
 }
@@ -42,11 +47,11 @@
   width: 50%;
   margin-bottom: 15px;
 }
-.dashboard-latest{
+
+.dashboard-latest {
   width: 521px;
   font-size: 14px;
   position: relative;
-
 }
 
 .dashboard-latest .latest-notice {
@@ -54,14 +59,14 @@
   color: #666;
 }
 
-.dashboard-latest .latest-notice .badge{
+.dashboard-latest .latest-notice .badge {
   color: #fff;
   background-color: #FDB515;
   padding: 4px 12px;
   margin-right: 10px;
 }
 
-.dashboard-latest .latest-posts{
+.dashboard-latest .latest-posts {
   margin-left: 58px;
 }
 
@@ -70,7 +75,7 @@
   color: #666;
 }
 
-.latest-notice span.date, 
+.latest-notice span.date,
 .latest-posts span.date {
   position: absolute;
   right: 0;
@@ -91,7 +96,6 @@
   position: static !important;
 }
 
-
 /********** 주간 캘린더 **********/
 .week-calendar {
   margin: 100px auto;
@@ -102,7 +106,6 @@
   max-width: 720px;
   margin: 20px 0;
 }
-
 
 .form-row {
   display: flex;
@@ -250,9 +253,8 @@
 .post-date {
   font-size: 14px;
   color: #666;
-  
-}
 
+}
 
 .post-actions button {
   background: none;

@@ -19,34 +19,33 @@ export default function StudyCalendar() {
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  
-  /********** 새 모달 상태들 **********/
+
   // 일정 등록용 입력 모달
   const [showInputModal, setShowInputModal] = useState(false);
   const [inputTitle, setInputTitle] = useState('');
   const [inputContent, setInputContent] = useState('');
   const [selectedDateInfo, setSelectedDateInfo] = useState(null);
-  
+
   // 확인 모달
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState({});
-  
+
   // 알림 모달
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('success'); // 'success', 'error'
-  
-  /********** Context & Hooks **********/  
+
+  /********** Context & Hooks **********/
   const { user } = useAuth();
   const { groupId: groupIdParam } = useParams();
   const { studyInfo, host } = useStudy();
-  
+
   const userId = user?.id;
   const groupId = Number(groupIdParam);
   const isHost = useMemo(() => {
     return !!(user?.id && studyInfo?.groupOwnerId && user.id === studyInfo.groupOwnerId);
   }, [user?.id, studyInfo?.groupOwnerId]);
-  
+
   /********** API & 데이터 로딩 **********/
   useEffect(() => {
     axios.get(`${host}/api/study/calendar/study/${groupId}`).then((res) => {
@@ -65,19 +64,19 @@ export default function StudyCalendar() {
       setEvents(fetched);
     });
   }, [groupId]);
-  
+
   /********** 알림 모달 헬퍼 함수 **********/
   const showAlert = (message, type = 'success') => {
     setAlertMessage(message);
     setAlertType(type);
     setShowAlertModal(true);
   };
-  
+
   /********** 이벤트 핸들러 **********/
   // 일정 등록 시작 (날짜 선택)
   const handleSelect = (info) => {
     if (!isHost) return; // 스터디장만 등록 가능
-    
+
     setSelectedDateInfo(info);
     setInputTitle('');
     setInputContent('');
@@ -98,7 +97,7 @@ export default function StudyCalendar() {
       startDate: selectedDateInfo.startStr,
       endDate: selectedDateInfo.endStr,
       bgColor: "#FDB515",
-      textColor: "#666666",
+      textColor: "#fff",
     };
 
     try {
@@ -197,7 +196,7 @@ export default function StudyCalendar() {
         events={events}
         eventClick={handleEventClick}
       />
-      
+
       {/* 기존 일정 상세보기/수정 모달 */}
       {showModal && (
         <div className="modal-overlay">
@@ -206,7 +205,7 @@ export default function StudyCalendar() {
             <button className="modal-close-x" onClick={() => setShowModal(false)}>
               ×
             </button>
-            
+
             <div className="modal-body">
               {/* 제목 섹션 */}
               <div className="modal-section">
@@ -256,11 +255,11 @@ export default function StudyCalendar() {
             <button className="modal-close-x" onClick={() => setShowInputModal(false)}>
               ×
             </button>
-            
+
             <div className="modal-header">
               <h3 className="modal-title">새 일정 등록</h3>
             </div>
-            
+
             <div className="modal-body">
               <div className="modal-section">
                 <div className="modal-label">제목 (필수)</div>
@@ -301,11 +300,11 @@ export default function StudyCalendar() {
             <button className="modal-close-x" onClick={() => setShowConfirmModal(false)}>
               ×
             </button>
-            
+
             <div className="modal-header">
               <h3 className="modal-title">{confirmConfig.title}</h3>
             </div>
-            
+
             <div className="modal-body">
               <div className="modal-section">
                 <p className="confirm-message">{confirmConfig.message}</p>
@@ -313,8 +312,8 @@ export default function StudyCalendar() {
             </div>
 
             <div className="modal-buttons">
-              <button 
-                onClick={confirmConfig.onConfirm} 
+              <button
+                onClick={confirmConfig.onConfirm}
                 className={`confirm-button ${confirmConfig.isDangerous ? 'delete-button' : 'update-button'}`}
               >
                 {confirmConfig.confirmText}
@@ -332,13 +331,13 @@ export default function StudyCalendar() {
             <button className="modal-close-x" onClick={() => setShowAlertModal(false)}>
               ×
             </button>
-            
+
             <div className="modal-header">
               <h3 className={`modal-title ${alertType === 'error' ? 'error' : 'success'}`}>
                 {alertType === 'error' ? '오류' : '알림'}
               </h3>
             </div>
-            
+
             <div className="modal-body">
               <div className="modal-section">
                 <p className="alert-message">{alertMessage}</p>
@@ -346,8 +345,8 @@ export default function StudyCalendar() {
             </div>
 
             <div className="modal-buttons">
-              <button 
-                onClick={() => setShowAlertModal(false)} 
+              <button
+                onClick={() => setShowAlertModal(false)}
                 className="update-button single-button"
               >
                 확인
