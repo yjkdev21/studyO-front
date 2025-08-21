@@ -9,7 +9,7 @@ import "./Promotion.css";
 export default function PromotionEdit() {
   // host는 빌드 시점에 결정되는 값이므로, useState의 초기값으로만 사용됩니다.
   const [host, setHost] = useState(import.meta.env.VITE_AWS_API_HOST);
-  console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
+  // console.log("API Host:", host); // 디버깅을 위해 호스트 값 출력
 
   const { postId } = useParams();
   const navigate = useNavigate();
@@ -104,7 +104,7 @@ export default function PromotionEdit() {
       formData.append("newAttachments", file);
     });
 
-    console.log("FormData:", formData); // FormData 내용 확인 (디버깅용)
+    // console.log("FormData:", formData); // FormData 내용 확인 (디버깅용)
 
     try {
       // "multipart/form-data" 을 사용할 경우 put 요청 spring 500 에러남
