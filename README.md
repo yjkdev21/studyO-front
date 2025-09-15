@@ -228,6 +228,6 @@ cd tjspring
        
 ---
 
-ⓒ [김환희](https://github.com/rlaksl) · [김예지](https://github.com/yjkdev21) · [백유선](https://github.com/yuseon4455)
+README ⓒ [김환희](https://github.com/rlaksl) · [김예지](https://github.com/yjkdev21) · [백유선](https://github.com/yuseon4455)
   
 </div>
