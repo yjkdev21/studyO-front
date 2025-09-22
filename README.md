@@ -1,5 +1,6 @@
-<img width="100%" alt="image" src="https://github.com/user-attachments/assets/a9ea4511-2574-4ccd-a30b-593815f8be62" />
-
+<a href="https://www.figma.com/deck/wcNAN0dl7TiPoTO4TzYsaJ/StudyO-PPT?node-id=1-140&t=bKo5OzDgHvVPKEVP-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1">
+       <img width="100%" alt="image" src="https://github.com/user-attachments/assets/a9ea4511-2574-4ccd-a30b-593815f8be62" />
+</a>
 
 ## 🚀 프로젝트 개요
 
@@ -10,6 +11,9 @@ StudyO는 **스터디(Study)와 스튜디오(Studio)를 결합한 올인원 협�
 - **개발기간**: 2025.07.14 - 2025.08.20 (5주)
 - **팀구성**: 6명 (풀스택 6명)
 - **배포 URL**: [www.studyo.r-e.kr/](https://www.studyo.r-e.kr/) _(2025년 10월까지 운영 예정)_
+- **Frontend Repository**: [react-study-o](https://github.com/hyunsupLee/react-study-o)
+- **Backend Repository**: [tjspring](https://github.com/hyunsupLee/tjspring)
+- **PPT**: [StudyO 발표 자료](https://www.figma.com/deck/wcNAN0dl7TiPoTO4TzYsaJ/StudyO-PPT?node-id=1-140&t=bKo5OzDgHvVPKEVP-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1)
 - **시연 영상**: [youtu.be/YQAbBxCMgDo](https://youtu.be/YQAbBxCMgDo)
 
 <br/>
@@ -196,15 +200,6 @@ cd tjspring
 ### Git 워크플로우
 - **브랜치 전략**: 개인 브랜치 → Main 브랜치
 - **CI/CD**: GitHub Actions를 통한 자동 배포
-
-<br/>
-
-## 🔗 관련 링크
-
-- **서비스 URL**: [StudyO](https://www.studyo.r-e.kr/)
-- **Frontend Repository**: [react-study-o](https://github.com/hyunsupLee/react-study-o)
-- **Backend Repository**: [tjspring](https://github.com/hyunsupLee/tjspring)
-- **프로젝트 피그마**: [StudyO 디자인](https://www.figma.com/studyo-design)
 
 <br/>
 
